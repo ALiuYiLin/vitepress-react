@@ -606,6 +606,7 @@ export function serializeHtmlToJsx(
       return
     }
     const tag = rawTag
+    const nodeTag = tag.toLowerCase()
     const attrParts: string[] = []
     for (const [k, v] of node.attrs) {
       if (typeof v === 'string' && /^on[a-z]/i.test(k)) {
@@ -620,8 +621,48 @@ export function serializeHtmlToJsx(
         )
         continue
       }
-      const prop = REACT_ATTR_ALIASES[k.toLowerCase()] ?? k
       const lower = k.toLowerCase()
+      let prop = REACT_ATTR_ALIASES[lower] ?? k
+
+      // SVG/HTML 的 kebab-case 属性 → React 驼峰(如 stroke-width → strokeWidth);
+      // data-*/aria-* 必须保持连字符原样
+      if (
+        lower.includes('-') &&
+        !lower.startsWith('data-') &&
+        !lower.startsWith('aria-')
+      ) {
+        prop = lower
+          .split('-')
+          .map((seg, i) =>
+            i === 0 ? seg : seg[0].toUpperCase() + seg.slice(1)
+          )
+          .join('')
+      }
+
+      // 静态 HTML 的受控感属性 → 非受控 default*(无 onChange 时可编辑且不告警)
+      if (
+        (nodeTag === 'input' || nodeTag === 'option') &&
+        lower === 'checked'
+      ) {
+        attrParts.push('defaultChecked')
+        continue
+      }
+      if (
+        (nodeTag === 'select' || nodeTag === 'option') &&
+        lower === 'selected'
+      ) {
+        attrParts.push('defaultSelected')
+        continue
+      }
+      if (
+        (nodeTag === 'input' ||
+          nodeTag === 'textarea' ||
+          nodeTag === 'select') &&
+        lower === 'value'
+      ) {
+        prop = 'defaultValue'
+      }
+
       if (BOOLEAN_PROPS.has(lower)) {
         // 布尔属性:HTML 语义下存在即 true
         attrParts.push(prop)
