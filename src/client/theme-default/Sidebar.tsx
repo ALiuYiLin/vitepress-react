@@ -1,5 +1,11 @@
+import { ChevronDown } from 'lucide-react'
 import { useData, useNavigate, useRoute } from 'vitepress'
 
+import {
+  Collapsible,
+  CollapsibleContent,
+  CollapsibleTrigger
+} from './components/ui/collapsible'
 import {
   Sidebar,
   SidebarContent,
@@ -158,18 +164,27 @@ export function AppSidebar() {
       <SidebarContent>
         {groups.map((group, gi) => (
           <SidebarGroup key={gi}>
-            {group.text ? (
-              <SidebarGroupLabel>{group.text}</SidebarGroupLabel>
-            ) : null}
-            <SidebarGroupContent>
-              <SidebarMenu>
-                <TopMenuItems
-                  items={group.items}
-                  current={current}
-                  navigate={navigate}
-                />
-              </SidebarMenu>
-            </SidebarGroupContent>
+            <Collapsible defaultOpen className="group/collapsible">
+              {group.text ? (
+                <CollapsibleTrigger asChild>
+                  <SidebarGroupLabel className="flex cursor-pointer items-center justify-between gap-2">
+                    {group.text}
+                    <ChevronDown className="size-3.5 text-sidebar-foreground/70 transition-transform group-data-[state=open]/collapsible:rotate-180" />
+                  </SidebarGroupLabel>
+                </CollapsibleTrigger>
+              ) : null}
+              <CollapsibleContent>
+                <SidebarGroupContent>
+                  <SidebarMenu>
+                    <TopMenuItems
+                      items={group.items}
+                      current={current}
+                      navigate={navigate}
+                    />
+                  </SidebarMenu>
+                </SidebarGroupContent>
+              </CollapsibleContent>
+            </Collapsible>
           </SidebarGroup>
         ))}
       </SidebarContent>

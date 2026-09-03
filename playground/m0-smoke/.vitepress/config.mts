@@ -26,18 +26,18 @@ export default defineConfig({
       ],
       '/guide/': [
         {
-          text: 'Guide',
+          text: '简介',
           items: [
             { text: 'Guide Page', link: '/guide' },
             { text: 'Getting Started', link: '/guide/getting-started' },
-            { text: 'Configuration', link: '/guide/configuration' },
-            {
-              text: 'Deploy',
-              items: [
-                { text: 'Deploy', link: '/guide/deploy/' },
-                { text: 'Static Hosting', link: '/guide/deploy/static' }
-              ]
-            }
+            { text: 'Configuration', link: '/guide/configuration' }
+          ]
+        },
+        {
+          text: '部署',
+          items: [
+            { text: 'Deploy', link: '/guide/deploy/' },
+            { text: 'Static Hosting', link: '/guide/deploy/static' }
           ]
         }
       ]

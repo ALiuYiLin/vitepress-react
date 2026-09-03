@@ -465,8 +465,8 @@
     left: calc(var(--spacing) * 2);
   }
 
-  .z-20 {
-    z-index: 20;
+  .z-30 {
+    z-index: 30;
   }
 
   .z-40 {
@@ -842,6 +842,10 @@
 
   .cursor-default {
     cursor: default;
+  }
+
+  .cursor-pointer {
+    cursor: pointer;
   }
 
   .resize {
@@ -1501,6 +1505,12 @@
     transition-duration: var(--tw-duration, var(--default-transition-duration));
   }
 
+  .transition-transform {
+    transition-property: transform, translate, scale, rotate;
+    transition-timing-function: var(--tw-ease, var(--default-transition-timing-function));
+    transition-duration: var(--tw-duration, var(--default-transition-duration));
+  }
+
   .duration-200 {
     --tw-duration: .2s;
     transition-duration: .2s;
@@ -1564,6 +1574,10 @@
 
   .group-data-\[collapsible\=offcanvas\]\:right-0:is(:where(.group)[data-collapsible="offcanvas"] *) {
     right: 0;
+  }
+
+  .group-data-\[state\=open\]\/collapsible\:rotate-180:is(:where(.group\/collapsible)[data-state="open"] *) {
+    rotate: 180deg;
   }
 
   .marker\:text-muted-foreground ::marker {
