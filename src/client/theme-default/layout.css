@@ -1,75 +1,35 @@
-/* vitepress-react 参考默认主题样式(手写自包含 CSS;近似 shadcn zinc tokens,
-   亮暗切换走 .dark;迁移 D6 视觉自由、D11 随包开箱即用)。 */
+/* React 默认主题的「布局/组件」样式:自写,只负责本主题组件的结构外观。
+   基础(reset/fonts/utils/vars/vp-doc 正文排版/code/custom-block)一律使用
+   上游 VitePress 的 styles 资产(见 without-fonts.ts 的 import 顺序),
+   不再自写 theme.css。
+   颜色引用通过下方 :root 桥接到上游 tokens(--vp-c-* / --vp-font-* 等),
+   亮暗切换由上游 vars.css 的 .dark 覆盖自动生效。 */
 
 :root {
-  --vp-bg: #ffffff;
-  --vp-bg-alt: #fafafa;
-  --vp-bg-soft: #f4f4f5;
-  --vp-border: #e4e4e7;
-  --vp-border-soft: #ececee;
-  --vp-fg: #18181b;
-  --vp-fg-muted: #52525b;
-  --vp-fg-subtle: #71717a;
-  --vp-accent: #18181b;
-  --vp-accent-fg: #fafafa;
-  --vp-code-bg: #f4f4f5;
-  --vp-code-fg: #d946ef;
-  --vp-warn: #f59e0b;
+  /* 上游 tokens → 本主题组件样式的桥 */
+  --vp-bg: var(--vp-c-bg);
+  --vp-bg-alt: var(--vp-c-bg-alt);
+  --vp-bg-soft: var(--vp-c-bg-soft);
+  --vp-border: var(--vp-c-divider);
+  --vp-border-soft: var(--vp-c-divider);
+  --vp-fg: var(--vp-c-text-1);
+  --vp-fg-muted: var(--vp-c-text-2);
+  --vp-fg-subtle: var(--vp-c-text-3);
+  --vp-accent: var(--vp-c-brand-1);
+  --vp-accent-2: var(--vp-c-brand-2);
+  --vp-accent-fg: var(--vp-c-white);
+  --vp-code-bg: var(--vp-code-bg);
+  --vp-code-fg: var(--vp-code-color);
+  --vp-header-h: var(--vp-nav-height);
+  --vp-sidebar-w: var(--vp-sidebar-width);
+  --vp-outline-w: 15rem; /* 上游无对应变量,固定值 */
   --vp-radius: 6px;
-  --vp-header-h: 3.5rem;
-  --vp-sidebar-w: 16.5rem;
-  --vp-outline-w: 15rem;
-  --vp-font-sans: ui-sans-serif, system-ui, -apple-system, 'Segoe UI',
-    Roboto, 'Helvetica Neue', Arial, 'PingFang SC', 'Microsoft YaHei',
-    sans-serif;
-  --vp-font-mono: ui-monospace, SFMono-Regular, Menlo, Consolas,
-    'Liberation Mono', monospace;
-}
-
-.dark {
-  --vp-bg: #09090b;
-  --vp-bg-alt: #0c0c0e;
-  --vp-bg-soft: #131316;
-  --vp-border: #27272a;
-  --vp-border-soft: #1f1f23;
-  --vp-fg: #fafafa;
-  --vp-fg-muted: #a1a1aa;
-  --vp-fg-subtle: #8e8e96;
-  --vp-accent: #fafafa;
-  --vp-accent-fg: #09090b;
-  --vp-code-bg: #18181b;
-  --vp-code-fg: #c084fc;
-}
-
-/* 平滑过渡与基础 */
-* {
-  box-sizing: border-box;
-}
-
-html {
-  scroll-behavior: smooth;
-}
-
-body {
-  margin: 0;
-  background: var(--vp-bg);
-  color: var(--vp-fg);
-  font-family: var(--vp-font-sans);
-  font-size: 16px;
-  line-height: 1.75;
-  -webkit-font-smoothing: antialiased;
+  --vp-font-sans: var(--vp-font-family-base);
+  --vp-font-mono: var(--vp-font-family-mono);
 }
 
 [id] {
   scroll-margin-top: calc(var(--vp-header-h) + 1rem);
-}
-
-a {
-  color: inherit;
-}
-
-button {
-  font: inherit;
 }
 
 /* ===== 布局 ===== */
@@ -383,119 +343,7 @@ button {
   padding-left: 1.25rem;
 }
 
-/* ===== 正文排版 ===== */
-.vp-doc > *:first-child {
-  margin-top: 0;
-}
-
-.vp-doc h1,
-.vp-doc h2,
-.vp-doc h3,
-.vp-doc h4 {
-  font-weight: 650;
-  line-height: 1.3;
-  color: var(--vp-fg);
-  margin: 2rem 0 0.8rem;
-}
-
-.vp-doc h1 {
-  font-size: 1.9rem;
-  margin-top: 0;
-}
-
-.vp-doc h2 {
-  font-size: 1.45rem;
-  border-bottom: 1px solid var(--vp-border-soft);
-  padding-bottom: 0.3rem;
-}
-
-.vp-doc h3 {
-  font-size: 1.15rem;
-}
-
-.vp-doc p {
-  margin: 0.8rem 0;
-}
-
-.vp-doc ul,
-.vp-doc ol {
-  padding-left: 1.4rem;
-  margin: 0.8rem 0;
-}
-
-.vp-doc li {
-  margin: 0.25rem 0;
-}
-
-.vp-doc a {
-  color: var(--vp-accent);
-  text-decoration: underline;
-  text-underline-offset: 2px;
-}
-
-.vp-doc blockquote {
-  margin: 1rem 0;
-  padding: 0.1rem 1rem;
-  border-left: 3px solid var(--vp-border);
-  color: var(--vp-fg-muted);
-  background: var(--vp-bg-soft);
-  border-radius: 0 var(--vp-radius) var(--vp-radius) 0;
-}
-
-.vp-doc code {
-  font-family: var(--vp-font-mono);
-  font-size: 0.875em;
-  background: var(--vp-code-bg);
-  color: var(--vp-code-fg);
-  padding: 0.15em 0.4em;
-  border-radius: 4px;
-}
-
-.vp-doc pre {
-  background: var(--vp-code-bg);
-  border: 1px solid var(--vp-border-soft);
-  border-radius: var(--vp-radius);
-  padding: 1rem 1.1rem;
-  overflow-x: auto;
-  line-height: 1.6;
-  margin: 1rem 0;
-}
-
-.vp-doc pre code {
-  background: none;
-  padding: 0;
-  color: var(--vp-fg);
-  font-size: 0.875rem;
-}
-
-/* markdown-it preWrapper 结构:div.language-x > pre */
-.language-ts,
-.language-js,
-.language-tsx,
-.language-jsx,
-.language-bash,
-.language-sh,
-.language-md,
-.language-html,
-.language-css,
-.language-json {
-  position: relative;
-  margin: 1rem 0;
-}
-
-.language-ts > pre,
-.language-js > pre,
-.language-tsx > pre,
-.language-jsx > pre,
-.language-bash > pre,
-.language-sh > pre,
-.language-md > pre,
-.language-html > pre,
-.language-css > pre,
-.language-json > pre {
-  margin: 0;
-}
-
+/* ===== 复制按钮(正文 pre 的 .copy;hover 时出现,拷贝后闪烁) ===== */
 .language-ts .copy,
 .language-js .copy,
 .language-tsx .copy,
@@ -545,79 +393,6 @@ button {
 .language-json .copy.copied {
   color: var(--vp-accent);
   border-color: var(--vp-accent);
-}
-
-.language-ts .lang,
-.language-js .lang,
-.language-tsx .lang,
-.language-jsx .lang,
-.language-bash .lang,
-.language-sh .lang,
-.language-md .lang,
-.language-html .lang,
-.language-css .lang,
-.language-json .lang {
-  position: absolute;
-  top: 0.4rem;
-  right: 3.2rem;
-  color: var(--vp-fg-subtle);
-  font-size: 0.75rem;
-}
-
-.vp-doc table {
-  border-collapse: collapse;
-  width: 100%;
-  margin: 1rem 0;
-  font-size: 0.925rem;
-  display: block;
-  overflow-x: auto;
-}
-
-.vp-doc th,
-.vp-doc td {
-  border: 1px solid var(--vp-border);
-  padding: 0.45rem 0.8rem;
-  text-align: left;
-}
-
-.vp-doc th {
-  background: var(--vp-bg-soft);
-  font-weight: 600;
-}
-
-.vp-doc hr {
-  border: none;
-  border-top: 1px solid var(--vp-border);
-  margin: 2rem 0;
-}
-
-.vp-doc img {
-  max-width: 100%;
-}
-
-/* header-anchor(markdown-it 生成)默认隐藏,悬停显示 */
-.vp-doc h1 > a.header-anchor,
-.vp-doc h2 > a.header-anchor,
-.vp-doc h3 > a.header-anchor,
-.vp-doc h4 > a.header-anchor,
-.vp-doc h5 > a.header-anchor,
-.vp-doc h6 > a.header-anchor {
-  display: inline-block;
-  margin-left: 0.4rem;
-  color: var(--vp-fg-subtle);
-  text-decoration: none;
-  opacity: 0;
-  transition: opacity 0.15s;
-  font-size: 0.85em;
-}
-
-.vp-doc h1:hover > a.header-anchor,
-.vp-doc h2:hover > a.header-anchor,
-.vp-doc h3:hover > a.header-anchor,
-.vp-doc h4:hover > a.header-anchor,
-.vp-doc h5:hover > a.header-anchor,
-.vp-doc h6:hover > a.header-anchor {
-  opacity: 1;
 }
 
 /* ===== 上一页/下一页 ===== */
