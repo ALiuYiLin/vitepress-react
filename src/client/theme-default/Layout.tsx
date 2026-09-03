@@ -13,6 +13,7 @@ import { VPSponsors } from './components/vp-sponsors'
 import { VPCarbonAds } from './components/vp-carbon-ads'
 import { VPSocialLinks } from './components/vp-social-links'
 import { VPDocFooterLastUpdated } from './components/vp-doc-footer-last-updated'
+import { VPNavBarSearchButton } from './components/vp-nav-bar-search'
 import { type VpHeader, type VpSidebarItem } from './theme-utils'
 import s from './layout.module.css'
 
@@ -124,6 +125,7 @@ export function Layout() {
                 </a>
               </div>
               <div className={cx(s.navBarContent, 'VPNavBarContent')}>
+                <VPNavBarSearchButton />
                 <nav className={cx(s.menuGroup, 'VPNavMenu')}>
                   {nav.map((item, i) => (
                     <NavItem key={i} item={item} />
