@@ -47,10 +47,13 @@ export function createRouter(
     },
     async go(href, options) {
       if ((await router.onBeforeRouteChange?.(href)) === false) return
-      if (
-        !inBrowser ||
-        (await changeRoute(href, { replace: options?.replace ?? false }))
-      ) {
+      // 首帧(initialLoad)时 store 还停在默认 notFound 路由;即使 URL 与
+      // 初始 route.path 相同也要真正加载页面模块,否则 Content 会以 404
+      // 文本水合(见 M0 调试:changeRoute 同路径短路导致页面从未加载)
+      const changed = inBrowser
+        ? await changeRoute(href, { replace: options?.replace ?? false })
+        : true
+      if (changed || options?.initialLoad) {
         await loadPage(href, { initialLoad: options?.initialLoad })
       }
       await router.onAfterRouteChange?.(href)
