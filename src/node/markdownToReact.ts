@@ -606,11 +606,13 @@ function maskJsxExpressions(
         continue
       }
       if (fence && fenceChar === c) {
+        // 只检查当前行(不是整段余文),等长/超长的同字符围栏即可闭合
+        const eol = rest.indexOf('\n')
+        const lineText = eol === -1 ? rest : rest.slice(0, eol)
         const closeRe = new RegExp(
           `^\\s{0,3}${fenceChar === '`' ? '`{3,}' : '~{3,}'}\\s*$`
         )
-        if (closeRe.test(rest)) {
-          const eol = rest.indexOf('\n')
+        if (closeRe.test(lineText)) {
           const line = eol === -1 ? rest : rest.slice(0, eol + 1)
           out += line
           i += line.length
