@@ -1,0 +1,123 @@
+.doc {
+  padding: 2rem 1.5rem 6rem;
+  width: 100%;
+}
+
+@media (min-width: 48rem) {
+  .doc {
+    padding: 3rem 2rem 8rem;
+  }
+}
+
+@media (min-width: 60rem) {
+  .doc {
+    padding: 3rem 2rem 0;
+  }
+  .doc:not(.hasSidebar) .container {
+    display: flex;
+    justify-content: center;
+    max-width: 62rem;
+  }
+  .doc:not(.hasSidebar) .content {
+    max-width: 47rem;
+  }
+}
+
+@media (min-width: 80rem) {
+  .doc .container {
+    display: flex;
+    justify-content: center;
+  }
+  .doc .aside {
+    display: block;
+  }
+}
+
+@media (min-width: 90rem) {
+  .doc:not(.hasSidebar) .content {
+    max-width: 49rem;
+  }
+  .doc:not(.hasSidebar) .container {
+    max-width: 69rem;
+  }
+}
+
+.container {
+  margin: 0 auto;
+  width: 100%;
+}
+
+.aside {
+  position: relative;
+  display: none;
+  order: 2;
+  flex-grow: 1;
+  padding-left: 2rem;
+  width: 100%;
+  max-width: 16rem;
+}
+
+.aside.leftAside {
+  order: 1;
+  padding-left: unset;
+  padding-right: 2rem;
+}
+
+.asideContainer {
+  position: fixed;
+  top: 0;
+  padding-top: calc(var(--vp-nav-height) + var(--vp-layout-top-height, 0px) + var(--vp-doc-top-height, 0px) + 3rem);
+  width: 14rem;
+  height: 100vh;
+  overflow-x: hidden;
+  overflow-y: auto;
+  scrollbar-width: none;
+}
+.asideContainer::-webkit-scrollbar {
+  display: none;
+}
+
+.asideCurtain {
+  position: fixed;
+  bottom: 0;
+  z-index: 10;
+  width: 14rem;
+  height: 2rem;
+  background: linear-gradient(transparent, var(--vp-c-bg) 70%);
+  pointer-events: none;
+}
+
+.asideContent {
+  display: flex;
+  flex-direction: column;
+  min-height: calc(100vh - (var(--vp-nav-height) + var(--vp-layout-top-height, 0px) + 3rem));
+  padding-bottom: 2rem;
+}
+
+.content {
+  position: relative;
+  margin: 0 auto;
+  width: 100%;
+}
+
+@media (min-width: 60rem) {
+  .content {
+    padding: 0 2rem 8rem;
+  }
+}
+
+@media (min-width: 80rem) {
+  .content {
+    order: 1;
+    margin: 0;
+    min-width: 40rem;
+  }
+}
+
+.contentContainer {
+  margin: 0 auto;
+}
+
+.doc.hasAside .contentContainer {
+  max-width: 43rem;
+}
