@@ -32,7 +32,7 @@ VitePress 旨在使用 Markdown 生成内容时提供出色的开发体验。
 
 - **[内置 Markdown 扩展](./markdown)**：frontmatter、表格、语法高亮……应有尽有。具体来说，VitePress 提供了许多用于处理代码块的高级功能，使其真正成为技术文档的理想选择。
 
-- **[Vue 增强的 Markdown](./using-vue)**：每个 Markdown 页面都是 Vue [单文件组件](https://cn.vuejs.org/guide/scaling-up/sfc.html)，这要归功于 Vue 模板与 HTML 的 100% 语法兼容性。可以使用 Vue 模板语法或导入的 Vue 组件在静态内容中嵌入交互性。
+- **[React 增强的 Markdown](./using-react)**：Markdown 被编译为静态 HTML 并经 JSX 序列化。可以用 `<script>` 块编写 React 组件/页面作用域状态,在正文中用组件标签或 `{expr}` 嵌入交互性。
 
 ## 性能 {#performance}
 
