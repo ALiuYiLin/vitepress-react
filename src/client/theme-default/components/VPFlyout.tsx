@@ -16,12 +16,14 @@ export function VPFlyout({
   button,
   label,
   items,
+  className,
   children
 }: {
   icon?: string
   button?: string
   label?: string
   items?: unknown[]
+  className?: string
   children?: ReactNode
 }) {
   const [open, setOpen] = useState(false)
@@ -94,7 +96,7 @@ export function VPFlyout({
   }
 
   return (
-    <div className={cx(s.root, 'VPFlyout')} ref={el}>
+    <div className={cx(s.root, 'VPFlyout', className)} ref={el}>
       <button
         ref={buttonEl}
         type="button"

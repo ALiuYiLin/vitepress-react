@@ -1,0 +1,29 @@
+/* 对应 Vue VPNavMenu.vue <style scoped> —— 字面量类名统一 :global */
+:global(.VPNavBarMenu) {
+  position: relative;
+  display: none;
+  min-width: 0;
+}
+
+:global(.VPNavBarMenu .list) {
+  display: flex;
+  justify-content: flex-end;
+}
+
+/* 折叠进 ⋯ 菜单——保持挂载(隐藏、移出可访问树与 Tab 序)以维持可测宽度 */
+:global(.VPNavBarMenu .list > li.collapsed) {
+  visibility: hidden;
+  position: absolute;
+  top: 0;
+  left: 0;
+  max-width: 100%;
+  overflow: hidden;
+}
+
+@media (min-width: 48rem) {
+  :global(.VPNavBarMenu) {
+    display: flex;
+    flex-grow: 1;
+    justify-content: flex-end;
+  }
+}

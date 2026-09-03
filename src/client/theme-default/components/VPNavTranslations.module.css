@@ -1,0 +1,66 @@
+/* 对应 Vue VPNavTranslations.vue <style scoped> —— 类名均为字面量,统一 :global */
+
+/* flyout 形态 */
+:global(.VPNavBarTranslations) {
+  display: none;
+}
+
+@media (min-width: 48rem) {
+  :global(.VPNavBarTranslations) {
+    display: flex;
+    align-items: center;
+  }
+}
+
+:global(.VPNavBarTranslations .title) {
+  padding: 0 1.5rem 0 0.75rem;
+  line-height: 2.2857143;
+  font-size: 0.875rem;
+  font-weight: 700;
+  color: var(--vp-c-text-1);
+}
+
+/* ⋯ 菜单内分组形态——与菜单组标题一致 */
+:global(.translations.group > .title) {
+  padding: 0 0.75rem;
+  line-height: 2.2857143;
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: var(--vp-c-text-2);
+}
+
+/* 屏幕导航手风琴形态 */
+:global(.VPNavScreenTranslations .title) {
+  display: flex;
+  align-items: center;
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: var(--vp-c-text-1);
+}
+
+:global(.VPNavScreenTranslations .icon) {
+  font-size: 1rem;
+}
+
+:global(.VPNavScreenTranslations .icon.lang) {
+  margin-right: 0.5rem;
+}
+
+:global(.VPNavScreenTranslations .icon.chevron) {
+  margin-left: 0.25rem;
+  transition: transform 0.25s;
+}
+
+:global(.VPNavScreenTranslations.open .icon.chevron) {
+  transform: rotate(180deg);
+}
+
+:global(.VPNavScreenTranslations .list) {
+  padding: 0.25rem 0 0 1.5rem;
+}
+
+:global(.VPNavScreenTranslations .link) {
+  line-height: 2.4615385;
+  font-size: 0.8125rem;
+  color: var(--vp-c-text-1);
+}

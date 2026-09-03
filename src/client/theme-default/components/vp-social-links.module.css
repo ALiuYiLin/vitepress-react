@@ -1,22 +1,13 @@
-.list {
+/* 对应 Vue VPSocialLinks.vue <style scoped> —— 字面量类名走 :global */
+:global(.VPSocialLinks) {
   display: flex;
-  align-items: center;
-  gap: 2px;
+  justify-content: center;
 }
 
-.link {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  width: 32px;
-  height: 32px;
-  border-radius: 6px;
-  color: var(--vp-c-text-2);
-  font-size: 12px;
-  font-weight: 600;
-  text-decoration: none;
-}
-.link:hover {
-  background: var(--vp-c-bg-alt);
-  color: var(--vp-c-text-1);
+/* 在 markdown 中使用时重置 vp-doc 的样式 */
+:global(.vp-doc .VPSocialLinks),
+:global(.vp-doc .VPSocialLinks > li) {
+  list-style: none;
+  margin: 0;
+  padding: 0;
 }

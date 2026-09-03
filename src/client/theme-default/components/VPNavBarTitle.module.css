@@ -1,0 +1,34 @@
+/* 对应 Vue VPNavBarTitle.vue <style scoped> */
+.title {
+  display: flex;
+  align-items: center;
+  width: 100%;
+  height: var(--vp-nav-height);
+  font-size: 1rem;
+  font-weight: 600;
+  color: var(--vp-c-text-1);
+  transition: opacity 0.25s;
+}
+
+/* 空间不足时标题文字先让位 */
+.title > span {
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+@media (min-width: 60rem) {
+  .title {
+    flex-shrink: 0;
+  }
+
+  /* 侧栏列固定宽——在分割线内缩(距列边 2rem);外层列盒保留整宽 */
+  :global(.VPNavBarTitle.has-sidebar) {
+    max-width: calc(var(--vp-sidebar-width) - 4rem);
+  }
+}
+
+:global(.logo) {
+  flex: none;
+  margin-right: 0.5rem;
+  height: var(--vp-nav-logo-height);
+}

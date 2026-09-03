@@ -41,8 +41,12 @@ export function VPLink(props: VPLinkProps) {
 
   if (Tag === 'a') {
     if (href) elementProps.href = normalizeLink(href, siteForLink)
-    elementProps.target = target ?? (isExternalLink ? '_blank' : undefined)
-    elementProps.rel = rel ?? (isExternalLink ? 'noreferrer' : undefined)
+    if (elementProps.target == null) {
+      elementProps.target = target ?? (isExternalLink ? '_blank' : undefined)
+    }
+    if (elementProps.rel == null) {
+      elementProps.rel = rel ?? (isExternalLink ? 'noreferrer' : undefined)
+    }
   }
 
   return createElement(Tag, elementProps, children)

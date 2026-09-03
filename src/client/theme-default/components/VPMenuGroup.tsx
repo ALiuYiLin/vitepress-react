@@ -9,12 +9,16 @@ export interface VPMenuGroupProps {
 }
 
 /** 菜单分组(递归;子项可为链接或嵌套组) */
-export function VPMenuGroup({ text, items }: VPMenuGroupProps) {
+export function VPMenuGroup({
+  text,
+  items,
+  className
+}: VPMenuGroupProps & { className?: string }) {
   const hasSubGroups = items.some(
     (item) => !('link' in item) && !('component' in item)
   )
   return (
-    <li className={cx(s.group, 'VPMenuGroup')}>
+    <li className={cx(s.group, 'VPMenuGroup', className)}>
       {text ? <p className={s.title}>{text}</p> : null}
       <ul className={cx(hasSubGroups && s.subGroups)}>
         {items.map((item, i) => {

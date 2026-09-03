@@ -1,0 +1,11 @@
+/* 对应 Vue VPNavSocialLinks.vue <style scoped> */
+:global(.VPNavBarSocialLinks) {
+  display: none;
+}
+
+@media (min-width: 48rem) {
+  :global(.VPNavBarSocialLinks) {
+    display: flex;
+    align-items: center;
+  }
+}

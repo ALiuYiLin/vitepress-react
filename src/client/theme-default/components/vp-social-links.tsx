@@ -1,29 +1,32 @@
+import { VPSocialLink, type VPSocialLinkProps } from './VPSocialLink'
 import s from './vp-social-links.module.css'
 
-export type VpSocialLink = {
-  icon?: string
-  link?: string
-}
+const cx = (...c: (string | false | undefined | null)[]) => c.filter(Boolean).join(' ')
 
-/** 顶栏社交链接(theme.socialLinks) */
-export function VPSocialLinks({ links }: { links: VpSocialLink[] }) {
+export type VpSocialLink = VPSocialLinkProps
+
+/** 社交链接组(ul > li > VPSocialLink,对应 Vue VPSocialLinks.vue) */
+export function VPSocialLinks({
+  links,
+  className
+}: {
+  links: VpSocialLink[]
+  className?: string
+}) {
   if (!links.length) return null
   return (
-    <div className="VPSocialLinks">
-      <div className={s.list}>
-        {links.map((l, i) => (
-          <a
-            key={i}
-            className={s.link}
-            href={l.link}
-            target="_blank"
-            rel="noreferrer"
-            title={(l.icon || '').replace(/-/g, ' ')}
-          >
-            {l.icon ? l.icon.replace(/^[a-z]/, (c) => c.toUpperCase()) : 'L'}
-          </a>
-        ))}
-      </div>
-    </div>
+    <ul className={cx(s.list, 'VPSocialLinks', className)}>
+      {links.map((l) => (
+        <li key={l.link}>
+          <VPSocialLink
+            icon={l.icon}
+            link={l.link}
+            ariaLabel={l.ariaLabel}
+            target={l.target}
+            me
+          />
+        </li>
+      ))}
+    </ul>
   )
 }

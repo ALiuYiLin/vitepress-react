@@ -6,7 +6,7 @@ import s from './VPSwitchAppearance.module.css'
 const cx = (...c: (string | false | undefined | null)[]) => c.filter(Boolean).join(' ')
 
 /** 外观切换开关(稳定名称 + aria-checked;标题为操作提示) */
-export function VPSwitchAppearance() {
+export function VPSwitchAppearance({ ariaLabelledby }: { ariaLabelledby?: string }) {
   const { theme } = useData()
   const { isDark, toggle } = useAppearance()
   const t = theme as {
@@ -21,7 +21,8 @@ export function VPSwitchAppearance() {
     <VPSwitch
       className="VPSwitchAppearance"
       title={title}
-      ariaLabel={t.darkModeSwitchLabel || 'Appearance'}
+      ariaLabel={ariaLabelledby ? undefined : t.darkModeSwitchLabel || 'Appearance'}
+      ariaLabelledby={ariaLabelledby}
       ariaChecked={isDark}
       onClick={toggle}
     >

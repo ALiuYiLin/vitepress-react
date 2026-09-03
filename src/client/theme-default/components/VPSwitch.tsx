@@ -7,6 +7,7 @@ export function VPSwitch({
   children,
   title,
   ariaLabel,
+  ariaLabelledby,
   ariaChecked,
   onClick,
   className
@@ -14,6 +15,7 @@ export function VPSwitch({
   children?: React.ReactNode
   title?: string
   ariaLabel?: string
+  ariaLabelledby?: string
   ariaChecked?: boolean
   onClick?: () => void
   className?: string
@@ -25,6 +27,7 @@ export function VPSwitch({
       role="switch"
       title={title}
       aria-label={ariaLabel}
+      aria-labelledby={ariaLabelledby}
       aria-checked={ariaChecked}
       onClick={onClick}
     >

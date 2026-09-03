@@ -1,0 +1,48 @@
+/* 对应 Vue VPNavAppearance.vue <style scoped> —— 类名均与 DOM 字面量一致 */
+:global(.VPNavBarAppearance) {
+  display: none;
+}
+
+@media (min-width: 48rem) {
+  :global(.VPNavBarAppearance) {
+    display: flex;
+    align-items: center;
+  }
+}
+
+:global(.VPNavAppearance .text) {
+  font-size: 0.75rem;
+  font-weight: 500;
+  color: var(--vp-c-text-2);
+}
+
+/* 屏幕导航内的文字行 */
+:global(.VPNavScreenAppearance) {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border-radius: 0.5rem;
+  padding: 0.75rem 0.875rem 0.75rem 1rem;
+  background-color: var(--vp-c-bg-soft);
+}
+
+:global(.VPNavScreenAppearance .text) {
+  line-height: 2;
+}
+
+/* ⋯ 菜单内的文字行 */
+:global(.menu-appearance) {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 1rem;
+  min-width: 11rem;
+  padding: 0 0.75rem;
+}
+
+/* 与菜单组标题一致 */
+:global(.menu-appearance .text) {
+  line-height: 2.2857143;
+  font-size: 0.875rem;
+  font-weight: 600;
+}

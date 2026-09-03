@@ -9,7 +9,8 @@ export interface VPSocialLinkProps {
   link: string
   ariaLabel?: string
   target?: string
-  me: boolean
+  /** 声明 rel="me"(站主身份,默认开启;第三方嵌页场景可关) */
+  me?: boolean
 }
 
 /** 社交链接项(icon 为 simple-icons 名或图标类) */
@@ -29,7 +30,7 @@ export function VPSocialLink({
       href={link}
       aria-label={ariaLabel ?? (typeof icon === 'string' ? icon : '')}
       target={target ?? (external ? '_blank' : undefined)}
-      rel={me ? 'me noopener' : 'noopener'}
+      rel={me === false ? 'noopener' : 'me noopener'}
     >
       <VPIcon icon={qualified} />
     </a>
