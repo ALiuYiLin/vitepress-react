@@ -37,3 +37,15 @@ const answer = 42
 ```
 
 > a blockquote
+
+## Section One
+
+some prose under section one.
+
+## Section Two
+
+more prose under section two.
+
+## Section Three
+
+last section with a third heading.

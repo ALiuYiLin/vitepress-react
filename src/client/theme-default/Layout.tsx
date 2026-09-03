@@ -1,41 +1,76 @@
-// M0 占位 Layout:仅用于验证「SSR + 水合 + 路由内容渲染」链路。
-// 视觉/结构会在 M4 替换为 shadcn 主题(参考 playground/theme)。
-
+import { useState } from 'react'
 import { Content, useData } from 'vitepress'
 
+import { TopNav } from './TopNav'
+import { SidebarList } from './Sidebar'
+import { AsideOutline } from './AsideOutline'
+import { Footer, PrevNext } from './layout-parts'
+
+/**
+ * 参考默认主题 Layout(React 版;对上游 default theme 的结构近似,
+ * 视觉自由——迁移 D6)。组件按需订阅 useData() 快照。
+ */
 export default function Layout() {
-  const { site, title } = useData()
+  const data = useData()
+  const [menuOpen, setMenuOpen] = useState(false)
+
+  const page = data.page
+  const frontmatter = (page.frontmatter ?? {}) as {
+    sidebar?: boolean
+    aside?: boolean | 'left'
+    outline?: false | { level?: number | number[] | 'deep' }
+    layout?: string
+  }
+  const cfg = data.theme as {
+    aside?: boolean | 'left'
+    outline?: unknown
+    footer?: unknown
+    sidebar?: unknown
+  }
+
+  const is404 = page.isNotFound === true
+
+  // 大纲:取 h2/h3(h1 是页面主标题;上限按 level 过滤,默认展示到 h3)
+  const outlineLevels = new Set<number>([2, 3])
+  const headers = page.headers.filter((h) => outlineLevels.has(h.level))
+  const showAside =
+    !is404 &&
+    headers.length >= 2 &&
+    cfg.aside !== false &&
+    cfg.outline !== false &&
+    frontmatter.aside !== false &&
+    frontmatter.outline !== false
+  const showSidebar = !is404 && frontmatter.sidebar !== false
 
   return (
-    <div style={{ minHeight: '100vh', display: 'flex', flexDirection: 'column' }}>
-      <header
-        style={{
-          display: 'flex',
-          alignItems: 'center',
-          gap: '1rem',
-          padding: '0.75rem 1.5rem',
-          borderBottom: '1px solid #e5e7eb'
-        }}
-      >
-        <strong>{site.title}</strong>
-        <span style={{ marginLeft: 'auto', color: '#6b7280', fontSize: '0.9em' }}>
-          {title}
-        </span>
-      </header>
-      <main style={{ flex: 1, padding: '2rem 1.5rem', maxWidth: '48rem', margin: '0 auto', width: '100%' }}>
-        <Content />
-      </main>
-      <footer
-        style={{
-          padding: '1rem 1.5rem',
-          borderTop: '1px solid #e5e7eb',
-          textAlign: 'center',
-          color: '#9ca3af',
-          fontSize: '0.85em'
-        }}
-      >
-        VitePress-React · M0 skeleton
-      </footer>
+    <div className="vp-layout">
+      <TopNav onMenu={() => setMenuOpen(true)} />
+
+      {menuOpen ? (
+        <>
+          <div className="vp-drawer-backdrop" onClick={() => setMenuOpen(false)} />
+          <div className="vp-drawer" role="dialog" aria-label="Navigation">
+            <SidebarList />
+          </div>
+        </>
+      ) : null}
+
+      <div className="vp-shell">
+        {showSidebar ? (
+          <aside className="vp-sidebar" aria-label="Sidebar">
+            <SidebarList />
+          </aside>
+        ) : null}
+        <div className={`vp-main${showAside ? ' has-aside' : ''}`}>
+          <div className="vp-doc-container">
+            <Content />
+            {!is404 ? <PrevNext /> : null}
+          </div>
+          {showAside ? <AsideOutline headers={headers} /> : null}
+        </div>
+      </div>
+
+      <Footer />
     </div>
   )
 }

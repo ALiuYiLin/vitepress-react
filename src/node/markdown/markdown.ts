@@ -549,7 +549,9 @@ export async function createMarkdownRenderer(
   // https://github.com/jonschlinkert/gray-matter/blob/310f9349381775d10a221cef903989eb5acc8843/index.js#L44-L47
   ;(options.frontmatter ??= {}).grayMatterOptions ??= {}
   frontmatterPlugin(md, options.frontmatter)
-  if (options.headers) {
+  // headers 默认启用(与上游一致:!=false);关闭时(显式 false)不收集。
+  // 注意:页面大纲/滚动相关依赖 PageData.headers,默认必须开启。
+  if (options.headers !== false) {
     headersPlugin(md, {
       level: [2, 3, 4, 5, 6],
       slugify,

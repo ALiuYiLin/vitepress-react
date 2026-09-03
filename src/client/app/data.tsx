@@ -192,3 +192,23 @@ export function useRouter(): Router {
   }
   return store.router
 }
+
+/** 外观控制(主题的明暗切换按钮用):isDark 快照 + setDark/toggle */
+export function useAppearance(): {
+  isDark: boolean
+  setDark: (v: boolean) => void
+  toggle: () => void
+} {
+  const store = useStore()
+  const state = useSyncExternalStore(
+    store.subscribe,
+    store.getSnapshot,
+    store.getSnapshot
+  )
+  const isDark = state.data.isDark
+  return {
+    isDark,
+    setDark: (v) => store.setDark(v),
+    toggle: () => store.setDark(!isDark)
+  }
+}
