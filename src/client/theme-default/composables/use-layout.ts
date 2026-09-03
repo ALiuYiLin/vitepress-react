@@ -18,7 +18,7 @@ export function useLayout() {
     aside?: boolean | 'left'
     outline?: unknown
   }
-  const isHome = fm.layout === 'home' || route.path === '/'
+  const isHome = fm.layout === 'home'
   const sidebarConfig = cfg.sidebar as never
   const groups = sidebarGroupsFor(route.path, sidebarConfig as never)
   const hasSidebarEnabled = fm.sidebar !== false && cfg.sidebar !== false
@@ -32,11 +32,11 @@ export function useLayout() {
   return {
     isHome,
     sidebarGroups: groups,
-    hasSidebar,
-    isSidebarEnabled: hasSidebar,
-    hasAside,
+    hasSidebar: isHome ? false : hasSidebar,
+    isSidebarEnabled: isHome ? false : hasSidebar,
+    hasAside: isHome ? false : hasAside,
     leftAside,
     headers,
-    hasLocalNav
+    hasLocalNav: isHome ? false : hasLocalNav
   }
 }

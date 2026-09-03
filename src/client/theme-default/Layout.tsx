@@ -7,6 +7,7 @@ import { useLayout } from './composables/use-layout'
 import { useNav, useNavItemLink } from './composables/use-nav'
 import { usePrevNext } from './composables/use-prev-next'
 import { useSidebarItemControl } from './composables/use-sidebar'
+import { VPHome } from './components/vp-home'
 import { type VpHeader, type VpSidebarItem } from './theme-utils'
 import s from './layout.module.css'
 
@@ -76,7 +77,7 @@ export function Layout() {
   const { isDark, toggle: toggleDark } = useAppearance()
   const [, setLocale] = useLocale()
   const { isScreenOpen, open, toggle: toggleScreen } = useNav()
-  const { sidebarGroups, hasSidebar, hasAside, leftAside, headers, hasLocalNav } =
+  const { isHome, sidebarGroups, hasSidebar, hasAside, leftAside, headers, hasLocalNav } =
     useLayout()
   const { prev, next } = usePrevNext()
   const { currentLang, localeLinks } = useLangs()
@@ -181,7 +182,7 @@ export function Layout() {
         <div className={cx(s.content, 'content')}>
           <div className={cx(s.contentContainer, 'content-container', hasAside && 'has-aside')}>
             <main className={cx(s.main, 'main')}>
-              <Content />
+              {isHome ? <VPHome /> : <Content />}
             </main>
             {(prev || next) && (
               <footer className={cx(s.docFooter, 'VPDocFooter')}>

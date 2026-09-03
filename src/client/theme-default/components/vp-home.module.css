@@ -1,0 +1,91 @@
+.hero {
+  max-width: 960px;
+  margin: 0 auto;
+  text-align: center;
+  padding: 64px 24px 40px;
+}
+
+.heroName {
+  font-size: 56px;
+  line-height: 1.1;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  margin: 0;
+  background: linear-gradient(120deg, var(--vp-c-brand-1), var(--vp-c-brand-2));
+  background-clip: text;
+  -webkit-background-clip: text;
+  color: transparent;
+}
+
+.heroText {
+  font-size: 20px;
+  line-height: 1.6;
+  color: var(--vp-c-text-1);
+  margin: 24px 0 0;
+}
+
+.heroTagline {
+  font-size: 15px;
+  color: var(--vp-c-text-2);
+  margin: 16px 0 0;
+}
+
+.heroActions {
+  display: flex;
+  gap: 12px;
+  justify-content: center;
+  margin-top: 32px;
+}
+
+.heroAction {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  height: 40px;
+  padding: 0 24px;
+  border-radius: 8px;
+  font-size: 15px;
+  font-weight: 500;
+  text-decoration: none;
+  background: var(--vp-c-brand-1);
+  color: var(--vp-c-bg);
+  transition: opacity 0.2s;
+}
+.heroAction:hover {
+  opacity: 0.9;
+}
+
+.featuresGrid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 16px;
+  max-width: 1152px;
+  margin: 0 auto;
+  padding: 24px;
+}
+
+.featureCard {
+  border: 1px solid var(--vp-c-divider);
+  border-radius: 12px;
+  padding: 24px;
+  background: var(--vp-c-bg);
+}
+
+.featureIcon {
+  font-size: 28px;
+  margin-bottom: 12px;
+}
+
+.featureTitle {
+  font-size: 17px;
+  font-weight: 600;
+  margin: 0 0 8px;
+  color: var(--vp-c-text-1);
+}
+
+.featureDetails {
+  font-size: 14px;
+  line-height: 1.6;
+  color: var(--vp-c-text-2);
+  margin: 0;
+}
