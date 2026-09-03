@@ -1,0 +1,10 @@
+.prefix {
+  color: var(--vp-c-text-2);
+  font-size: 14px;
+}
+
+.datetime {
+  color: var(--vp-c-text-1);
+  font-size: 14px;
+  margin-left: 4px;
+}

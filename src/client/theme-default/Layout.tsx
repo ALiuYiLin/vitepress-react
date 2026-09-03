@@ -12,6 +12,7 @@ import { VPTeamMembers } from './components/vp-team'
 import { VPSponsors } from './components/vp-sponsors'
 import { VPCarbonAds } from './components/vp-carbon-ads'
 import { VPSocialLinks } from './components/vp-social-links'
+import { VPDocFooterLastUpdated } from './components/vp-doc-footer-last-updated'
 import { type VpHeader, type VpSidebarItem } from './theme-utils'
 import s from './layout.module.css'
 
@@ -205,6 +206,9 @@ export function Layout() {
             </main>
             {(prev || next) && (
               <footer className={cx(s.docFooter, 'VPDocFooter')}>
+                <div className="edit-info">
+                  <VPDocFooterLastUpdated />
+                </div>
                 <div className="prev-next">
                   <span className="visually-hidden">上一页 / 下一页</span>
                   <div className="pager">
