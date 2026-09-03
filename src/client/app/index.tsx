@@ -6,7 +6,10 @@ import { VpStoreProvider, createStore, useData, type VpStore } from './data'
 import { createRouter, type Router } from './router'
 import { Content } from './components/Content'
 import { syncHead } from './composables/head'
+import { setupCopyButtons } from './composables/copyCode'
+import { setupLinkPrefetch } from './composables/preFetch'
 import { inBrowser, pathToFile } from './utils'
+import type { PageData } from '../shared'
 import type { PageModule } from './router'
 
 function resolveThemeExtends(theme: typeof RawTheme): typeof RawTheme {
@@ -46,6 +49,12 @@ export function VitePressApp() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
+  // 复制按钮:document 层委托注册一次(内容区域每次导航重建,委托不受影响)
+  useEffect(() => {
+    if (!inBrowser) return
+    return setupCopyButtons()
+  }, [])
+
   const Layout = Theme.Layout
   return Layout ? <Layout /> : <Content />
 }
@@ -60,7 +69,8 @@ export async function createApp(): Promise<CreatedApp> {
   ;(globalThis as any).__VITEPRESS__ = true
 
   const store = createStore()
-  const router = createRouter(loadPageModule(), store, Theme.NotFound)
+  const loader = loadPageModule()
+  const router = createRouter(loader, store, Theme.NotFound)
   store.router = router
 
   if (Theme.enhanceApp) {
@@ -128,5 +138,46 @@ if (inBrowser) {
     } else {
       createRoot(container).render(element)
     }
+
+    const loader = loadPageModule()
+
+    // PROD:站内链接 hover/触摸预取页面 chunk
+    if (import.meta.env.PROD) {
+      const site = store.state.data.site as {
+        router?: { prefetchLinks?: boolean }
+      }
+      setupLinkPrefetch((p) => loader(p), site.router?.prefetchLinks !== false)
+    }
+
+    // DEV HMR:当前页 md/frontmatter 变更(vitepress:pageData)时,重新加载
+    // 带新时间戳的页面模块并原地更新 route——内容/标题即时生效,无需整页刷新
+    if (import.meta.env.DEV && import.meta.hot) {
+      import.meta.hot.on(
+        'vitepress:pageData',
+        async (payload: { path: string; pageData: PageData }) => {
+          const cur = store.state.route
+          if (!pathsEqual(payload.path, cur.path)) return
+          try {
+            const mod = await loader(cur.path)
+            if (mod) {
+              store.updateRoute({
+                ...cur,
+                component: mod.default,
+                data: mod.__pageData ?? cur.data
+              })
+            }
+          } catch {
+            // 页面处于加载中/已导航等情况,忽略
+          }
+        }
+      )
+    }
   })
+}
+
+/** /guide.md 与 /guide 归一等价 */
+function pathsEqual(a: string, b: string): boolean {
+  const norm = (p: string) =>
+    p.replace(/\.(md|html)$/i, '').replace(/\/+$/, '') || '/'
+  return norm(a) === norm(b)
 }

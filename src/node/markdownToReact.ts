@@ -592,5 +592,9 @@ function createReactPageSrc(
   parts.push(`  )`)
   parts.push(`}`)
 
+  // dev 下自接受热更新:阻止 vite 因页面模块无 importer 而整页刷新;
+  // 内容替换由客户端 vitepress:pageData 事件驱动(重新 import 新模块)
+  parts.push(`if (import.meta.hot) { import.meta.hot.accept() }`)
+
   return parts.join('\n')
 }
