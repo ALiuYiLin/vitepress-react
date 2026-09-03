@@ -33,7 +33,8 @@
 - 骨架:`Layout.tsx`(**自包含**:已内联 VPNavBar/VPSidebar/VPContent/VPDocAside/VPFooter/VPLocalNav 结构 + `layout.module.css`)、`NotFound.tsx`。后续可把内联结构拆为 `components/VP*` 并用上面已迁移组件替换(待办)。
 - 已迁移组件(文件已存在于 `src/client/theme-default/components/`):
   - 基础:`VPBackdrop`、`VPBadge`、`VPIcon`、`VPImage`、`VPLink`、`VPSkipLink`(早前子代理落盘)、`VPButton`(自己迁)、`VPPage`、`VPSwitch`、`VPSocialLink`、`VPMenuLink`、`VPFooter`、`VPSwitchAppearance`、`VPMenuGroup`、`VPMenu`、`VPDocOutlineItem`、`VPDocAsideOutline`、`VPDocAside`、`VPDocFooter`、`VPDoc`(自己迁)。
-  - 页面/功能:`vp-home(VPHome/VPHero/VPFeatures)`、`vp-team`、`vp-sponsors`、`vp-social-links`、`vp-carbon-ads`、`vp-nav-bar-search`、`vp-doc-footer-last-updated`。
+  - 页面/功能:`vp-home(VPHome/VPHero/VPFeatures)` → **已删除**,改为严格 Vue 结构:`VPHome`/`VPHomeHero`/`VPHero`/`VPHomeFeatures`/`VPFeatures`/`VPFeature`/`VPHomeContent`(DOM/样式由 Vue scoped CSS 生成 `styles/components/theme-home.css`,根类锚定展开);`vp-team`、`vp-sponsors`、`vp-social-links`、`vp-carbon-ads`、`vp-nav-bar-search`、`vp-doc-footer-last-updated`。
+- Home 验证:SSR DOM 与 Vue 一致(`VPHero>container>main>heading(name clip/text)/tagline/actions/action>VPButton`;`VPFeatures VPHomeFeatures>container>ul.items>li.item.grid-3>VPFeature>box>icon/title/details`;`VPHomeContent vp-doc container` 含 md 内容);浏览器 1440px 9/9 PASS(3 列等宽 389px、按钮可见、无 JS 报错)。
   - 侧栏:`VPSidebar`/`VPSidebarGroup`/`VPSidebarItem`(递归,已迁移;useSidebarItemControl 语义对齐 Vue:collapsible=collapsed!=null、自动展开、item 变化重置)。
   - 本地导航:`VPLocalNav`/`VPLocalNavOutlineDropdown`(已迁移;v-show、vh、body lock、Esc/外部/内容更新关闭)。
   - 顶栏/导航全套:`VPFlyout`、`VPNav`、`VPNavBar`、`VPNavBarTitle`、`VPNavBarHamburger`、`VPNavBarSearchButton`(vp-nav-bar-search)、`VPNavMenu`/`VPNavMenuGroup`/`VPNavMenuLink`、`VPNavAppearance`、`VPNavTranslations`、`VPNavSocialLinks`、`VPNavBarExtra`、`VPNavScreen`。
@@ -46,7 +47,7 @@
 ## 4. 待办/简化项(尚未做或有意简化)
 - **剩余验证/收尾**:生产 hydration #418 仍为已知(骨架期即在,dev 无、交互正常)——若需深挖用 dev 构建对照 SSR/client 文本差异;`VPNavBarSearch` 接线本地/远程搜索框(可后置);其余按 §4 简化。
 - 简化(可接受偏差):溢出引擎未实现(默认不折叠);`VPNavBarSearch` 仅保留按钮 stub(未迁 Algolia/LocalSearchBox 弹层);flyout/屏幕动画用 CSS keyframes 近似 Vue Transition;纯字面量规则集中为全局 `styles/components/theme-nav.css`(类名唯一,安全);VPMenuLink 等按本项目先例近似。
-- 可选细分:`VPDocAsideCarbonAds`/`VPDocAsideSponsors`(VPDocAside 已内联碳广告占位)、`VPHomeContent/VPHomeHero/VPHomeFeatures/VPHomeSponsors`(现并入 vp-home)、`VPTeamPage*`(`VPTeamPage/VPTeamPageSection/VPTeamPageTitle`)。注:m0 的 team/sponsors 页依赖 markdown 内组件(VPTeamMembers/VPSponsors),需站点侧注册/import,与主题迁移无关。
+- 可选细分:`VPDocAsideCarbonAds`/`VPDocAsideSponsors`(VPDocAside 已内联碳广告占位)、`VPTeamPage*`(`VPTeamPage/VPTeamPageSection/VPTeamPageTitle`)。注:m0 的 team/sponsors 页依赖 markdown 内组件(VPTeamMembers/VPSponsors),需站点侧注册/import,与主题迁移无关。
 - 风格:小写 `vp-*.tsx` 文件将来可拆为 `<Name>.tsx` 与 Vue 一一对应(待办,不改优先级)。
 
 ## 5. 下一步(恢复后从这里继续)
