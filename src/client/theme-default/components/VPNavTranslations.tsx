@@ -43,7 +43,8 @@ export function VPNavTranslations({
 
   const localeProps = (locale: (typeof localeLinks)[number]) => ({
     lang: locale.lang,
-    hreflang: locale.lang,
+    // React 用驼峰属性名渲染出小写 HTML 属性 hreflang
+    hrefLang: locale.lang,
     rel: 'alternate',
     dir: locale.dir,
     'data-allow-mismatch': 'attribute'
