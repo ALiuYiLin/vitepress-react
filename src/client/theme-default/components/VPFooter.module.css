@@ -1,0 +1,40 @@
+.footer {
+  position: relative;
+  z-index: var(--vp-z-index-footer);
+  border-top: 1px solid var(--vp-c-gutter);
+  padding: 2rem 1.5rem;
+  background-color: var(--vp-c-bg);
+}
+
+.footer.hasSidebar {
+  display: none;
+}
+
+.footer :global(a) {
+  text-decoration-line: underline;
+  text-underline-offset: 0.125rem;
+  transition: color 0.25s;
+}
+.footer :global(a:hover) {
+  color: var(--vp-c-text-1);
+}
+
+@media (min-width: 48rem) {
+  .footer {
+    padding: 2rem;
+  }
+}
+
+.container {
+  margin: 0 auto;
+  max-width: var(--vp-layout-max-width);
+  text-align: center;
+}
+
+.message,
+.copyright {
+  line-height: 1.7142857;
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: var(--vp-c-text-2);
+}
