@@ -1,0 +1,5 @@
+fix(theme): resolve outline headers from page.headers for SSR/client parity
+
+use-layout now reads headers from page.headers (consistent across
+SSR/client) instead of route.data; also commit the package.json dependency
+cleanup's pnpm-lock sync and the removed build-theme-css script.

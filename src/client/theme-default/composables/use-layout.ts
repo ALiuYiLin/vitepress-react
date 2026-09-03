@@ -1,10 +1,10 @@
 import { useData, useRoute } from 'vitepress'
 
-import { sidebarGroupsFor } from '../theme-utils'
+import { sidebarGroupsFor, type VpHeader } from '../theme-utils'
 
 /** 页面布局信息:home/侧栏/大纲/本地导航 */
 export function useLayout() {
-  const { theme, frontmatter } = useData()
+  const { theme, frontmatter, page } = useData()
   const route = useRoute()
   const cfg = theme as {
     sidebar?: unknown
@@ -23,7 +23,7 @@ export function useLayout() {
   const groups = sidebarGroupsFor(route.path, sidebarConfig as never)
   const hasSidebarEnabled = fm.sidebar !== false && cfg.sidebar !== false
   const hasSidebar = hasSidebarEnabled && groups.length > 0
-  const headers = route.data?.headers ?? []
+  const headers = ((page as { headers?: VpHeader[] })?.headers ?? []) as VpHeader[]
   const hasAside =
     (fm.aside ?? cfg.aside ?? true) !== false && headers.length > 0
   const leftAside = fm.aside === 'left'
