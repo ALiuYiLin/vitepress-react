@@ -47,8 +47,13 @@
 - 页面组件:`VPHomeContent`、`VPHomeHero`、`VPHomeFeatures`、`VPHomeSponsors`(当前已并入 vp-home,可选细分)、`VPTeamPage`、`VPTeamPageSection`、`VPTeamPageTitle`。
 
 ## 5. 下一步(恢复后从这里继续)
-1. 迁移 **`VPContent`**(已读源 `VPContent.vue`):根 `div.VPContent[id][has-sidebar|is-home]`,分支:`page.isNotFound`→`<NotFound/>`;`frontmatter.layout==='page'`→`<VPPage/>`;`layout==='home'`→`<VPHome/>`(用 `./vp-home`);`layout==='doc'/无`→`<VPDoc/>`(用 `./VPDoc`);自定义 layout→`<X/>`。样式 `.VPContent`(flex-grow,顶部/侧栏偏移,is-home 全宽,has-sidebar padding)复制到 `VPContent.module.css`。
-2. 之后:`VPDocAsideCarbonAds/VPDocAsideSponsors`(可选)→ 顶栏(`VPNav*/VPNavMenu*`)、侧栏(`VPSidebar*`)、本地导航(`VPLocalNav*`)、`VPFlyout`、`VPNavScreen*`、`VPHome*` 细分、`VPTeamPage*`。
+1. 迁移**顶栏/侧栏/本地导航**(文档核心已完:VPDoc/VPDocAside/VPDocAsideOutline/VPDocOutlineItem/VPDocFooter/VPContent/VPPage/VPFooter/VPMenu*/VPSwitch*/VPSocialLink/VPButton)。顺序:
+   - 先 `VPSidebar`/`VPSidebarGroup`/`VPSidebarItem`(递归,侧栏)
+   - `VPLocalNav`/`VPLocalNavOutlineDropdown`
+   - `VPFlyout`(顶栏下拉)
+   - `VPNav`/`VPNavBar`/`VPNavBarTitle`/`VPNavBarAppearance`/`VPNavBarHamburger`/`VPNavBarExtra`/`VPNavSocialLinks`/`VPNavTranslations`
+   - `VPNavMenu`/`VPNavMenuGroup`/`VPNavMenuLink`、`VPNavScreen*`
+2. 之后:`VPDocAsideCarbonAds`/`VPDocAsideSponsors`(VPDocAside 已内联碳广告占位)、`VPHome*` 细分、`VPTeamPage*`。
 3. 全部迁移后,统一验证(tsc/tsdown/SSG/preview),再决定是否拆分 `Layout` 内联为 `components/VP*` 与消除 #418。
 
 ## 6. 注意事项
