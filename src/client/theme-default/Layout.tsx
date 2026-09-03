@@ -1,4 +1,4 @@
-import { useRef } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { Content, useAppearance, useData, useLocale, useNavigate } from 'vitepress'
 
 import { resolveHeaders, resolveTitle, useActiveAnchor } from './composables/use-active-anchor'
@@ -32,7 +32,7 @@ function SidebarItem({ item }: { item: VpSidebarItem }) {
     useSidebarItemControl(item)
   const link = item.link
   return (
-    <div className={cx(s.sidebarItem, isActiveLink && 'is-active')}>
+    <div className={cx(s.sidebarItem, 'VPSidebarItem', isActiveLink && 'is-active')}>
       {item.text && (
         <div className={s.item}>
           {link ? (
@@ -98,7 +98,11 @@ export function Layout() {
   const pageClass = (frontmatter as { pageClass?: string })?.pageClass
 
   const brandLc = (site.locales as any)?.[0]?.link ?? '/'
-  const isDarkFlavor = Boolean(isDark)
+  const [iconDark, setIconDark] = useState(false)
+  useEffect(() => {
+    setIconDark(Boolean(isDark))
+  }, [isDark])
+  const isDarkFlavor = iconDark
 
   return (
     <div className={cx('Layout', pageClass && pageClass)}>
@@ -113,12 +117,12 @@ export function Layout() {
                   <span>{site.title}</span>
                 </a>
               </div>
-              <div className={s.navBarContent}>
-                <div className={s.menuGroup}>
+              <div className={cx(s.navBarContent, 'VPNavBarContent')}>
+                <nav className={cx(s.menuGroup, 'VPNavMenu')}>
                   {nav.map((item, i) => (
                     <NavItem key={i} item={item} />
                   ))}
-                </div>
+                </nav>
               </div>
               <div className={s.navRight}>
                 <div className="VPNavTranslations">
