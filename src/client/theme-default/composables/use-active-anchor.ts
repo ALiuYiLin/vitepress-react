@@ -2,9 +2,9 @@ import { useEffect } from 'react'
 
 import type { VpHeader } from '../theme-utils'
 
-/** 大纲标题文本 */
+/** 大纲标题文本(label 由各语言 themeConfig.outline.label 提供,缺省英文) */
 export function resolveTitle(theme: { outline?: { label?: string } }): string {
-  return theme.outline?.label ?? '页面导航'
+  return theme.outline?.label ?? 'On this page'
 }
 
 /** 从 DOM .vp-doc 收集 h1..h6(带 id)并序列化为扁平 headers */

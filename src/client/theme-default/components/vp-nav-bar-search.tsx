@@ -16,9 +16,9 @@ export function VPNavBarSearchButton({ className }: { className?: string }) {
   }
   return (
     <div className={cx('VPNavBarSearch', className)}>
-      <button className={s.btn} onClick={openSearch} aria-label="搜索">
+      <button className={s.btn} onClick={openSearch} aria-label="Search">
         <span className="vpi-search icon" />
-        <span className={s.text}>搜索</span>
+        <span className={s.text}>Search</span>
         <kbd className={s.kbd}>Ctrl K</kbd>
       </button>
     </div>
