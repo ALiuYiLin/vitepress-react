@@ -4,6 +4,7 @@
 // components/vp-*.css。
 import './tailwind.css'
 import './styles/vars.css'
+import './styles/icons.css'
 import './styles/components/vp-doc.css'
 import './styles/components/vp-code.css'
 import './styles/components/vp-code-group.css'
