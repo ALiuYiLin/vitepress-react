@@ -1,0 +1,12 @@
+.spacer {
+  flex-grow: 1;
+}
+
+.carbonAds {
+  margin-top: 1.5rem;
+  padding: 0.75rem;
+  border: 1px solid var(--vp-c-divider);
+  border-radius: 8px;
+  font-size: 0.8125rem;
+  color: var(--vp-c-text-2);
+}
