@@ -32,7 +32,7 @@
 - 全局:shadcn/Tailwind 移除;`styles/*`+fonts 复用并按序导入(`without-fonts.ts`/`index.ts`);`themes` composables(9 hooks)+ `theme-utils.ts`。
 - 骨架:`Layout.tsx`(**自包含**:已内联 VPNavBar/VPSidebar/VPContent/VPDocAside/VPFooter/VPLocalNav 结构 + `layout.module.css`)、`NotFound.tsx`。后续可把内联结构拆为 `components/VP*` 并用上面已迁移组件替换(待办)。
 - 已迁移组件(文件已存在于 `src/client/theme-default/components/`):
-  - 基础:`VPBackdrop`、`VPBadge`、`VPIcon`、`VPImage`、`VPLink`、`VPSkipLink`(早前子代理落盘)、`VPButton`(自己迁)、`VPPage`、`VPSwitch`、`VPSocialLink`、`VPMenuLink`(自己迁)、`VPFooter`、`VPSwitchAppearance`、`VPMenuGroup`、`VPMenu`(自己迁)。
+  - 基础:`VPBackdrop`、`VPBadge`、`VPIcon`、`VPImage`、`VPLink`、`VPSkipLink`(早前子代理落盘)、`VPButton`(自己迁)、`VPPage`、`VPSwitch`、`VPSocialLink`、`VPMenuLink`(自己迁)、`VPFooter`、`VPSwitchAppearance`、`VPMenuGroup`、`VPMenu`、`VPDocOutlineItem`、`VPDocAsideOutline`、`VPDocAside`、`VPDocFooter`(自己迁)。
   - 页面/功能:`vp-home(VPHome/VPHero/VPFeatures)`、`vp-team`、`vp-sponsors`、`vp-social-links`、`vp-carbon-ads`、`vp-nav-bar-search`、`vp-doc-footer-last-updated`。
 - 验证:`tsc(client)` 绿;`tsdown` 绿;SSG(`m0-smoke`)绿;preview 骨架下文档页/`/home`/`/team`/`/sponsors` 正常;生产 hydration #418 为已知(dev 无、页面正常)。
 
@@ -47,8 +47,11 @@
 - 页面组件:`VPHomeContent`、`VPHomeHero`、`VPHomeFeatures`、`VPHomeSponsors`(当前已并入 vp-home,可选细分)、`VPTeamPage`、`VPTeamPageSection`、`VPTeamPageTitle`。
 
 ## 5. 下一步(恢复后从这里继续)
-1. 迁移**文档核心**,顺序:**先 `VPDoc`**(结构/样式较大;已被 `VPContent` 依赖),再 `VPDocAside`、`VPDocAsideOutline`、`VPDocOutlineItem`(递归)、`VPDocFooter`、`VPDocAsideCarbonAds`、`VPDocAsideSponsors`,最后 **`VPContent`**(已读源:`VPContent.vue` 的分支 not-found→`NotFound`、layout:page→`VPPage`、layout:home→`VPHome`、default/doc→`VPDoc`、自定义 layout→组件;样式 `.VPContent[has-sidebar|is-home]` + 顶部/侧栏偏移)。
-2. 之后按第 4 节清单继续(顶栏 `VPNav*/VPNavMenu*`、侧栏 `VPSidebar*`、本地导航 `VPLocalNav*`、`VPFlyout`、`VPNavScreen*`、`VPHome*` 细分、`VPTeamPage*`)。
+1. 迁移 **`VPDoc`**(文档正文核心,已被 `VPContent` 依赖)。要点(源 `VPDoc.vue` 已读):
+   - 根 `div.VPDoc[has-sidebar|has-aside]` → `.container` → (`div.aside[.left-aside]`(hasAside 时;内含 `.aside-curtain/.aside-container/.aside-content` + `<VPDocAside/>`) + `div.content > div.content-container`(`main.main` 内 `<<Content>`(**给根 `vp-doc` 类**,可用 `class="vp-doc"`? Content 不传 class,md 根已 vp-doc;可留 `main.main` + `<Content/>`)+ `<VPDocFooter/>`)。
+   - 样式:`.VPDoc` padding、`.container/.aside/.content/.content-container` 布局(has-aside max-width 43rem;min-width 60rem/80rem 偏移)复制到 `VPDoc.module.css`(:deep 无)。
+   - 数据:`useLayout()`→hasSidebar/hasAside/leftAside;`useData()`→theme(有 `externalLinkIcon` 可选)。
+2. 之后继续:`VPDocAsideCarbonAds`/`VPDocAsideSponsors`(可选;`VPDocAside` 已内联碳广告占位)→ **`VPContent`**(已读源)→ 顶栏/侧栏/本地导航/屏幕菜单、`VPFlyout`、`VPHome*` 细分、`VPTeamPage*`。
 3. 全部迁移后,统一验证(tsc/tsdown/SSG/preview),再决定是否拆分 `Layout` 内联为 `components/VP*` 与消除 #418。
 
 ## 6. 注意事项
