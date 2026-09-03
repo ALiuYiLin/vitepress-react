@@ -87,7 +87,7 @@ export function AsideOutline() {
   return (
     <div className="pt-10 text-sm">
       <div className="mb-3 text-xs font-semibold uppercase tracking-wider text-muted-foreground">
-        本页目录
+        页面导航
       </div>
       {renderList(headers)}
     </div>

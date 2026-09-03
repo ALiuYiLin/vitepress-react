@@ -12,6 +12,7 @@ import {
   SidebarGroup,
   SidebarGroupContent,
   SidebarGroupLabel,
+  SidebarHeader,
   SidebarMenu,
   SidebarMenuButton,
   SidebarMenuItem,
@@ -152,7 +153,7 @@ function TopMenuItems({
 
 /** 默认主题侧栏:左侧导航(桌面常驻;移动端由 shadcn Sidebar 自动收进 Sheet) */
 export function AppSidebar() {
-  const { theme } = useData()
+  const { theme, site } = useData()
   const route = useRoute()
   const navigate = useNavigate()
   const cfg = theme as { sidebar?: VpSidebarConfig }
@@ -161,6 +162,22 @@ export function AppSidebar() {
 
   return (
     <Sidebar collapsible="icon">
+      <SidebarHeader>
+        <a
+          href="/"
+          onClick={(e) => {
+            e.preventDefault()
+            navigate('/')
+          }}
+          className="flex items-center gap-2 px-2 py-1 font-semibold"
+        >
+          <span className="flex size-7 items-center justify-center rounded-md bg-primary font-bold text-primary-foreground">
+            {(site.title ?? 'V').slice(0, 1)}
+          </span>
+          <span className="truncate">{site.title}</span>
+        </a>
+      </SidebarHeader>
+
       <SidebarContent>
         {groups.map((group, gi) => (
           <SidebarGroup key={gi}>
