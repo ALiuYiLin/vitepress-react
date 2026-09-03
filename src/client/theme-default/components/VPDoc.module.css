@@ -121,3 +121,11 @@
 .doc.hasAside .contentContainer {
   max-width: 43rem;
 }
+
+/* 状态标记类(CSS Modules 需本地类才参与组合选择器;与字面量类并行挂载) */
+.hasSidebar {
+}
+.hasAside {
+}
+.leftAside {
+}

@@ -10,6 +10,8 @@ import './styles/components/vp-code.css'
 import './styles/components/vp-code-group.css'
 import './styles/components/vp-doc.css'
 import './styles/components/vp-sponsor.css'
+// 纯字面量类名的导航/外壳组件规则(无本地类会被 CSS Modules 丢弃,故为全局样式)
+import './styles/components/theme-nav.css'
 
 import { Layout } from './Layout'
 import { NotFound } from './NotFound'

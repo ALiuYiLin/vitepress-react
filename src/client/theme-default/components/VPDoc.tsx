@@ -12,11 +12,16 @@ export function VPDoc() {
   const { hasSidebar, hasAside, leftAside } = useLayout()
   return (
     <div
-      className={cx(s.doc, 'VPDoc', hasSidebar && 'has-sidebar', hasAside && 'has-aside')}
+      className={cx(
+        s.doc,
+        'VPDoc',
+        hasSidebar && cx(s.hasSidebar, 'has-sidebar'),
+        hasAside && cx(s.hasAside, 'has-aside')
+      )}
     >
       <div className={cx(s.container, 'container')}>
         {hasAside ? (
-          <div className={cx(s.aside, 'aside', leftAside && 'left-aside')}>
+          <div className={cx(s.aside, 'aside', leftAside && cx(s.leftAside, 'left-aside'))}>
             <div className={s.asideCurtain} />
             <div className={s.asideContainer}>
               <div className={s.asideContent}>

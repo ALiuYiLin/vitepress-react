@@ -1,7 +1,7 @@
 .aside {
   display: none;
 }
-.aside.hasOutline {
+.aside:global(.has-outline) {
   display: block;
 }
 

@@ -1,0 +1,646 @@
+/* 聚合:纯字面量类名规则(剥除 :global() 包装后作为全局 CSS 生效)。 */
+/* === VPNavBarHamburger === */
+/* 对应 Vue VPNavBarHamburger.vue <style scoped> —— 类名全为字面量,统一 :global */
+.VPNavBarHamburger {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  width: 3rem;
+  height: var(--vp-nav-height);
+}
+
+@media (min-width: 48rem) {
+  .VPNavBarHamburger {
+    display: none;
+  }
+}
+
+.VPNavBarHamburger .container {
+  position: relative;
+  width: 1rem;
+  height: 0.875rem;
+  overflow: hidden;
+}
+
+.VPNavBarHamburger:hover .top {
+  top: 0;
+  left: 0;
+  transform: translateX(0.25rem);
+}
+.VPNavBarHamburger:hover .middle {
+  top: 0.375rem;
+  left: 0;
+  transform: translateX(0);
+}
+.VPNavBarHamburger:hover .bottom {
+  top: 0.75rem;
+  left: 0;
+  transform: translateX(0.5rem);
+}
+
+.VPNavBarHamburger.active .top {
+  top: 0.375rem;
+  transform: translateX(0) rotate(225deg);
+}
+.VPNavBarHamburger.active .middle {
+  top: 0.375rem;
+  transform: translateX(1rem);
+}
+.VPNavBarHamburger.active .bottom {
+  top: 0.375rem;
+  transform: translateX(0) rotate(135deg);
+}
+
+.VPNavBarHamburger.active:hover .top,
+.VPNavBarHamburger.active:hover .middle,
+.VPNavBarHamburger.active:hover .bottom {
+  background-color: var(--vp-c-text-2);
+  transition: top 0.25s, background-color 0.25s, transform 0.25s;
+}
+
+.VPNavBarHamburger .top,
+.VPNavBarHamburger .middle,
+.VPNavBarHamburger .bottom {
+  position: absolute;
+  width: 1rem;
+  height: 0.125rem;
+  background-color: var(--vp-c-text-1);
+  transition: top 0.25s, background-color 0.5s, transform 0.25s;
+}
+
+.VPNavBarHamburger .top {
+  top: 0;
+  left: 0;
+  transform: translateX(0);
+}
+.VPNavBarHamburger .middle {
+  top: 0.375rem;
+  left: 0;
+  transform: translateX(0.5rem);
+}
+.VPNavBarHamburger .bottom {
+  top: 0.75rem;
+  left: 0;
+  transform: translateX(0.25rem);
+}
+/* === VPNav === */
+/* 对应 Vue VPNav.vue <style scoped> */
+.VPNav {
+  position: relative;
+  top: var(--vp-layout-top-height, 0px);
+  /*rtl:ignore*/
+  left: 0;
+  z-index: var(--vp-z-index-nav);
+  width: 100%;
+  pointer-events: none;
+}
+
+@media (min-width: 60rem) {
+  .VPNav {
+    position: fixed;
+  }
+}
+/* === VPNavBar === */
+/* 对应 Vue VPNavBar.vue <style scoped> —— 类名均为字面量,统一 :global */
+.VPNavBar {
+  position: relative;
+  z-index: 1;
+  height: var(--vp-nav-height);
+  pointer-events: none;
+  white-space: nowrap;
+  /* 背景面与分割线左缘——文档页侧栏列自己绘面直到此偏移 */
+  --vp-nav-col-offset: 0px;
+}
+
+/* 单张背景面——以下状态变化仅改色,不发生位移 */
+.VPNavBar::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  left: var(--vp-nav-col-offset);
+  z-index: -1;
+  background-color: var(--vp-nav-bg-color);
+  backdrop-filter: var(--vp-nav-backdrop-filter);
+  transition: background-color 0.25s;
+}
+
+/* 60rem 以下导航栏随页滚动,首页保持透明 */
+.VPNavBar.home::before {
+  background-color: transparent;
+}
+
+@media (min-width: 60rem) {
+  .VPNavBar.home::before {
+    background-color: var(--vp-nav-bg-color);
+  }
+
+  .VPNavBar.home.top::before {
+    background-color: var(--vp-nav-home-bg-color);
+    backdrop-filter: none;
+  }
+
+  .VPNavBar.has-sidebar {
+    --vp-nav-col-offset: var(--vp-sidebar-width);
+  }
+}
+
+@media (min-width: 90rem) {
+  .VPNavBar.has-sidebar {
+    --vp-nav-col-offset: calc(
+      (100% - var(--vp-layout-max-width)) / 2 + var(--vp-sidebar-width)
+    );
+  }
+}
+
+.VPNavBar.screen-open::before {
+  transition: none;
+  background-color: var(--vp-nav-bg-color);
+}
+
+/* 60–80rem:本地导航钉在导航栏下并向后延伸其面,由它承载两栏着色 */
+@media (min-width: 60rem) and (max-width: 79.99rem) {
+  .VPNavBar.has-local-nav::before {
+    background-color: transparent;
+    backdrop-filter: none;
+  }
+}
+
+.VPNavBar .wrapper {
+  padding: 0 0.5rem 0 1.5rem;
+}
+
+@media (min-width: 48rem) {
+  .VPNavBar .wrapper {
+    padding: 0 2rem;
+  }
+}
+
+.VPNavBar .container {
+  display: flex;
+  justify-content: space-between;
+  margin: 0 auto;
+  max-width: calc(var(--vp-layout-max-width) - 4rem);
+  height: var(--vp-nav-height);
+  pointer-events: none;
+}
+
+.VPNavBar .container > .title,
+.VPNavBar .container > .content {
+  pointer-events: none;
+}
+
+.VPNavBar .container * {
+  pointer-events: auto;
+}
+
+.VPNavBar .container > .title {
+  /* 溢出引擎量程以下,title 是唯一可收缩块,截断而非压过搜索/汉堡 */
+  min-width: 0;
+}
+
+@media (min-width: 48rem) {
+  .VPNavBar .container > .title {
+    /* 溢出引擎围绕刚性 title 测量固定占用 */
+    flex-shrink: 0;
+  }
+}
+
+@media (min-width: 60rem) {
+  /* 非首页 title 列对齐侧栏列;首页保持自然宽,搜索紧随其后 */
+  .VPNavBar:not(.home) .container > .title {
+    min-width: calc(var(--vp-sidebar-width) - 2rem);
+  }
+
+  .VPNavBar.has-sidebar .container > .title {
+    max-width: calc(var(--vp-sidebar-width) - 2rem);
+  }
+}
+
+.VPNavBar .container > .content {
+  flex-grow: 1;
+  /* 引擎量程以下控件保持刚性,title 承担全部收缩 */
+  flex-shrink: 0;
+}
+
+@media (min-width: 48rem) {
+  .VPNavBar .container > .content {
+    flex-shrink: 1;
+    min-width: 0;
+  }
+}
+
+.VPNavBar .content-body {
+  position: relative;
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
+  height: var(--vp-nav-height);
+}
+
+@media (min-width: 48rem) {
+  /* 无菜单占据中段时搜索靠 title 侧;有菜单时其 flex-grow 生效、此边距归零 */
+  .VPNavBar .content-body > .search {
+    margin-right: auto;
+  }
+}
+
+/* 折叠进 ⋯ 菜单——保持挂载(隐藏、移出 a11y 树与 Tab 序)以维持可测宽度 */
+.VPNavBar .content-body > .collapsed {
+  visibility: hidden;
+  position: absolute;
+  top: 0;
+  left: 0;
+  max-width: 100%;
+  overflow: hidden;
+}
+
+/* 当前位于顶栏的簇单位之间的分隔线 */
+.VPNavBar .content-body > .menu,
+.VPNavBar .content-body > .translations,
+.VPNavBar .content-body > .appearance,
+.VPNavBar .content-body > .social-links {
+}
+
+.VPNavBar .content-body > .menu + .translations::before,
+.VPNavBar .content-body > .menu + .appearance::before,
+.VPNavBar .content-body > .translations + .appearance::before,
+.VPNavBar .content-body > .translations + .social-links::before,
+.VPNavBar .content-body > .appearance + .social-links::before {
+  margin-right: 0.5rem;
+  margin-left: 0.5rem;
+  width: 1px;
+  height: 1.5rem;
+  background-color: var(--vp-c-divider);
+  content: '';
+}
+
+.VPNavBar .content-body > .menu + .appearance::before,
+.VPNavBar .content-body > .translations + .appearance::before {
+  margin-right: 1rem;
+}
+
+.VPNavBar .content-body > .appearance + .social-links::before {
+  margin-left: 1rem;
+}
+
+.VPNavBar .content-body > .social-links {
+  margin-right: -0.5rem;
+}
+
+.VPNavBar .divider {
+  position: relative;
+  /* 在背景面之上、导航栏内容之下——展开的 flyout 面板压住栏底并盖过分隔线 */
+  z-index: -1;
+  /* 独立层——否则 Safari 会把分隔线排到粘性本地导航面之下(#5399) */
+  transform: translateZ(0);
+  width: 100%;
+  height: 1px;
+  padding-left: var(--vp-nav-col-offset);
+}
+
+/* 底部分隔线在侧栏列内的段——内缩以对齐侧栏自己的分组分隔线 */
+.VPNavBar.has-sidebar .divider::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: calc(var(--vp-nav-col-offset) - var(--vp-sidebar-width) + 2rem);
+  width: calc(var(--vp-sidebar-width) - 4rem);
+  height: 1px;
+  background-color: var(--vp-c-divider);
+}
+
+.VPNavBar .divider-line {
+  width: 100%;
+  height: 1px;
+  transition: background-color 0.25s;
+}
+
+.VPNavBar:not(.home) .divider-line {
+  background-color: var(--vp-nav-divider-color);
+}
+
+@media (min-width: 60rem) {
+  .VPNavBar:not(.home.top) .divider-line {
+    background-color: var(--vp-nav-divider-color);
+  }
+}
+
+.VPNavBar.screen-open .divider-line {
+  background-color: var(--vp-c-divider);
+}
+/* === VPNavMenu === */
+/* 对应 Vue VPNavMenu.vue <style scoped> —— 字面量类名统一 :global */
+.VPNavBarMenu {
+  position: relative;
+  display: none;
+  min-width: 0;
+}
+
+.VPNavBarMenu .list {
+  display: flex;
+  justify-content: flex-end;
+}
+
+/* 折叠进 ⋯ 菜单——保持挂载(隐藏、移出可访问树与 Tab 序)以维持可测宽度 */
+.VPNavBarMenu .list > li.collapsed {
+  visibility: hidden;
+  position: absolute;
+  top: 0;
+  left: 0;
+  max-width: 100%;
+  overflow: hidden;
+}
+
+@media (min-width: 48rem) {
+  .VPNavBarMenu {
+    display: flex;
+    flex-grow: 1;
+    justify-content: flex-end;
+  }
+}
+/* === VPNavMenuGroup === */
+/* 对应 Vue VPNavMenuGroup.vue <style scoped> —— 字面量类名统一 :global */
+.VPNavScreenMenuGroup {
+  border-bottom: 1px solid var(--vp-c-divider);
+  transition: border-color 0.5s;
+}
+
+.VPNavScreenMenuGroup.open {
+  padding-bottom: 0.625rem;
+}
+
+.VPNavScreenMenuGroup.open .button {
+  padding-bottom: 0.375rem;
+  color: var(--vp-c-brand-1);
+}
+
+.VPNavScreenMenuGroup.open .button-icon {
+  /*rtl:ignore*/
+  transform: rotate(45deg);
+}
+
+.VPNavScreenMenuGroup .button {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0.75rem 0.25rem 0.6875rem 0;
+  width: 100%;
+  line-height: 1.7142857;
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: var(--vp-c-text-1);
+  transition: color 0.25s;
+}
+
+.VPNavScreenMenuGroup .button:hover,
+.VPNavScreenMenuGroup.active .button {
+  color: var(--vp-c-brand-1);
+}
+
+.VPNavScreenMenuGroup .button-icon {
+  transition: transform 0.25s;
+}
+
+.VPNavScreenMenuGroup .items .VPMenuGroup {
+  padding-top: 0.25rem;
+}
+/* === VPNavMenuLink === */
+/* 对应 Vue VPNavMenuLink.vue <style scoped> —— 类名均为字面量 */
+.VPNavMenuLink {
+  color: var(--vp-c-text-1);
+  font-size: 0.875rem;
+  font-weight: 500;
+  transition: color 0.25s;
+}
+
+.VPNavMenuLink:hover,
+.VPNavMenuLink.active {
+  color: var(--vp-c-brand-1);
+}
+
+.VPNavBarMenuLink {
+  display: flex;
+  align-items: center;
+  min-height: var(--vp-nav-height);
+  padding: 0 0.75rem;
+  line-height: 1.5;
+}
+
+.VPNavScreenMenuLink {
+  display: block;
+  border-bottom: 1px solid var(--vp-c-divider);
+  padding: 0.75rem 0 0.6875rem;
+  line-height: 1.7142857;
+  transition: border-color 0.25s, color 0.25s;
+}
+/* === VPNavSocialLinks === */
+/* 对应 Vue VPNavSocialLinks.vue <style scoped> */
+.VPNavBarSocialLinks {
+  display: none;
+}
+
+@media (min-width: 48rem) {
+  .VPNavBarSocialLinks {
+    display: flex;
+    align-items: center;
+  }
+}
+/* === VPNavBarExtra === */
+/* 对应 Vue VPNavBarExtra.vue <style scoped> */
+.VPNavBarExtra {
+  display: none;
+  margin-right: -0.75rem;
+}
+
+@media (min-width: 48rem) {
+  .VPNavBarExtra {
+    display: block;
+  }
+}
+
+.item.social-links {
+  display: flex;
+  align-items: center;
+  padding: 0 0.75rem;
+}
+
+.social-links-list {
+  margin: -0.25rem -0.5rem;
+}
+/* === VPNavScreen === */
+/* 对应 Vue VPNavScreen.vue <style scoped> —— 字面量类名统一 :global */
+.VPNavScreen {
+  position: fixed;
+  top: 0;
+  /*rtl:ignore*/
+  right: 0;
+  bottom: 0;
+  /*rtl:ignore*/
+  left: 0;
+  padding: calc(var(--vp-nav-height) + var(--vp-layout-top-height, 0px) + 1px) 2rem 0;
+  width: 100%;
+  background-color: var(--vp-nav-screen-bg-color);
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  transition: background-color 0.25s;
+  pointer-events: auto;
+  animation: vp-screen-fade-in 0.25s ease;
+}
+
+.VPNavScreen .container {
+  margin: 0 auto;
+  padding: 1.5rem 0 6rem;
+  max-width: 18rem;
+  animation: vp-screen-rise-in 0.25s ease;
+}
+
+@keyframes vp-screen-fade-in {
+  from {
+    opacity: 0;
+  }
+}
+
+@keyframes vp-screen-rise-in {
+  from {
+    transform: translateY(-0.5rem);
+  }
+}
+
+@media (min-width: 48rem) {
+  .VPNavScreen {
+    display: none;
+  }
+}
+
+.VPNavScreen .menu + .translations,
+.VPNavScreen .menu + .appearance,
+.VPNavScreen .translations + .appearance {
+  margin-top: 1.5rem;
+}
+
+.VPNavScreen .menu + .social-links {
+  margin-top: 1rem;
+}
+
+.VPNavScreen .appearance + .social-links {
+  margin-top: 1rem;
+}
+/* === VPNavTranslations === */
+/* 对应 Vue VPNavTranslations.vue <style scoped> —— 类名均为字面量,统一 :global */
+
+/* flyout 形态 */
+.VPNavBarTranslations {
+  display: none;
+}
+
+@media (min-width: 48rem) {
+  .VPNavBarTranslations {
+    display: flex;
+    align-items: center;
+  }
+}
+
+.VPNavBarTranslations .title {
+  padding: 0 1.5rem 0 0.75rem;
+  line-height: 2.2857143;
+  font-size: 0.875rem;
+  font-weight: 700;
+  color: var(--vp-c-text-1);
+}
+
+/* ⋯ 菜单内分组形态——与菜单组标题一致 */
+.translations.group > .title {
+  padding: 0 0.75rem;
+  line-height: 2.2857143;
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: var(--vp-c-text-2);
+}
+
+/* 屏幕导航手风琴形态 */
+.VPNavScreenTranslations .title {
+  display: flex;
+  align-items: center;
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: var(--vp-c-text-1);
+}
+
+.VPNavScreenTranslations .icon {
+  font-size: 1rem;
+}
+
+.VPNavScreenTranslations .icon.lang {
+  margin-right: 0.5rem;
+}
+
+.VPNavScreenTranslations .icon.chevron {
+  margin-left: 0.25rem;
+  transition: transform 0.25s;
+}
+
+.VPNavScreenTranslations.open .icon.chevron {
+  transform: rotate(180deg);
+}
+
+.VPNavScreenTranslations .list {
+  padding: 0.25rem 0 0 1.5rem;
+}
+
+.VPNavScreenTranslations .link {
+  line-height: 2.4615385;
+  font-size: 0.8125rem;
+  color: var(--vp-c-text-1);
+}
+/* === VPNavAppearance === */
+/* 对应 Vue VPNavAppearance.vue <style scoped> —— 类名均与 DOM 字面量一致 */
+.VPNavBarAppearance {
+  display: none;
+}
+
+@media (min-width: 48rem) {
+  .VPNavBarAppearance {
+    display: flex;
+    align-items: center;
+  }
+}
+
+.VPNavAppearance .text {
+  font-size: 0.75rem;
+  font-weight: 500;
+  color: var(--vp-c-text-2);
+}
+
+/* 屏幕导航内的文字行 */
+.VPNavScreenAppearance {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border-radius: 0.5rem;
+  padding: 0.75rem 0.875rem 0.75rem 1rem;
+  background-color: var(--vp-c-bg-soft);
+}
+
+.VPNavScreenAppearance .text {
+  line-height: 2;
+}
+
+/* ⋯ 菜单内的文字行 */
+.menu-appearance {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 1rem;
+  min-width: 11rem;
+  padding: 0 0.75rem;
+}
+
+/* 与菜单组标题一致 */
+.menu-appearance .text {
+  line-height: 2.2857143;
+  font-size: 0.875rem;
+  font-weight: 600;
+}
+
