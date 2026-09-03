@@ -1,6 +1,7 @@
 packages:
   - docs
   - __tests__/*
+  - playground/*
 
 allowBuilds:
   playwright-chromium: true
@@ -11,6 +12,14 @@ autoInstallPeers: false
 ignoreWorkspaceRootCheck: true
 
 minimumReleaseAge: 1440
+
+# playground/theme(vite@8 与主仓库共享)及其 shadcn/ui 依赖的 peer 约束放宽,
+# 避免 strictPeerDependencies 因 React/Vite 新主版本误报
+peerDependencyRules:
+  allowedVersions:
+    vite: '>=7'
+    react: '>=19'
+    react-dom: '>=19'
 
 overrides:
   esbuild: '-'
