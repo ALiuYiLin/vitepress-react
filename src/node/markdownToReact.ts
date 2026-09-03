@@ -561,12 +561,56 @@ function findMatchingBrace(src: string, openIndex: number): number {
   return -1
 }
 
+/** 顶层(不嵌套)是否存在逗号/分号 —— 用于排除 `{1, 2}` 这类序列写法 */
+function hasTopLevelCommaOrSemi(expr: string): boolean {
+  let depth = 0
+  let i = 0
+  while (i < expr.length) {
+    const ch = expr[i]
+    if (ch === '(' || ch === '[') depth++
+    else if (ch === ')' || ch === ']') depth--
+    else if (depth === 0 && (ch === ',' || ch === ';')) return true
+    i++
+  }
+  return false
+}
+
+const JS_KEYWORDS = new Set([
+  'true',
+  'false',
+  'null',
+  'undefined',
+  'NaN',
+  'Infinity',
+  'this',
+  'new',
+  'typeof',
+  'void',
+  'delete'
+])
+
+/**
+ * 判定花括号内容可安全当作 JSX 表达式:
+ * - 不含中文;
+ * - 引用的标识符要么在白名单(script 绑定),要么是 JS 关键字/全局字面量;
+ * - 无顶层逗号/分号序列(避免 `{1, 2}` 这类正文列表被误求值)。
+ */
+function isSafeJsExpr(inner: string, allowed: ReadonlySet<string>): boolean {
+  if (/[\u4e00-\u9fff]/.test(inner)) return false
+  if (hasTopLevelCommaOrSemi(inner)) return false
+  const idRe = /[A-Za-z_$][\w$]*/g
+  let m: RegExpExecArray | null
+  while ((m = idRe.exec(inner))) {
+    if (!allowed.has(m[0]) && !JS_KEYWORDS.has(m[0])) return false
+  }
+  return true
+}
+
 /**
  * fence/行内码/围栏感知地"保护"正文里的 {…}:
  * - `{#id}` / `{.class}` 这类 attrs 语法原样留给 @mdit/plugin-attrs;
- * - 首标识符命中白名单(script 绑定)→ @@VP_EXPR_n@@(序列化还原为表达式);
- * - 其余 → @@VP_TXT_n@@(还原为字面花括号文本),避免 attrs 插件误吞
- *   ({count} 被当属性、{1+1} 产生 <p 1+1=""> 之类坏输出)。
+ * - 表达式候选(引用 script 绑定,或纯数值/字面量如 `{1+1}`)→ @@VP_EXPR_n@@;
+ * - 其余(中文/未绑定标识符/序列)→ @@VP_TXT_n@@ 还原为字面花括号文本。
  */
 function maskJsxExpressions(
   src: string,
@@ -644,17 +688,16 @@ function maskJsxExpressions(
       if (end > i) {
         const raw = src.slice(i + 1, end)
         const inner = raw.trim()
-        const head = /^([A-Za-z_$][\w$]*)/.exec(inner)
         // attrs 语法(#id/.class)留给 @mdit/plugin-attrs
         if (inner && !/^[#.]/.test(inner)) {
-          if (head && allowed.has(head[1])) {
+          if (isSafeJsExpr(inner, allowed)) {
             const token = `@@VP_EXPR_${store.length}@@`
             store.push({ expr: inner })
             out += token
             i = end + 1
             continue
           }
-          // 不是绑定 → 保护为字面花括号文本(避免 attrs/其它处理吞掉)
+          // 不安全 → 保护为字面花括号文本(避免 attrs/其它处理吞掉)
           const token = `@@VP_TXT_${store.length}@@`
           store.push({ literal: `{${raw}}` })
           out += token
