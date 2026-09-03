@@ -19,9 +19,20 @@ export type VpSidebarGroup = {
   items: VpSidebarItem[]
 }
 
-export type VpSidebarConfig = {
-  [path: string]: VpSidebarGroup[] | VpSidebarItem[] | undefined
-}
+/** 某个路径的侧栏值:分组/条目数组,或 { items, base } 对象 */
+export type VpSidebarConfigValue =
+  | VpSidebarGroup[]
+  | VpSidebarItem[]
+  | { items: VpSidebarItem[]; base?: string }
+  | false
+
+/** 与 Vue DefaultTheme.Sidebar 一致:多路径表 / 全局单数组 / false */
+export type VpSidebarConfig =
+  | {
+      [path: string]: VpSidebarConfigValue | undefined
+    }
+  | VpSidebarItem[]
+  | false
 
 export type VpHeader = {
   level: number
@@ -58,36 +69,74 @@ export function isNavActive(item: VpNavItem, path: string): boolean {
   return link !== '/' && current.startsWith(link + '/')
 }
 
-/** 为给定 path 挑选 sidebar 分组(匹配最长的前缀键) */
-export function sidebarGroupsFor(
-  path: string,
-  sidebar?: VpSidebarConfig
-): VpSidebarGroup[] {
-  if (!sidebar) return []
-  const current = normalizePath(path)
-  const keys = Object.keys(sidebar).sort((a, b) => b.length - a.length)
-  let matched: string | undefined
-  for (const key of keys) {
-    const normalized = normalizePath(key)
-    if (
-      current === normalized ||
-      current.startsWith(normalized + '/') ||
-      normalized === '/'
-    ) {
-      matched = key
-      break
+/**
+ * 为给定 path 取出侧栏条目(对齐 Vue support/sidebar.ts getSidebar):
+ * - 配置为数组 → 全局适用;
+ * - 多路径表:按“/”段数降序取首个前缀命中;值为 { items, base } 时取 items;
+ * - 其余情况返回空数组。
+ */
+export function getSidebarItems(
+  sidebar: VpSidebarConfig | undefined,
+  path: string
+): VpSidebarItem[] {
+  if (Array.isArray(sidebar)) return addBase(sidebar)
+  if (sidebar == null || sidebar === false) return []
+
+  const current = ensureStartSlash(path)
+  const dir = Object.keys(sidebar)
+    .sort((a, b) => b.split('/').length - a.split('/').length)
+    .find((key) => current.startsWith(ensureStartSlash(key)))
+
+  const value = dir ? sidebar[dir] : undefined
+  if (value == null || value === false) return []
+  if (Array.isArray(value)) return addBase(value)
+  return addBase(value.items)
+}
+
+function ensureStartSlash(p: string): string {
+  return p.startsWith('/') ? p : `/${p}`
+}
+
+function addBase(items: VpSidebarItem[], _base?: string): VpSidebarItem[] {
+  return items.map((_item) => {
+    const item = { ..._item } as VpSidebarItem & { base?: string }
+    const base = item.base || _base
+    if (base && item.link && !/^(?:https?:|mailto:|tel:|\/\/)/.test(item.link)) {
+      item.link = base + item.link.replace(/^\//, base.endsWith('/') ? '' : '/')
     }
-  }
-  if (matched == null) return []
-  const value = sidebar[matched as string]
-  if (!value) return []
-  return value.map((g) => {
-    if (Array.isArray(g)) {
-      return { items: g }
+    if (item.items) {
+      item.items = addBase(item.items as VpSidebarItem[], base) as never
     }
-    const v = g as VpSidebarGroup
-    return { text: v.text, items: v.items ?? [] }
+    return item
   })
+}
+
+/**
+ * 为给定 path 挑选 sidebar 分组(对齐 Vue support/sidebar.ts getSidebar +
+ * getSidebarGroups):带 items 的条目自成一组;裸链接并入最近一组(没有则建匿名组)。
+ */
+export function sidebarGroupsFor(
+  sidebar: VpSidebarConfig | undefined,
+  path: string
+): VpSidebarGroup[] {
+  const items = getSidebarItems(sidebar, path)
+  const groups: VpSidebarGroup[] = []
+  let lastGroupIndex = -1
+
+  for (const item of items) {
+    if (item.items) {
+      groups.push(item as VpSidebarGroup)
+      lastGroupIndex = groups.length - 1
+      continue
+    }
+    if (lastGroupIndex === -1 || !groups[lastGroupIndex]) {
+      groups.push({ items: [] })
+      lastGroupIndex = groups.length - 1
+    }
+    groups[lastGroupIndex]!.items.push(item)
+  }
+
+  return groups
 }
 
 /** 把当前分组展开成扁平链接序列(用于 prev/next 与活动项) */

@@ -18,7 +18,7 @@ export function usePrevNext(): { prev?: PrevNextEntry; next?: PrevNextEntry } {
   }
   const current = normalizePath(route.path)
   const flat = flattenSidebarItems(
-    sidebarGroupsFor(route.path, cfg.sidebar as never)
+    sidebarGroupsFor(cfg.sidebar as never, route.path)
   )
   const idx = flat.findIndex((l) => normalizePath(l.link) === current)
   if (idx < 0) return {}

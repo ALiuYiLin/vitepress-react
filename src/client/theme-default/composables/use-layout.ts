@@ -21,7 +21,7 @@ export function useLayout() {
   }
   const isHome = Boolean(fm.isHome ?? fm.layout === 'home')
   const sidebarConfig = cfg.sidebar as never
-  const groups = sidebarGroupsFor(route.path, sidebarConfig as never)
+  const groups = sidebarGroupsFor(sidebarConfig, route.path)
   const hasSidebarEnabled = fm.sidebar !== false && cfg.sidebar !== false
   const hasSidebar = hasSidebarEnabled && groups.length > 0
   const headers = ((page as { headers?: VpHeader[] })?.headers ?? []) as VpHeader[]
