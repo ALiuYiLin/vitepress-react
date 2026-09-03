@@ -32,12 +32,12 @@
 - 全局:shadcn/Tailwind 移除;`styles/*`+fonts 复用并按序导入(`without-fonts.ts`/`index.ts`);`themes` composables(9 hooks)+ `theme-utils.ts`。
 - 骨架:`Layout.tsx`(**自包含**:已内联 VPNavBar/VPSidebar/VPContent/VPDocAside/VPFooter/VPLocalNav 结构 + `layout.module.css`)、`NotFound.tsx`。后续可把内联结构拆为 `components/VP*` 并用上面已迁移组件替换(待办)。
 - 已迁移组件(文件已存在于 `src/client/theme-default/components/`):
-  - 基础:`VPBackdrop`、`VPBadge`、`VPIcon`、`VPImage`、`VPLink`、`VPSkipLink`(早前子代理落盘)、`VPButton`(自己迁)、`VPPage`、`VPSwitch`、`VPSocialLink`、`VPMenuLink`(自己迁)。
+  - 基础:`VPBackdrop`、`VPBadge`、`VPIcon`、`VPImage`、`VPLink`、`VPSkipLink`(早前子代理落盘)、`VPButton`(自己迁)、`VPPage`、`VPSwitch`、`VPSocialLink`、`VPMenuLink`(自己迁)、`VPFooter`、`VPSwitchAppearance`、`VPMenuGroup`(自己迁)。
   - 页面/功能:`vp-home(VPHome/VPHero/VPFeatures)`、`vp-team`、`vp-sponsors`、`vp-social-links`、`vp-carbon-ads`、`vp-nav-bar-search`、`vp-doc-footer-last-updated`。
 - 验证:`tsc(client)` 绿;`tsdown` 绿;SSG(`m0-smoke`)绿;preview 骨架下文档页/`/home`/`/team`/`/sponsors` 正常;生产 hydration #418 为已知(dev 无、页面正常)。
 
 ## 4. 待迁移组件(按 Vue 参照 `components/*.vue`,尚未建对应 React 文件)
-- 文档:`VPContent`、`VPDoc`、`VPDocAside`、`VPDocAsideOutline`、`VPDocOutlineItem`(递归)、`VPDocFooter`、`VPDocFooterLastUpdated`(已自建,可复用)、`VPDocAsideCarbonAds`、`VPDocAsideSponsors`、`VPFooter`(正在做)。
+- 文档:`VPContent`、`VPDoc`、`VPDocAside`、`VPDocAsideOutline`、`VPDocOutlineItem`(递归)、`VPDocFooter`、`VPDocFooterLastUpdated`(已自建,可复用)、`VPDocAsideCarbonAds`、`VPDocAsideSponsors`。
 - 顶栏:`VPNav`、`VPNavBar`、`VPNavBarTitle`、`VPNavBarAppearance`、`VPNavBarHamburger`、`VPNavBarExtra`、`VPNavSocialLinks`、`VPNavTranslations`、`VPNavBarSearch`(用已建 vp-nav-bar-search)。
 - 菜单:`VPNavMenu`、`VPNavMenuGroup`、`VPNavMenuLink`、`VPMenu`、`VPMenuGroup`、`VPFlyout`。
 - 屏幕菜单:`VPNavScreen`、`VPNavScreenMenu`、`VPNavScreenMenuGroup`、`VPNavScreenMenuLink`。
@@ -47,8 +47,8 @@
 - 页面组件:`VPHomeContent`、`VPHomeHero`、`VPHomeFeatures`、`VPHomeSponsors`(当前已并入 vp-home,可选细分)、`VPTeamPage`、`VPTeamPageSection`、`VPTeamPageTitle`。
 
 ## 5. 下一步(恢复后从这里继续)
-1. 先完成已在做的 **`VPFooter`**(读 `components/VPFooter.vue` 已读;写 `VPFooter.tsx` + `VPFooter.module.css`:footer 根 `.VPFooter[has-sidebar]` + `.container` + `.message/.copyright`,`:deep(a)`→`:global(a)`;数据 theme.footer+frontmatter.footer!==false+hasSidebar(useLayout))。
-2. 然后按第 4 节清单逐个迁移(优先文档/顶栏/侧栏/菜单/本地导航)。
+1. 继续迁移 `VPMenu`(读 `components/VPMenu.vue`:菜单容器 `div.VPMenu` 结构,内部渲染子项/插槽;样式 scoped→`VPMenu.module.css`)。已完成:`VPFooter`、`VPSwitchAppearance`、`VPMenuGroup`、`VPMenuLink`、`VPSwitch`、`VPButton`、`VPPage`、`VPSocialLink`。
+2. 然后按第 4 节清单逐个迁移(优先文档:`VPContent/VPDoc/VPDocAside/VPDocOutlineItem/VPDocFooter`,再顶栏/侧栏/菜单/本地导航)。
 3. 全部迁移后,统一验证(tsc/tsdown/SSG/preview),再决定是否拆分 `Layout` 内联为 `components/VP*` 与消除 #418。
 
 ## 6. 注意事项
