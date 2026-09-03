@@ -31,7 +31,7 @@ export function VPImage({ image, alt, className, ...rest }: VPImageProps) {
     const imageAlt = alt ?? (typeof image === 'string' ? '' : image.alt || '')
     return (
       <img
-        className={cx(s.VPImage, className)}
+        className={cx(s.VPImage, 'VPImage', className)}
         src={withBase(src)}
         alt={imageAlt}
         {...rest}

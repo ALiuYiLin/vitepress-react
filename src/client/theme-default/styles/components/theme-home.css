@@ -1,0 +1,453 @@
+/* 聚合:Home 栈(VPHome/VPHomeContent/VPHero/VPFeatures/VPFeature)样式。
+ * 来源 Vue 各组件 <style scoped>;按组件根类名锚定展开为全局规则。
+ */
+/* === VPHome.vue === */
+
+.VPHome {
+  overflow-x: clip;
+  margin-bottom: 6rem;
+}
+
+@media (min-width: 48rem) {
+  .VPHome {
+    margin-bottom: 8rem;
+  }
+}
+
+/* === VPHomeContent.vue === */
+
+.VPHomeContent.container {
+  margin: auto;
+  width: 100%;
+  max-width: 80rem;
+  padding: 0 1.5rem;
+}
+
+@media (min-width: 40rem) {
+  .VPHomeContent.container {
+    padding: 0 3rem;
+  }
+}
+
+@media (min-width: 60rem) {
+  .VPHomeContent.container {
+    width: 100%;
+    padding: 0 4rem;
+  }
+}
+
+/* stretch to full viewport width, overflow is clipped by .VPHome */
+.vp-doc .VPHomeSponsors, .vp-doc .VPTeamPage {
+  margin-left: calc(50% - 50vw);
+  margin-right: calc(50% - 50vw);
+}
+
+.vp-doc .VPTeamPage a {
+  text-decoration: none;
+}
+
+/* === VPHero.vue === */
+
+.VPHero {
+  margin-top: calc((var(--vp-nav-height) + var(--vp-layout-top-height, 0px)) * -1);
+  padding: calc(var(--vp-nav-height) + var(--vp-layout-top-height, 0px) + 3rem) 1.5rem 3rem;
+}
+
+@media (min-width: 40rem) {
+  .VPHero {
+    padding: calc(var(--vp-nav-height) + var(--vp-layout-top-height, 0px) + 5rem) 3rem 4rem;
+  }
+}
+
+@media (min-width: 60rem) {
+  .VPHero {
+    padding: calc(var(--vp-nav-height) + var(--vp-layout-top-height, 0px) + 5rem) 4rem 4rem;
+  }
+}
+
+.VPHero .container {
+  display: flex;
+  flex-direction: column;
+  margin: 0 auto;
+  max-width: 72rem;
+}
+
+@media (min-width: 60rem) {
+  .VPHero .container {
+    flex-direction: row;
+  }
+}
+
+.VPHero .main {
+  position: relative;
+  z-index: 10;
+  order: 2;
+  flex-grow: 1;
+  flex-shrink: 0;
+}
+
+.VPHero.has-image .container {
+  text-align: center;
+}
+
+@media (min-width: 60rem) {
+  .VPHero.has-image .container {
+    text-align: left;
+  }
+}
+
+@media (min-width: 60rem) {
+  .VPHero .main {
+    order: 1;
+    width: calc((100% / 3) * 2);
+  }
+
+  .VPHero.has-image .main {
+    max-width: 37rem;
+  }
+}
+
+.VPHero .heading {
+  display: flex;
+  flex-direction: column;
+}
+
+.VPHero .name, .VPHero .text {
+  width: fit-content;
+  max-width: 24.5rem;
+  letter-spacing: -0.025rem;
+  line-height: 1.25;
+  font-size: 2rem;
+  font-weight: 700;
+  white-space: pre-wrap
+}
+
+.VPHero.has-image .name, .VPHero.has-image .text {
+  margin: 0 auto;
+}
+
+.VPHero .name {
+  color: var(--vp-home-hero-name-color);
+}
+
+.VPHero .clip {
+  background: var(--vp-home-hero-name-background);
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: var(--vp-home-hero-name-color);
+}
+
+@media (min-width: 40rem) {
+  .VPHero .name, .VPHero .text {
+    max-width: 36rem;
+    line-height: 1.1666667;
+    font-size: 3rem;
+  }
+}
+
+@media (min-width: 60rem) {
+  .VPHero .name, .VPHero .text {
+    line-height: 1.1428571;
+    font-size: 3.5rem;
+  }
+
+  .VPHero.has-image .name, .VPHero.has-image .text {
+    margin: 0;
+  }
+}
+
+.VPHero .tagline {
+  padding-top: 0.5rem;
+  max-width: 24.5rem;
+  line-height: 1.5555556;
+  font-size: 1.125rem;
+  font-weight: 500;
+  white-space: pre-wrap;
+  color: var(--vp-c-text-2);
+}
+
+.VPHero.has-image .tagline {
+  margin: 0 auto;
+}
+
+@media (min-width: 40rem) {
+  .VPHero .tagline {
+    padding-top: 0.75rem;
+    max-width: 36rem;
+    line-height: 1.6;
+    font-size: 1.25rem;
+  }
+}
+
+@media (min-width: 60rem) {
+  .VPHero .tagline {
+    line-height: 1.5;
+    font-size: 1.5rem;
+  }
+
+  .VPHero.has-image .tagline {
+    margin: 0;
+  }
+}
+
+.VPHero .actions {
+  display: flex;
+  flex-wrap: wrap;
+  margin: -0.375rem;
+  padding-top: 1.5rem;
+}
+
+.VPHero.has-image .actions {
+  justify-content: center;
+}
+
+@media (min-width: 40rem) {
+  .VPHero .actions {
+    padding-top: 2rem;
+  }
+}
+
+@media (min-width: 60rem) {
+  .VPHero.has-image .actions {
+    justify-content: flex-start;
+  }
+}
+
+.VPHero .action {
+  flex-shrink: 0;
+  padding: 0.375rem;
+}
+
+.VPHero .image {
+  order: 1;
+  margin: -4.75rem -1.5rem -3rem;
+}
+
+@media (min-width: 40rem) {
+  .VPHero .image {
+    margin: -6.75rem -1.5rem -3rem;
+  }
+}
+
+@media (min-width: 60rem) {
+  .VPHero .image {
+    flex-grow: 1;
+    order: 2;
+    margin: 0;
+    min-height: 100%;
+  }
+}
+
+.VPHero .image-container {
+  position: relative;
+  margin: 0 auto;
+  width: 20rem;
+  height: 20rem;
+}
+
+@media (min-width: 40rem) {
+  .VPHero .image-container {
+    width: 24.5rem;
+    height: 24.5rem;
+  }
+}
+
+@media (min-width: 60rem) {
+  .VPHero .image-container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    width: 100%;
+    height: 100%;
+    /*rtl:ignore*/
+    transform: translate(-2rem, -2rem);
+  }
+}
+
+.VPHero .image-bg {
+  position: absolute;
+  top: 50%;
+  /*rtl:ignore*/
+  left: 50%;
+  border-radius: 50%;
+  width: 12rem;
+  height: 12rem;
+  background-image: var(--vp-home-hero-image-background-image);
+  filter: var(--vp-home-hero-image-filter);
+  /*rtl:ignore*/
+  transform: translate(-50%, -50%);
+}
+
+@media (min-width: 40rem) {
+  .VPHero .image-bg {
+    width: 16rem;
+    height: 16rem;
+  }
+}
+
+@media (min-width: 60rem) {
+  .VPHero .image-bg {
+    width: 20rem;
+    height: 20rem;
+  }
+}
+
+.VPHero .image-src {
+  position: absolute;
+  top: 50%;
+  /*rtl:ignore*/
+  left: 50%;
+  max-width: 12rem;
+  max-height: 12rem;
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  /*rtl:ignore*/
+  transform: translate(-50%, -50%);
+}
+
+@media (min-width: 40rem) {
+  .VPHero .image-src {
+    max-width: 16rem;
+    max-height: 16rem;
+  }
+}
+
+@media (min-width: 60rem) {
+  .VPHero .image-src {
+    max-width: 20rem;
+    max-height: 20rem;
+  }
+}
+
+/* === VPFeatures.vue === */
+
+.VPFeatures {
+  position: relative;
+  padding: 0 1.5rem;
+}
+
+@media (min-width: 40rem) {
+  .VPFeatures {
+    padding: 0 3rem;
+  }
+}
+
+@media (min-width: 60rem) {
+  .VPFeatures {
+    padding: 0 4rem;
+  }
+}
+
+.VPFeatures .container {
+  margin: 0 auto;
+  max-width: 72rem;
+}
+
+.VPFeatures .items {
+  display: flex;
+  flex-wrap: wrap;
+  margin: -0.5rem;
+}
+
+.VPFeatures .item {
+  padding: 0.5rem;
+  width: 100%;
+}
+
+@media (min-width: 40rem) {
+  .VPFeatures .item.grid-2, .VPFeatures .item.grid-4, .VPFeatures .item.grid-6 {
+    width: calc(100% / 2);
+  }
+}
+
+@media (min-width: 48rem) {
+  .VPFeatures .item.grid-2, .VPFeatures .item.grid-4 {
+    width: calc(100% / 2);
+  }
+
+  .VPFeatures .item.grid-3, .VPFeatures .item.grid-6 {
+    width: calc(100% / 3);
+  }
+}
+
+@media (min-width: 60rem) {
+  .VPFeatures .item.grid-4 {
+    width: calc(100% / 4);
+  }
+}
+
+/* === VPFeature.vue === */
+
+.VPFeature {
+  display: block;
+  border: 1px solid var(--vp-c-bg-soft);
+  border-radius: 0.75rem;
+  height: 100%;
+  background-color: var(--vp-c-bg-soft);
+  transition: border-color 0.25s, background-color 0.25s;
+}
+
+.VPFeature.link:hover {
+  border-color: var(--vp-c-brand-1);
+}
+
+.VPFeature .box {
+  display: flex;
+  flex-direction: column;
+  padding: 1.5rem;
+  height: 100%;
+}
+
+.VPFeature .box > .VPImage {
+  margin-bottom: 1.25rem;
+}
+
+.VPFeature .icon {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  margin-bottom: 1.25rem;
+  border-radius: 0.375rem;
+  background-color: var(--vp-c-default-soft);
+  width: 3rem;
+  height: 3rem;
+  font-size: 1.5rem;
+  transition: background-color 0.25s;
+}
+
+.VPFeature .title {
+  line-height: 1.5;
+  font-size: 1rem;
+  font-weight: 600;
+}
+
+.VPFeature .details {
+  flex-grow: 1;
+  padding-top: 0.5rem;
+  line-height: 1.7142857;
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: var(--vp-c-text-2);
+}
+
+.VPFeature ul.details {
+  list-style-type: disc;
+  padding-left: 0.875rem;
+}
+
+.VPFeature .link-text {
+  padding-top: 0.5rem;
+}
+
+.VPFeature .link-text-value {
+  display: flex;
+  align-items: center;
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: var(--vp-c-brand-1);
+}
+
+.VPFeature .link-text-icon {
+  margin-left: 0.375rem;
+}

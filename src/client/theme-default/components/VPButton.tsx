@@ -36,15 +36,16 @@ export function VPButton({
   const Comp: any = tag || (href ? 'a' : 'button')
   const resolvedTarget = target ?? (external ? '_blank' : undefined)
   const resolvedRel = rel ?? (external ? 'noreferrer' : undefined)
+  const useHtml = Boolean(text) && children === undefined
   return (
     <Comp
       className={cx(s.button, s[size], s[theme], 'VPButton no-icon')}
       href={href ? normalizeLink(href) : undefined}
       target={resolvedTarget}
       rel={resolvedRel}
-      dangerouslySetInnerHTML={children ? undefined : text ? { __html: text } : undefined}
+      dangerouslySetInnerHTML={useHtml ? { __html: text } : undefined}
     >
-      {children ?? text}
+      {useHtml ? null : (children ?? text)}
     </Comp>
   )
 }

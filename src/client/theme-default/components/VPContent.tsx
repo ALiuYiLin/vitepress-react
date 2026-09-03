@@ -4,7 +4,7 @@ import { useData } from 'vitepress'
 import { useLayout } from '../composables/use-layout'
 import { NotFound } from '../NotFound'
 import { VPPage } from './VPPage'
-import { VPHome } from './vp-home'
+import { VPHome } from './VPHome'
 import { VPDoc } from './VPDoc'
 import s from './VPContent.module.css'
 
