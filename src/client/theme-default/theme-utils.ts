@@ -90,7 +90,9 @@ export function getSidebarItems(
   const value = dir ? sidebar[dir] : undefined
   if (value == null || value === false) return []
   if (Array.isArray(value)) return addBase(value)
-  return addBase(value.items)
+  // 对象形态 { base, items }(如各语言侧栏 '{/zh/guide/: { base, items }}'):
+  // base 需随条目一起传递,相对 link 才解析成 '/zh/guide/xxx'
+  return addBase(value.items, value.base)
 }
 
 function ensureStartSlash(p: string): string {
