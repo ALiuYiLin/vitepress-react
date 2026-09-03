@@ -2,6 +2,7 @@ import { ChevronLeft, ChevronRight } from 'lucide-react'
 import { useData, useNavigate, useRoute } from 'vitepress'
 
 import { cn } from './lib/utils'
+import { Separator } from './components/ui/separator'
 import {
   flattenSidebarItems,
   normalizePath,
@@ -60,9 +61,12 @@ export function PrevNext() {
   // 不在任何侧边栏分组里(如 404)时不渲染
   if (!flat.length || idx < 0) return null
   return (
-    <div className="mt-12 flex gap-3 border-t pt-6">
-      <CardLink dir="prev" item={prev} navigate={navigate} />
-      <CardLink dir="next" item={next} navigate={navigate} />
+    <div className="mt-12">
+      <Separator className="mb-6" />
+      <div className="flex gap-3">
+        <CardLink dir="prev" item={prev} navigate={navigate} />
+        <CardLink dir="next" item={next} navigate={navigate} />
+      </div>
     </div>
   )
 }
