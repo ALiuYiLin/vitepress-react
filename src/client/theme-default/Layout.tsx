@@ -8,6 +8,7 @@ import { useNav, useNavItemLink } from './composables/use-nav'
 import { usePrevNext } from './composables/use-prev-next'
 import { useSidebarItemControl } from './composables/use-sidebar'
 import { VPHome } from './components/vp-home'
+import { VPTeamMembers } from './components/vp-team'
 import { type VpHeader, type VpSidebarItem } from './theme-utils'
 import s from './layout.module.css'
 
@@ -182,7 +183,16 @@ export function Layout() {
         <div className={cx(s.content, 'content')}>
           <div className={cx(s.contentContainer, 'content-container', hasAside && 'has-aside')}>
             <main className={cx(s.main, 'main')}>
-              {isHome ? <VPHome /> : <Content />}
+              {isHome ? (
+                <VPHome />
+              ) : (
+                <>
+                  {(frontmatter as { members?: any[] }).members?.length ? (
+                    <VPTeamMembers members={(frontmatter as { members?: any[] }).members!} />
+                  ) : null}
+                  <Content />
+                </>
+              )}
             </main>
             {(prev || next) && (
               <footer className={cx(s.docFooter, 'VPDocFooter')}>
