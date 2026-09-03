@@ -14,9 +14,17 @@ import './styles/components/vp-sponsor.css'
 import './styles/components/theme-nav.css'
 // Home 栈(VPHome/VPHomeHero/VPHero/VPHomeFeatures/VPFeatures/VPFeature/VPHomeContent)样式
 import './styles/components/theme-home.css'
+// 团队页组件样式
+import './styles/components/theme-team.css'
 
 import { Layout } from './Layout'
 import { NotFound } from './NotFound'
+
+// 文档/markdown 可直接 import 的默认主题组件(与 Vue 默认主题导出一致)
+export { VPTeamMembers, VPTeamMembersItem } from './components/vp-team'
+export { VPTeamPage } from './components/VPTeamPage'
+export { VPTeamPageTitle } from './components/VPTeamPageTitle'
+export { VPTeamPageSection } from './components/VPTeamPageSection'
 
 export { Layout, NotFound }
 

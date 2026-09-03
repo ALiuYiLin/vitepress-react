@@ -40,12 +40,20 @@ export function VPTeamMembersItem({ member }: { member: VpTeamMember }) {
 }
 
 /** 团队成员网格 */
-export function VPTeamMembers({ members }: { members: VpTeamMember[] }) {
-  if (!members.length) return null
+export function VPTeamMembers({
+  members,
+  size
+}: {
+  members?: VpTeamMember[]
+  /** small | medium(默认 small 样式由模块类给出,保留参数以便与文档示例兼容) */
+  size?: string
+}) {
+  const list = members ?? []
+  if (!list.length) return null
   return (
-    <div className="VPTeamMembers">
+    <div className={`VPTeamMembers${size ? ` ${size}` : ''}`}>
       <div className={s.grid}>
-        {members.map((m, i) => (
+        {list.map((m, i) => (
           <VPTeamMembersItem key={i} member={m} />
         ))}
       </div>
