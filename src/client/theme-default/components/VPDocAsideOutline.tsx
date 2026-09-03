@@ -12,7 +12,7 @@ const cx = (...c: (string | false | undefined | null)[]) => c.filter(Boolean).jo
 export function VPDocAsideOutline() {
   const { theme } = useData()
   const container = useRef<HTMLElement | null>(null)
-  const marker = useRef<HTMLElement | null>(null)
+  const marker = useRef<HTMLDivElement | null>(null)
   const { headers, hasLocalNav } = useLayout()
   useActiveAnchor(container, marker)
 
