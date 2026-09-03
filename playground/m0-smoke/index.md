@@ -1,5 +1,9 @@
 ---
 title: M0 Smoke Home
+head:
+  - - meta
+    - name: keywords
+      content: m0,smoke,react
 ---
 
 # M0-SMOKE-MARKER

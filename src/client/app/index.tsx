@@ -5,6 +5,7 @@ import RawTheme from '@theme/index'
 import { VpStoreProvider, createStore, useData, type VpStore } from './data'
 import { createRouter, type Router } from './router'
 import { Content } from './components/Content'
+import { syncHead } from './composables/head'
 import { inBrowser, pathToFile } from './utils'
 import type { PageModule } from './router'
 
@@ -29,14 +30,15 @@ const Theme = resolveThemeExtends(RawTheme)
 export function VitePressApp() {
   const data = useData()
 
-  // 文档级属性(SSR 阶段也安全:仅浏览器分支写入)
+  // 文档级属性 + head 同步(SSR 阶段也安全:仅浏览器分支写入;
+  // data 是快照对象,导航/外观变化都会生成新引用触发本 effect)
   useEffect(() => {
     if (!inBrowser) return
     document.documentElement.lang = data.lang
     document.documentElement.dir = data.dir
     document.documentElement.classList.toggle('dark', data.isDark)
-    document.title = data.title
-  }, [data.lang, data.dir, data.isDark, data.title])
+    syncHead(data)
+  }, [data])
 
   useEffect(() => {
     if (!inBrowser) return
@@ -117,7 +119,11 @@ if (inBrowser) {
     // wait until page component is fetched before mounting
     await router.go(location.href, { initialLoad: true })
 
-    if (import.meta.env.PROD) {
+    // 默认 404 页(无自定义 404.md)的 HTML 不预渲染内容,#app 为空——
+    // 对空容器必须用 createRoot 而非 hydrateRoot,否则会因空 vs 内容
+    // 的差异产生 hydration mismatch(React 水合无法恢复)。
+    const hasSsrContent = container.firstChild != null
+    if (import.meta.env.PROD && hasSsrContent) {
       hydrateRoot(container, element)
     } else {
       createRoot(container).render(element)
