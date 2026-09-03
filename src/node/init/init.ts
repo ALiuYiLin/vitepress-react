@@ -204,7 +204,7 @@ export async function scaffold({
       targetPath = targetPath.replace(/\.js$/, '.mjs')
     }
     if (useTs) {
-      targetPath = targetPath.replace(/\.(m?)js$/, '.$1ts')
+      targetPath = targetPath.replace(/\.(m?)js$/, '.$1ts').replace(/\.jsx$/, '.tsx')
     }
     if (file.endsWith('.md')) {
       targetPath = path.resolve(resolvedSrcDir, file)
@@ -233,7 +233,7 @@ export async function scaffold({
     filesToScaffold.push(
       '.vitepress/theme/index.js',
       '.vitepress/theme/style.css',
-      '.vitepress/theme/Layout.vue'
+      '.vitepress/theme/Layout.jsx'
     )
   }
 
@@ -252,11 +252,11 @@ export async function scaffold({
 
   if (
     theme !== ScaffoldThemeType.Default &&
-    !userPkg.dependencies?.['vue'] &&
-    !userPkg.devDependencies?.['vue']
+    !userPkg.dependencies?.['react'] &&
+    !userPkg.devDependencies?.['react']
   ) {
     tips.push(
-      `Since you've chosen to customize the theme, you should also explicitly install ${c.cyan(`vue`)} as a dev dependency.`
+      `Since you've chosen to customize the theme, you should also explicitly install ${c.cyan(`react`)} and ${c.cyan(`react-dom`)} as dev dependencies (the framework can run without them, but it's good to have them in your own package.json).`
     )
   }
 

@@ -1,5 +1,4 @@
 import type { Options as _MiniSearchOptions } from 'minisearch'
-import type { ComputedRef, ShallowRef } from 'vue'
 
 import type { DocSearchProps } from './docsearch.js'
 import type { LocalSearchTranslations } from './local-search.js'
@@ -7,29 +6,31 @@ import type { Header, PageData, Route, VitePressData } from './shared.js'
 
 export namespace DefaultTheme {
   /**
-   * The layout state returned by `useLayout` from `vitepress/theme`.
+   * The layout state of the current page, as consumed by `useLayout` from
+   * `vitepress/theme`. (React adaptation: plain snapshot values, where the
+   * upstream Vue types used refs/computed.)
    */
   export interface Layout {
-    isHome: ComputedRef<boolean>
+    isHome: boolean
 
-    sidebar: Readonly<ShallowRef<SidebarItem[]>>
-    sidebarGroups: ComputedRef<SidebarItem[]>
-    hasSidebar: ComputedRef<boolean>
-    isSidebarEnabled: ComputedRef<boolean>
+    sidebar: SidebarItem[]
+    sidebarGroups: SidebarItem[]
+    hasSidebar: boolean
+    isSidebarEnabled: boolean
 
-    hasAside: ComputedRef<boolean>
-    leftAside: ComputedRef<boolean>
+    hasAside: boolean
+    leftAside: boolean
 
     /**
      * The outline headers of the current page.
      */
-    headers: Readonly<ShallowRef<OutlineItem[]>>
+    headers: OutlineItem[]
     /**
      * Whether the current page has a local nav. Local nav is shown when the
      * "outline" is present in the page. However, note that the actual
      * local nav visibility depends on the screen width as well.
      */
-    hasLocalNav: ComputedRef<boolean>
+    hasLocalNav: boolean
   }
 
   export interface Config {
