@@ -49,7 +49,7 @@ Vue 版文档里的 `{{ }}` 在这里不存在。**单层 `{…}`** 按下列规
 
 **输入**
 
-````md
+````tsx
 <script>
 import { useState } from 'react'
 
@@ -61,7 +61,35 @@ const [count, setCount] = useState(100)
 <button onClick={() => setCount(count + 1)}>+1</button>
 ````
 
-**说明**:`count` 随 `setCount`/`useEffect`/路由数据更新而**响应式重渲染**;它等价于把这段代码写进一个 React 组件函数再返回 JSX。需要完整交互(按钮、表单)时,更推荐定义成具名组件后用 `<组件 />` 引用。
+**实际渲染**
+
+<script>
+import { useState } from 'react'
+
+export function CountDemo() {
+  const [count, setCount] = useState(100)
+  return (
+    <p>
+      当前计数: <strong>{count}</strong>{' '}
+      <button
+        style={{
+          border: '1px solid var(--vp-c-brand-1)',
+          borderRadius: 8,
+          padding: '2px 12px',
+          cursor: 'pointer'
+        }}
+        onClick={() => setCount(count + 1)}
+      >
+        +1
+      </button>
+    </p>
+  )
+}
+</script>
+
+<CountDemo />
+
+**说明**:`count` 随 `setCount`/`useEffect`/路由数据更新而**响应式重渲染**;它等价于把这段代码写进一个 React 组件函数再返回 JSX。需要完整交互(按钮、表单)时,更推荐定义成具名组件后用 `<组件 />` 引用(如上演示)——因为正文里裸写的 `<button onClick=…>` 不会保留为真实事件。
 
 ### 在 Markdown 中导入并使用组件 {#using-components}
 
