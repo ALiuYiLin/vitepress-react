@@ -72,7 +72,7 @@ export function VPHero({
           <div className="image">
             <div className="image-container">
               <div className="image-bg" />
-              <VPImage className="image-src VPImage" image={image} />
+              <VPImage className="image-src" image={image} />
             </div>
           </div>
         ) : null}

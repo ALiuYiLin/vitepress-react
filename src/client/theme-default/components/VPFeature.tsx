@@ -43,7 +43,6 @@ export function VPFeature({
     <VPImage
       image={image}
       alt={iconAlt}
-      className="VPImage"
       height={iconHeight || 48}
       width={iconWidth || 48}
     />
