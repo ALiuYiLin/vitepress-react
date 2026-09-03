@@ -11,6 +11,23 @@ This page verifies the **React runtime skeleton**:
 
 [Go to guide](/guide)
 
+<script setup>
+import { useState } from 'react'
+
+export function Counter() {
+  const [count, setCount] = useState(0)
+  return (
+    <button type="button" onClick={() => setCount((c) => c + 1)}>
+      count is {count}
+    </button>
+  )
+}
+</script>
+
+<Counter />
+
+> 字面量检查:{{ count }} 会原样显示,不会被求值。
+
 ```ts
 const answer = 42
 ```

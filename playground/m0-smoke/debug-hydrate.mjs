@@ -48,6 +48,22 @@ for (const path of ['/', '/guide']) {
   pageErrors.slice(0, 6).forEach((m) => console.log(m))
 
   if (path === '/') {
+    // Counter 交互:SSR 后水合,点击按钮计数 +1
+    const counterText = await page
+      .locator('button[type="button"]')
+      .first()
+      .textContent()
+      .catch(() => null)
+    console.log('counter initial text:', JSON.stringify(counterText))
+    const literalKept = (await page.textContent('body')).includes('{{ count }}')
+    console.log('literal {{ count }} kept:', literalKept)
+    const btn = page.locator('button[type="button"]').first()
+    if ((await btn.count()) > 0) {
+      await btn.click()
+      await page.waitForTimeout(300)
+      const after = await btn.textContent()
+      console.log('counter after click:', JSON.stringify(after))
+    }
     // 尝试点击内部链接做 SPA 导航
     const clicked = await page.evaluate(() => {
       const a = [...document.querySelectorAll('a')].find((x) =>
