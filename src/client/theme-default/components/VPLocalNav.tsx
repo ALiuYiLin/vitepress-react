@@ -13,10 +13,13 @@ const cx = (...c: (string | false | undefined | null)[]) => c.filter(Boolean).jo
  */
 export function VPLocalNav({
   open,
-  onOpenMenu
+  onOpenMenu,
+  inert
 }: {
   open: boolean
   onOpenMenu: () => void
+  /** 全屏导航打开时使其不可交互(inert) */
+  inert?: boolean
 }) {
   const { theme } = useData()
   const themeCfg = theme as { sidebarMenuLabel?: string; outline?: { label?: string } }
@@ -52,6 +55,7 @@ export function VPLocalNav({
         !hasLocalNav && 'empty',
         !hasLocalNav && !hasSidebar && 'fixed'
       )}
+      {...({ inert: inert || undefined } as Record<string, unknown>)}
     >
       <div className={cx(s.container, 'container')}>
         {hasSidebar ? (

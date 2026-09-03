@@ -11,7 +11,7 @@ import s from './VPContent.module.css'
 const cx = (...c: (string | false | undefined | null)[]) => c.filter(Boolean).join(' ')
 
 /** 页面主体容器(按 layout 选择渲染 Notfound/Page/Home/Doc) */
-export function VPContent() {
+export function VPContent({ inert }: { inert?: boolean }) {
   const { page, frontmatter } = useData()
   const { hasSidebar, isHome } = useLayout()
   const layout = (frontmatter as { layout?: string })?.layout
@@ -34,6 +34,7 @@ export function VPContent() {
         isHome && s.isHome,
         isHome && 'is-home'
       )}
+      {...({ inert: inert || undefined } as Record<string, unknown>)}
     >
       {body}
     </div>

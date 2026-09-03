@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef } from 'react'
+import { useEffect, useMemo, useRef, type ReactNode } from 'react'
 
 import { useBodyScrollLock } from '../composables/use-body-scroll-lock'
 import { useLayout } from '../composables/use-layout'
@@ -13,7 +13,18 @@ const cx = (...c: (string | false | undefined | null)[]) => c.filter(Boolean).jo
  * - 打开时锁定 body 滚动并把焦点移入导航(可访问性);
  * - 侧栏分组深层变化时整体重挂(key)以复位折叠状态。
  */
-export function VPSidebar({ open }: { open: boolean }) {
+export function VPSidebar({
+  open,
+  inert,
+  before,
+  after
+}: {
+  open: boolean
+  /** 全屏导航打开时使其不可交互(inert) */
+  inert?: boolean
+  before?: ReactNode
+  after?: ReactNode
+}) {
   const { hasSidebar, sidebarGroups } = useLayout()
   const navEl = useRef<HTMLElement | null>(null)
   const { lock, unlock } = useBodyScrollLock()
@@ -38,6 +49,7 @@ export function VPSidebar({ open }: { open: boolean }) {
       ref={navEl}
       className={cx(s.sidebar, 'VPSidebar', open && 'open')}
       onClick={(e) => e.stopPropagation()}
+      {...({ inert: inert || undefined } as Record<string, unknown>)}
     >
       <div className={cx(s.curtain, 'curtain')} />
 
@@ -51,10 +63,12 @@ export function VPSidebar({ open }: { open: boolean }) {
           Sidebar Navigation
         </span>
 
+        {before}
         <VPSidebarGroup
           key={groupKey}
           items={sidebarGroups as unknown as VpSidebarItem[]}
         />
+        {after}
       </nav>
     </aside>
   )

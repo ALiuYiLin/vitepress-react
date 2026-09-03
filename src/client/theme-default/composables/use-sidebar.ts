@@ -3,15 +3,13 @@ import { useRoute } from 'vitepress'
 
 import { flattenSidebarItems, normalizePath, type VpSidebarItem } from '../theme-utils'
 
-/** 侧栏抽屉开合(桌面 sticky / 移动抽屉) */
+/** 侧栏抽屉开合(桌面 sticky / 移动抽屉);函数稳定以便做 watcher */
 export function useSidebarControl() {
   const [isOpen, setOpen] = useState(false)
-  return {
-    isOpen,
-    open: () => setOpen(true),
-    close: () => setOpen(false),
-    toggle: () => setOpen((v) => !v)
-  }
+  const open = useCallback(() => setOpen(true), [])
+  const close = useCallback(() => setOpen(false), [])
+  const toggle = useCallback(() => setOpen((v) => !v), [])
+  return { isOpen, open, close, toggle }
 }
 
 /** Esc 关闭侧栏 */

@@ -14,11 +14,12 @@ export function useLayout() {
   }
   const fm = frontmatter as {
     layout?: string
+    isHome?: boolean
     sidebar?: boolean
     aside?: boolean | 'left'
     outline?: unknown
   }
-  const isHome = fm.layout === 'home'
+  const isHome = Boolean(fm.isHome ?? fm.layout === 'home')
   const sidebarConfig = cfg.sidebar as never
   const groups = sidebarGroupsFor(route.path, sidebarConfig as never)
   const hasSidebarEnabled = fm.sidebar !== false && cfg.sidebar !== false
