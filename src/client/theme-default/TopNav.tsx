@@ -40,7 +40,7 @@ export function TopNav() {
   const nav = cfg.nav ?? []
 
   return (
-    <header className="sticky top-0 z-20 flex h-14 items-center gap-2 border-b bg-background/90 px-4 backdrop-blur sm:px-6 lg:px-8">
+    <header className="sticky top-0 z-30 flex h-14 items-center gap-2 border-b bg-background/90 px-4 backdrop-blur sm:px-6 lg:px-8">
       {/* 侧栏开关(桌面折叠 / 移动端抽屉,由 shadcn Sidebar 处理) */}
       <SidebarTrigger />
 
