@@ -1,6 +1,7 @@
 import { useData, useNavigate, useRoute } from 'vitepress'
 
 import {
+  Sidebar,
   SidebarContent,
   SidebarFooter,
   SidebarGroup,
@@ -9,9 +10,10 @@ import {
   SidebarHeader,
   SidebarMenu,
   SidebarMenuButton,
+  SidebarMenuItem,
   SidebarMenuSub,
-  SidebarMenuSubItem,
-  Sidebar
+  SidebarMenuSubButton,
+  SidebarMenuSubItem
 } from './components/ui/sidebar'
 import {
   normalizePath,
@@ -24,7 +26,10 @@ function isItemActive(item: VpSidebarItem, current: string): boolean {
   return !!item.link && normalizePath(item.link) === current
 }
 
-/** 递归渲染菜单项:链接用 SidebarMenuButton,子项用 SidebarMenuSub */
+const labelCls =
+  'text-sidebar-foreground/70 px-2 py-1.5 text-xs font-semibold uppercase tracking-wider'
+
+/** 子级菜单项(在 SidebarMenuSub 内):链接 / 分组递归 */
 function MenuItems({
   items,
   depth,
@@ -36,16 +41,15 @@ function MenuItems({
   current: string
   navigate: (to: string) => void
 }) {
-  if (items.length === 0) return null
   return (
     <>
       {items.map((item, i) => {
         if (item.link) {
           return (
             <SidebarMenuSubItem key={i}>
-              <SidebarMenuButton
+              <SidebarMenuSubButton
                 asChild
-                size={depth > 0 ? 'sm' : 'default'}
+                size={depth > 1 ? 'sm' : 'md'}
                 isActive={isItemActive(item, current)}
               >
                 <a
@@ -57,19 +61,87 @@ function MenuItems({
                 >
                   {item.text}
                 </a>
-              </SidebarMenuButton>
+              </SidebarMenuSubButton>
             </SidebarMenuSubItem>
           )
         }
+        // 分组标签 + 递归子项
         return (
           <SidebarMenuSubItem key={i}>
-            <div className="text-sidebar-foreground/70 px-2 py-1.5 text-xs font-semibold uppercase tracking-wider">
-              {item.text}
-            </div>
+            <div className={labelCls}>{item.text}</div>
+            {item.items?.length ? (
+              <SidebarMenuSub>
+                <MenuItems
+                  items={item.items}
+                  depth={depth + 1}
+                  current={current}
+                  navigate={navigate}
+                />
+              </SidebarMenuSub>
+            ) : null}
           </SidebarMenuSubItem>
         )
       })}
-      {/* 子项递归(非空时) */}
+    </>
+  )
+}
+
+/** 顶层菜单项(在 SidebarMenu 内):链接(可带子项)或分组 */
+function TopMenuItems({
+  items,
+  current,
+  navigate
+}: {
+  items: VpSidebarItem[]
+  current: string
+  navigate: (to: string) => void
+}) {
+  return (
+    <>
+      {items.map((item, i) => {
+        if (item.link) {
+          return (
+            <SidebarMenuItem key={i}>
+              <SidebarMenuButton asChild isActive={isItemActive(item, current)}>
+                <a
+                  href={item.link}
+                  onClick={(e) => {
+                    e.preventDefault()
+                    navigate(item.link!)
+                  }}
+                >
+                  {item.text}
+                </a>
+              </SidebarMenuButton>
+              {item.items?.length ? (
+                <SidebarMenuSub>
+                  <MenuItems
+                    items={item.items}
+                    depth={1}
+                    current={current}
+                    navigate={navigate}
+                  />
+                </SidebarMenuSub>
+              ) : null}
+            </SidebarMenuItem>
+          )
+        }
+        return (
+          <SidebarMenuItem key={i}>
+            <div className={labelCls}>{item.text}</div>
+            {item.items?.length ? (
+              <SidebarMenuSub>
+                <MenuItems
+                  items={item.items}
+                  depth={1}
+                  current={current}
+                  navigate={navigate}
+                />
+              </SidebarMenuSub>
+            ) : null}
+          </SidebarMenuItem>
+        )
+      })}
     </>
   )
 }
@@ -104,42 +176,16 @@ export function AppSidebar() {
       <SidebarContent>
         {groups.map((group, gi) => (
           <SidebarGroup key={gi}>
-            {group.text ? <SidebarGroupLabel>{group.text}</SidebarGroupLabel> : null}
+            {group.text ? (
+              <SidebarGroupLabel>{group.text}</SidebarGroupLabel>
+            ) : null}
             <SidebarGroupContent>
               <SidebarMenu>
-                {group.items.map((item, i) =>
-                  item.link ? (
-                    <div key={i} className="contents">
-                      <SidebarMenuButton asChild isActive={isItemActive(item, current)}>
-                        <a
-                          href={item.link}
-                          onClick={(e) => {
-                            e.preventDefault()
-                            navigate(item.link!)
-                          }}
-                        >
-                          {item.text}
-                        </a>
-                      </SidebarMenuButton>
-                      {item.items?.length ? (
-                        <SidebarMenuSub>
-                          <MenuItems
-                            items={item.items}
-                            depth={1}
-                            current={current}
-                            navigate={navigate}
-                          />
-                        </SidebarMenuSub>
-                      ) : null}
-                    </div>
-                  ) : (
-                    <SidebarMenuSubItem key={i}>
-                      <div className="text-sidebar-foreground/70 px-2 py-1.5 text-xs font-semibold uppercase tracking-wider">
-                        {item.text}
-                      </div>
-                    </SidebarMenuSubItem>
-                  )
-                )}
+                <TopMenuItems
+                  items={group.items}
+                  current={current}
+                  navigate={navigate}
+                />
               </SidebarMenu>
             </SidebarGroupContent>
           </SidebarGroup>
