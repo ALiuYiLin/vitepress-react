@@ -9,6 +9,7 @@ import { usePrevNext } from './composables/use-prev-next'
 import { useSidebarItemControl } from './composables/use-sidebar'
 import { VPHome } from './components/vp-home'
 import { VPTeamMembers } from './components/vp-team'
+import { VPSponsors } from './components/vp-sponsors'
 import { type VpHeader, type VpSidebarItem } from './theme-utils'
 import s from './layout.module.css'
 
@@ -189,6 +190,9 @@ export function Layout() {
                 <>
                   {(frontmatter as { members?: any[] }).members?.length ? (
                     <VPTeamMembers members={(frontmatter as { members?: any[] }).members!} />
+                  ) : null}
+                  {(frontmatter as { sponsors?: any[] }).sponsors?.length ? (
+                    <VPSponsors sponsors={(frontmatter as { sponsors?: any[] }).sponsors!} />
                   ) : null}
                   <Content />
                 </>
