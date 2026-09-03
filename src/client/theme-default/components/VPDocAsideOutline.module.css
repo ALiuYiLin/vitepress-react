@@ -1,0 +1,33 @@
+.aside {
+  display: none;
+}
+.aside.hasOutline {
+  display: block;
+}
+
+.content {
+  position: relative;
+  border-left: 1px solid var(--vp-c-divider);
+  padding-left: 1rem;
+  font-size: 0.8125rem;
+  font-weight: 500;
+}
+
+.marker {
+  position: absolute;
+  top: 2rem;
+  left: -1px;
+  z-index: 0;
+  opacity: 0;
+  width: 2px;
+  border-radius: 2px;
+  height: 1.125rem;
+  background-color: var(--vp-c-brand-1);
+  transition: top 0.25s cubic-bezier(0, 1, 0.5, 1), background-color 0.5s, opacity 0.25s;
+}
+
+.title {
+  line-height: 2.2857143;
+  font-size: 0.875rem;
+  font-weight: 600;
+}
