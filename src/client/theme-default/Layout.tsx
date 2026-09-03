@@ -10,6 +10,7 @@ import { useSidebarItemControl } from './composables/use-sidebar'
 import { VPHome } from './components/vp-home'
 import { VPTeamMembers } from './components/vp-team'
 import { VPSponsors } from './components/vp-sponsors'
+import { VPCarbonAds } from './components/vp-carbon-ads'
 import { type VpHeader, type VpSidebarItem } from './theme-utils'
 import s from './layout.module.css'
 
@@ -223,6 +224,7 @@ export function Layout() {
                   </div>
                 </div>
               </nav>
+              <VPCarbonAds />
             </aside>
           )}
         </div>

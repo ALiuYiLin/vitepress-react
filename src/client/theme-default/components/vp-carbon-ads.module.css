@@ -1,0 +1,20 @@
+.wrap {
+  margin-top: 16px;
+  padding: 12px;
+  border: 1px solid var(--vp-c-divider);
+  border-radius: 8px;
+  background: var(--vp-c-bg);
+}
+
+.label {
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--vp-c-text-3);
+}
+
+.placeholder {
+  font-size: 13px;
+  color: var(--vp-c-text-2);
+  padding: 8px 0 4px;
+}
