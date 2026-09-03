@@ -38,18 +38,19 @@
   - 本地导航:`VPLocalNav`/`VPLocalNavOutlineDropdown`(已迁移;v-show、vh、body lock、Esc/外部/内容更新关闭)。
   - 顶栏/导航全套:`VPFlyout`、`VPNav`、`VPNavBar`、`VPNavBarTitle`、`VPNavBarHamburger`、`VPNavBarSearchButton`(vp-nav-bar-search)、`VPNavMenu`/`VPNavMenuGroup`/`VPNavMenuLink`、`VPNavAppearance`、`VPNavTranslations`、`VPNavSocialLinks`、`VPNavBarExtra`、`VPNavScreen`。
 - 支持设施:useNav 改**模块单例**(useSyncExternalStore;路由/≥48rem 自动关闭、trigger 焦点);`nav-context.ts`(closeScreen);`use-nav-overflow.ts`(**默认不折叠占位**,state.*=true、visibleItemCount=∞);`use-window-scroll-y.ts`。
-- 验证:`tsc(client)` 绿;`tsdown` 绿;SSG(`m0-smoke`)绿;preview 骨架下文档页/`/home`/`/team`/`/sponsors` 正常;生产 hydration #418 为已知(dev 无、页面正常)。
+- **Layout 重接线(已完成,commit 45ff9288)**:`Layout.tsx` 改为真实组件树 —— `Layout` 根(带 pageClass/gradedContainers)内:`VPSkipLink inert` → `VPBackdrop backdrop show=sidebarOpen` → `VPNav` → `VPLocalNav open/onOpenMenu inert` → `VPSidebar open inert` → `VPContent inert` → `VPFooter inert`;`frontmatter.layout===false` 直接 `<Content/>`;侧栏开合由 Layout 持有(Esc/路由/≥60rem 自动关闭);屏幕导航打开时其后内容 inert;内联骨架 SidebarItem/NavItem/LinkCard/OutlineItem 已删除;`layout.module.css` 仅剩 `.Layout` 规则。
+- 验证:`tsc(client)` 绿;`tsdown` 绿;SSG(`m0-smoke`)绿;SSR HTML 抽查确认 DOM:guide 页含 `VPNav/VPNavBar/VPNavBarTitle/VPNavMenu/VPLocalNav/VPSidebar/VPSidebarItem level-0/VPContent/VPDoc*/VPFooter`、`.vp-doc`;home 页含 `VPNavBar home top/VPHome/VPHero/VPFeatures/is-home`;生产 hydration #418 仍为已知(dev 无、页面正常)。
 
 ## 4. 待办/简化项(尚未做或有意简化)
-- **Layout 重接线(下一步)**:把 `Layout.tsx` 内联骨架替换为真实组件树 —— `VPNav`(+slots)、`VPSidebar open`(移动抽屉 + VPLocalNav menu 按钮开)、`VPLocalNav`、`VPSidebarItem` 替换内联 `SidebarItem`、`VPDoc*`/`VPPage`、`VPContent`、`VPFooter`、`NotFound`。
+- **剩余验证(下一步)**:浏览器级 interactive preview —— 移动抽屉(VPLocalNav menu → VPSidebar open + backdrop)、暗色切换、本地导航大纲下拉、404 路由、顶栏 flyout 悬停/点击、屏幕导航(汉堡/Escape/焦点);hydr #418 排查;`VPNavBarSearch` 接线本地/远程搜索框(可后置)。
 - 简化(可接受偏差):溢出引擎未实现(默认不折叠);`VPNavBarSearch` 仅保留按钮 stub(未迁 Algolia/LocalSearchBox 弹层);flyout/屏幕动画用 CSS keyframes 近似 Vue Transition;部分 scoped CSS 用全 `:global` 字面量类名(类名唯一,安全);VPMenuLink 等按本项目先例近似。
-- 可选细分:`VPDocAsideCarbonAds`/`VPDocAsideSponsors`(VPDocAside 已内联碳广告占位)、`VPHomeContent/VPHomeHero/VPHomeFeatures/VPHomeSponsors`(现并入 vp-home)、`VPTeamPage*`(`VPTeamPage/VPTeamPageSection/VPTeamPageTitle`)、`VPSidebar` curtain 背景在桌面 >90rem 的微调验证。
+- 可选细分:`VPDocAsideCarbonAds`/`VPDocAsideSponsors`(VPDocAside 已内联碳广告占位)、`VPHomeContent/VPHomeHero/VPHomeFeatures/VPHomeSponsors`(现并入 vp-home)、`VPTeamPage*`(`VPTeamPage/VPTeamPageSection/VPTeamPageTitle`)。注:m0 的 team/sponsors 页依赖 markdown 内组件(VPTeamMembers/VPSponsors),需站点侧注册/import,与主题迁移无关。
 - 风格:小写 `vp-*.tsx` 文件将来可拆为 `<Name>.tsx` 与 Vue 一一对应(待办,不改优先级)。
 
 ## 5. 下一步(恢复后从这里继续)
-1. **Layout 重接线**(见 §4 第一项)——把自包含骨架替换成已迁移组件树;必要时给 `VPSidebar`/`VPLocalNav`/`VPNav` 补接线(侧栏 open 状态由 Layout 持有,传 `VPSidebar open`;`VPLocalNav` 的 `open`/`onOpenMenu` 由 Layout 提供;移动抽屉状态可与 `useSidebarControl` 结合)。
-2. 需要时补 `VPTeamPage*`/`VPHome*` 细分与其余可选组件。
-3. 完成后统一验证:tsc/tsdown/SSG/preview —— DOM 类名(`vp-*`)、`.vp-doc` 排版、暗色、本地导航、404、搜索按钮不联网;再处理剩余 #418 与 CSS Modules 残留问题。
+1. **交互验证**(见 §4 第一项):preview/浏览器里逐项核对;必要时修 `use-layout`/组件细节。
+2. 需要时补 `VPTeamPage*`/`VPHome*` 细分与其余可选组件(§4 可选细分)。
+3. 全部验证通过后再决定:剩余 #418 归因、CSS Modules 残留、小写文件名拆分。
 
 ## 6. 注意事项
 - 分支保持在 `migrate-react-m0`;提交前确认 `git status --short` 干净。
