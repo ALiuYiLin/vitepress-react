@@ -1,6 +1,10 @@
 {
   "extends": "./tsconfig.base.json",
   "compilerOptions": {
+    // IDE(vscode 等)默认按根 tsconfig 解析 src 下文件;缺 jsx 会让所有 .tsx
+    // 退回 preserve,在 React 19 类型下报出大量 intrinsic/JSX 错误。
+    // CLI typecheck 各自走 tsconfig.{client,node,shared}.json(见 package.json)。
+    "jsx": "react-jsx",
     "paths": {
       "vitepress": ["./src/client/index.ts"],
       "vitepress/theme": ["./types/default-theme.d.ts"],
