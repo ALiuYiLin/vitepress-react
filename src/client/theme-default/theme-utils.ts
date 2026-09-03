@@ -144,8 +144,8 @@ export function sidebarGroupsFor(
 /** 把当前分组展开成扁平链接序列(用于 prev/next 与活动项) */
 export function flattenSidebarItems(
   groups: VpSidebarGroup[]
-): { text?: string; link: string }[] {
-  const result: { text?: string; link: string }[] = []
+): { text?: string; link: string; target?: string; rel?: string }[] {
+  const result: { text?: string; link: string; target?: string; rel?: string }[] = []
   const walk = (items: VpSidebarItem[]) => {
     for (const item of items) {
       const link = item.link
@@ -153,7 +153,7 @@ export function flattenSidebarItems(
       if (link) {
         const normalized = normalizePath(link)
         if (result.every((r) => normalizePath(r.link) !== normalized)) {
-          result.push({ text, link: normalized })
+          result.push({ text, link: normalized, target: item.target, rel: item.rel })
         }
       }
       if (item.items?.length) walk(item.items)
