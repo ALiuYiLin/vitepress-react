@@ -1,14 +1,15 @@
-// 参考默认主题(React 版;shadcn/ui 风格页面骨架 + md 正文用上游 vp-doc 排版)。
-// 页面骨架样式由 index.css 经 scripts/build-theme-css.mjs 预编译成 tailwind.css
-// (Tailwind v4 + shadcn tokens);md 正文 .vp-doc 排版复用上游 vars.css 与
-// components/vp-*.css。
-import './tailwind.css'
+// 默认主题(React 版):DOM 结构与样式严格复刻 Vue 默认主题(al.19 dev 主线)。
+// 站点/正文样式全部复用上游 styles/*(与 Vue 主题一致),组件级 scoped 样式
+// 在 React 侧用 CSS Modules。
 import './styles/vars.css'
+import './styles/base.css'
 import './styles/icons.css'
-import './styles/components/vp-doc.css'
+import './styles/utils.css'
+import './styles/components/custom-block.css'
 import './styles/components/vp-code.css'
 import './styles/components/vp-code-group.css'
-import './styles/components/custom-block.css'
+import './styles/components/vp-doc.css'
+import './styles/components/vp-sponsor.css'
 
 import { Layout } from './Layout'
 import { NotFound } from './NotFound'

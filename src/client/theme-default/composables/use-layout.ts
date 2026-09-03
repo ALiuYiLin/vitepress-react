@@ -1,0 +1,42 @@
+import { useData, useRoute } from 'vitepress'
+
+import { sidebarGroupsFor } from '../theme-utils'
+
+/** 页面布局信息:home/侧栏/大纲/本地导航 */
+export function useLayout() {
+  const { theme, frontmatter } = useData()
+  const route = useRoute()
+  const cfg = theme as {
+    sidebar?: unknown
+    aside?: unknown
+    outline?: unknown
+    docFooter?: unknown
+  }
+  const fm = frontmatter as {
+    layout?: string
+    sidebar?: boolean
+    aside?: boolean | 'left'
+    outline?: unknown
+  }
+  const isHome = fm.layout === 'home' || route.path === '/'
+  const sidebarConfig = cfg.sidebar as never
+  const groups = sidebarGroupsFor(route.path, sidebarConfig as never)
+  const hasSidebarEnabled = fm.sidebar !== false && cfg.sidebar !== false
+  const hasSidebar = hasSidebarEnabled && groups.length > 0
+  const headers = route.data?.headers ?? []
+  const hasAside =
+    (fm.aside ?? cfg.aside ?? true) !== false && headers.length > 0
+  const leftAside = fm.aside === 'left'
+  const hasLocalNav = headers.length > 0 || hasSidebar
+
+  return {
+    isHome,
+    sidebarGroups: groups,
+    hasSidebar,
+    isSidebarEnabled: hasSidebar,
+    hasAside,
+    leftAside,
+    headers,
+    hasLocalNav
+  }
+}
