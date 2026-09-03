@@ -1,0 +1,22 @@
+.list {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+}
+
+.link {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  border-radius: 6px;
+  color: var(--vp-c-text-2);
+  font-size: 12px;
+  font-weight: 600;
+  text-decoration: none;
+}
+.link:hover {
+  background: var(--vp-c-bg-alt);
+  color: var(--vp-c-text-1);
+}

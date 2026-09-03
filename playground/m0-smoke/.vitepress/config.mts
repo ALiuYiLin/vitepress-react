@@ -46,6 +46,9 @@ export default defineConfig({
       message: 'Made with VitePress-React',
       copyright: 'MIT'
     },
-    darkModeSwitchLabel: 'Appearance'
+    darkModeSwitchLabel: 'Appearance',
+    socialLinks: [
+      { icon: 'github', link: 'https://github.com' }
+    ]
   }
 })

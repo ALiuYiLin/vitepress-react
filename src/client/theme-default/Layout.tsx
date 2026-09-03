@@ -11,6 +11,7 @@ import { VPHome } from './components/vp-home'
 import { VPTeamMembers } from './components/vp-team'
 import { VPSponsors } from './components/vp-sponsors'
 import { VPCarbonAds } from './components/vp-carbon-ads'
+import { VPSocialLinks } from './components/vp-social-links'
 import { type VpHeader, type VpSidebarItem } from './theme-utils'
 import s from './layout.module.css'
 
@@ -143,6 +144,9 @@ export function Layout() {
                     {isDarkFlavor ? '☀' : '☾'}
                   </button>
                 </div>
+                {(theme as { socialLinks?: any[] }).socialLinks?.length ? (
+                  <VPSocialLinks links={(theme as { socialLinks?: any[] }).socialLinks!} />
+                ) : null}
                 <button className={cx(s.hamburger, 'VPNavBarHamburger')} onClick={toggleScreen} aria-label="打开菜单">
                   <span className="vpi-align-left menu-icon" />
                 </button>
