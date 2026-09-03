@@ -230,34 +230,9 @@ Then you can use the following in Markdown and theme components:
 
 VitePress currently has SSG support for teleports to body only. For other targets, you can wrap them inside the built-in `<ClientOnly>` component or inject the teleport markup into the correct location in your final page HTML through [`postRender` hook](../reference/site-config#postrender).
 
-<ModalDemo />
-
-::: details
-<<< @/components/ModalDemo.vue
-:::
-
-```md
-<ClientOnly>
-  <Teleport to="#modal">
-    <div>
-      // ...
-    </div>
-  </Teleport>
-</ClientOnly>
-```
-
-<script setup>
-import ModalDemo from '../../components/ModalDemo.vue'
-import ComponentInHeader from '../../components/ComponentInHeader.vue'
-</script>
-
-<style>
-.escape-demo {
-  border: 1px solid var(--vp-c-border);
-  border-radius: 8px;
-  padding: 0 20px;
-}
-</style>
+> The interactive `ModalDemo` / `ComponentInHeader` examples above were Vue-only
+> (single-file components imported at runtime). This React build does not ship
+> them; client-only rendering is covered in [Using Components](#using-components).
 
 
 ## VS Code IntelliSense Support

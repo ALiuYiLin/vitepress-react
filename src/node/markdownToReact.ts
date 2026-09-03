@@ -699,7 +699,7 @@ function maskJsxExpressions(
         const raw = src.slice(i + 1, end)
         const inner = raw.trim()
         // attrs 语法(#id/.class)留给 @mdit/plugin-attrs
-        if (inner && !/^[#.]/.test(inner)) {
+        if (inner && !/^[#.]/.test(inner) && !inner.startsWith('{')) {
           if (isSafeJsExpr(inner, allowed)) {
             const token = `@@VP_EXPR_${store.length}@@`
             store.push({ expr: inner })
