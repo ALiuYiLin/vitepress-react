@@ -622,6 +622,15 @@ export function serializeHtmlToJsx(
         continue
       }
       const lower = k.toLowerCase()
+
+      // Vue 指令属性(v-pre/v-html/…):JSX 无对应语义,丢弃
+      if (lower.startsWith('v-')) {
+        warnings.push(
+          `dropped Vue directive attribute "${k}" (not applicable in React JSX)`
+        )
+        continue
+      }
+
       let prop = REACT_ATTR_ALIASES[lower] ?? k
 
       // SVG/HTML 的 kebab-case 属性 → React 驼峰(如 stroke-width → strokeWidth);
