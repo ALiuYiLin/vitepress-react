@@ -1,0 +1,74 @@
+/* 对应 Vue VPSidebar.vue <style scoped> */
+.sidebar {
+  position: fixed;
+  top: var(--vp-layout-top-height, 0px);
+  bottom: 0;
+  left: 0;
+  z-index: var(--vp-z-index-sidebar);
+  padding: 2rem 2rem 6rem;
+  width: calc(100vw - 4rem);
+  max-width: 20rem;
+  background-color: var(--vp-sidebar-bg-color);
+  opacity: 0;
+  box-shadow: var(--vp-c-shadow-3);
+  overflow-x: hidden;
+  overflow-y: auto;
+  transform: translateX(-100%);
+  transition: opacity 0.5s, transform 0.25s ease;
+  overscroll-behavior: contain;
+}
+
+.sidebar:global(.open) {
+  opacity: 1;
+  visibility: visible;
+  transform: translateX(0);
+  transition: opacity 0.25s, transform 0.5s cubic-bezier(0.19, 1, 0.22, 1);
+}
+
+:global(.dark) .sidebar {
+  box-shadow: var(--vp-shadow-1);
+}
+
+@media (min-width: 60rem) {
+  .sidebar {
+    padding-top: var(--vp-nav-height);
+    width: var(--vp-sidebar-width);
+    max-width: 100%;
+    background-color: var(--vp-sidebar-bg-color);
+    opacity: 1;
+    visibility: visible;
+    box-shadow: none;
+    transform: translateX(0);
+  }
+}
+
+@media (min-width: 90rem) {
+  .sidebar {
+    padding-left: max(
+      2rem,
+      calc((100% - (var(--vp-layout-max-width) - 4rem)) / 2)
+    );
+    width: calc(
+      (100% - (var(--vp-layout-max-width) - 4rem)) / 2 +
+        var(--vp-sidebar-width) - 2rem
+    );
+  }
+}
+
+@media (min-width: 60rem) {
+  .curtain {
+    position: sticky;
+    top: calc(var(--vp-nav-height) * -1);
+    left: 0;
+    z-index: 1;
+    margin-top: calc(var(--vp-nav-height) * -1);
+    margin-right: -2rem;
+    margin-left: -2rem;
+    height: var(--vp-nav-height);
+    background-color: var(--vp-sidebar-bg-color);
+  }
+}
+
+.nav {
+  outline: 0;
+}

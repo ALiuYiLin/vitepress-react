@@ -5,6 +5,8 @@ export type VpNavItem = {
   text?: string
   link?: string
   activeMatch?: string
+  rel?: string
+  target?: string
   items?: VpNavItem[]
 }
 

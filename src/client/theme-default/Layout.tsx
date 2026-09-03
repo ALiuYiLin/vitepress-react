@@ -57,7 +57,7 @@ function SidebarItem({ item }: { item: VpSidebarItem }) {
           ) : (
             <span className="text">{item.text}</span>
           )}
-          {collapsible && (
+          {collapsible && hasChildren && (
             <button className="caret" onClick={toggleCollapsed} aria-expanded={!collapsed}>
               <span className="vpi-chevron-right caret-icon" />
             </button>

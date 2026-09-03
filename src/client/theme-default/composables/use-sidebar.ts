@@ -31,7 +31,11 @@ function itemHasActive(item: VpSidebarItem, current: string): boolean {
   )
 }
 
-/** 单个侧栏项的控制:折叠/展开、激活态、自动展开含当前页的祖先 */
+/**
+ * 单个侧栏项的控制(语义对齐 Vue composables/sidebar.ts):
+ * - collapsible = 配置了 collapsed 字段(而非有无子项)
+ * - collapsed 初值/随 item 变化重置为配置值;自身或子树含当前页时自动展开
+ */
 export function useSidebarItemControl(item: VpSidebarItem) {
   const route = useRoute()
   const current = normalizePath(route.path)
@@ -43,19 +47,29 @@ export function useSidebarItemControl(item: VpSidebarItem) {
     (isCurrentLink ||
       (normalized !== '/' && current.startsWith(normalized + '/')))
   const hasChildren = Boolean(item.items?.length)
-  const [collapsed, setCollapsed] = useState(false)
+  const collapsible = item.collapsed != null
+  const [collapsed, setCollapsed] = useState<boolean>(
+    () => !!(collapsible && item.collapsed)
+  )
 
+  // item 变化(换页 → 新侧栏配置)时重置为配置的 collapsed 值
   useEffect(() => {
-    if (hasChildren && itemHasActive(item, current)) setCollapsed(false)
-  }, [current, hasChildren, item])
+    setCollapsed(!!(item.collapsed != null && item.collapsed))
+  }, [item])
+
+  // 自身激活或子树含当前页 → 自动展开(item 变化后同样生效)
+  const hasActiveLink = isActiveLink || itemHasActive(item, current)
+  useEffect(() => {
+    if (hasActiveLink) setCollapsed(false)
+  }, [hasActiveLink, item])
 
   return {
     collapsed,
-    collapsible: hasChildren,
+    collapsible,
     isLink,
     isActiveLink,
     isCurrentLink,
-    hasActiveLink: itemHasActive(item, current),
+    hasActiveLink,
     hasChildren,
     toggleCollapsed: useCallback(() => setCollapsed((v) => !v), [])
   }
