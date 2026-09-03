@@ -3,9 +3,31 @@ import * as React from 'react'
 import s from './VPSwitch.module.css'
 
 /** 开关(外观切换用;children 为图标) */
-export function VPSwitch({ children }: { children?: React.ReactNode }) {
+export function VPSwitch({
+  children,
+  title,
+  ariaLabel,
+  ariaChecked,
+  onClick,
+  className
+}: {
+  children?: React.ReactNode
+  title?: string
+  ariaLabel?: string
+  ariaChecked?: boolean
+  onClick?: () => void
+  className?: string
+}) {
   return (
-    <button className={cx(s.switch, 'VPSwitch')} type="button" role="switch">
+    <button
+      className={cx(s.switch, 'VPSwitch', className)}
+      type="button"
+      role="switch"
+      title={title}
+      aria-label={ariaLabel}
+      aria-checked={ariaChecked}
+      onClick={onClick}
+    >
       <span className={s.check}>
         {children ? <span className={s.icon}>{children}</span> : null}
       </span>
