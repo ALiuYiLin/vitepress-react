@@ -928,6 +928,38 @@ function createReactPageSrc(
     componentNames.add(n)
   }
 
+  // Vue 默认主题全局注册的 markdown 可用标签(Badge 等)→ 编译期自动从主题导入。
+  // 只在最终 HTML 里出现才算被使用(代码块内容已被 markdown-it 转义,不会误中)。
+  const THEME_MD_TAGS: Record<string, string> = {
+    Badge: 'VPBadge',
+    VPBadge: 'VPBadge'
+  }
+  {
+    const tagRe = new RegExp(
+      `<(${Object.keys(THEME_MD_TAGS).join('|')})(?=[\\s/>])`,
+      'g'
+    )
+    const used = new Set<string>()
+    let m: RegExpExecArray | null
+    while ((m = tagRe.exec(html))) {
+      used.add(m[1])
+    }
+    if (used.size) {
+      moduleImports.push(
+        `// theme components used by markdown`
+      )
+      for (const local of used) {
+        const exportName = THEME_MD_TAGS[local] ?? local
+        moduleImports.push(
+          exportName === local
+            ? `import { ${exportName} } from 'vitepress/theme'`
+            : `import { ${exportName} as ${local} } from 'vitepress/theme'`
+        )
+        componentNames.add(local)
+      }
+    }
+  }
+
   if (moduleImports.length || moduleRest.length) {
     parts.push(
       `// ---- <script> imports / named exports (module top; shared scope) ----`

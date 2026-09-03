@@ -21,6 +21,7 @@ import { Layout } from './Layout'
 import { NotFound } from './NotFound'
 
 // 文档/markdown 可直接 import 的默认主题组件(与 Vue 默认主题导出一致)
+export { VPBadge } from './components/VPBadge'
 export { VPTeamMembers, VPTeamMembersItem } from './components/vp-team'
 export { VPTeamPage } from './components/VPTeamPage'
 export { VPTeamPageTitle } from './components/VPTeamPageTitle'

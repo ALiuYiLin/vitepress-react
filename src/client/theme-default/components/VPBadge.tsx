@@ -20,8 +20,9 @@ export type VPBadgeProps = {
 
 /** 对应 Vue VPBadge.vue(注意其样式在 Vue 侧是全局 <style>)。 */
 export function VPBadge({ text, type = 'tip', children }: VPBadgeProps) {
+  const typeClass = type && (s[type] ?? type)
   return (
-    <span className={cx(s.VPBadge, type && s[type])}>
+    <span className={cx(s.VPBadge, 'VPBadge', typeClass && cx(typeClass, type))}>
       {children ?? text}
     </span>
   )
