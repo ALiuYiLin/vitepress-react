@@ -163,6 +163,15 @@ export async function createMarkdownToReactRenderFn(
     const maskedScripts: { key: string; inner: string }[] = []
     src = maskScriptBlocks(src, maskedScripts)
 
+    // ★阶段1.5(D2):正文 {expr} 占位——白名单来自 script 顶层绑定;
+    // 命中才替换,避免正文 `{统计}` 之类的中文/无绑定花括号被误当表达式
+    const exprStore: string[] = []
+    const exprAllowed = new Set<string>()
+    for (const block of maskedScripts) {
+      collectTopLevelNames(block.inner, exprAllowed)
+    }
+    src = maskJsxExpressions(src, exprAllowed, exprStore)
+
     const localeIndex = getLocaleForPath(siteConfig?.site, relativePath)
 
     // reset env before render; the include plugin fills `includes` and
@@ -195,6 +204,7 @@ export async function createMarkdownToReactRenderFn(
       sfcBlocks,
       title = ''
     } = env
+    restoreHeaderExpressions(headers as any[], exprStore)
     src = env.src ?? src
     const contentLineOffset = countLineBreaks(
       content && src.endsWith(content) ? src.slice(0, -content.length) : ''
@@ -299,8 +309,14 @@ export async function createMarkdownToReactRenderFn(
 
     // ★阶段4/5(M1):还原占位 script → 组装 React 页面模块
     // (script 块提升模块顶层 + 正文 HTML→JSX 序列化 + __pageData)
-    restoreMaskedScripts(sfcBlocks?.scripts ?? [], maskedScripts)
-    const reactSrc = createReactPageSrc(html, sfcBlocks, pageData)
+    restoreMaskedScripts(
+      [
+        ...(sfcBlocks?.scripts ?? []),
+        ...(sfcBlocks?.scriptSetup ? [sfcBlocks.scriptSetup] : [])
+      ],
+      maskedScripts
+    )
+    const reactSrc = createReactPageSrc(html, sfcBlocks, pageData, exprStore)
 
     debug(`[render] ${file} in ${Date.now() - start}ms.`)
 
@@ -436,6 +452,224 @@ function restoreMaskedScripts(
   }
 }
 
+// ============================================================
+// JSX 表达式内联:正文 `{expr}` 若引用 script 绑定(模块顶层或 Page 作用域),
+// 渲染前替换为 @@VP_EXPR_n@@ 占位(不进入 markdown-it),序列化阶段还原成
+// 真实 JSX 表达式,与 Page 组件共享作用域(可配合 hooks 响应式更新)。
+// ============================================================
+
+/** 收集 script 顶层绑定名(import/export/声明/解构),作为 {expr} 白名单 */
+function collectTopLevelNames(code: string, out: Set<string>): void {
+  const add = (n: string) => {
+    if (n && !/^(?:default|import|export|type)$/.test(n)) out.add(n)
+  }
+  const idRe = /[A-Za-z_$][\w$]*/g
+  const collectIdents = (raw: string) => {
+    let m: RegExpExecArray | null
+    while ((m = idRe.exec(raw))) add(m[0])
+  }
+  for (const rawLine of code.split('\n')) {
+    const line = rawLine.replace(/\/\/.*$/, '').trim()
+    if (!line) continue
+
+    const imp = /^import\s+(?:type\s+)?/.exec(line)
+    if (imp) {
+      const rest = line.replace(/^import\s+(?:type\s+)?/, '')
+      if (rest.startsWith('"') || rest.startsWith("'")) continue // 纯副作用导入
+      const ns = /^\*\s+as\s+([A-Za-z_$][\w$]*)/.exec(rest)
+      if (ns) {
+        add(ns[1])
+        continue
+      }
+      const openB = rest.indexOf('{')
+      if (openB >= 0) {
+        const closeB = rest.indexOf('}')
+        const inner = closeB > openB ? rest.slice(openB + 1, closeB) : ''
+        for (const seg of inner.split(',')) {
+          const s = seg.trim()
+          const asM = s.match(/([A-Za-z_$][\w$]*)\s+as\s+([A-Za-z_$][\w$]*)/)
+          add(asM ? asM[2] : s.split(/\s+/)[0] ?? '')
+        }
+        // 默认导入(def from 'x')
+        const before = rest.slice(0, openB).trim()
+        const def = before.split(',').map((s) => s.trim())[0] ?? ''
+        if (/^[A-Za-z_$][\w$]*$/.test(def)) add(def)
+      } else {
+        const head = rest.split(/\s+/)[0] ?? ''
+        if (/^[A-Za-z_$][\w$]*$/.test(head) && head !== 'from') add(head)
+      }
+      continue
+    }
+
+    if (/^(?:export\s+)?(?:function|class)\b/.test(line)) {
+      const m = line.match(/(?:function|class)\s+([A-Za-z_$][\w$]*)/)
+      if (m) add(m[1])
+      continue
+    }
+    if (/^export\s*\{/.test(line)) {
+      const inner = line.slice(line.indexOf('{') + 1, line.lastIndexOf('}') || undefined)
+      for (const seg of inner.split(',')) {
+        const s = seg.trim()
+        const asM = s.match(/([A-Za-z_$][\w$]*)\s+as\s+([A-Za-z_$][\w$]*)/)
+        add(asM ? asM[2] : s.split(/\s+/)[0] ?? '')
+      }
+      continue
+    }
+    const decl = /^(?:export\s+)?(?:const|let|var)\s+(.+?)(?:\s*[=;]|$)/.exec(
+      line
+    )
+    if (decl) {
+      collectIdents(decl[1] ?? '')
+    }
+  }
+}
+
+/** 词法级括号配对:找 src 里 openIndex('{') 的匹配 '}'(跳过引号/模板串/注释) */
+function findMatchingBrace(src: string, openIndex: number): number {
+  let depth = 0
+  let i = openIndex
+  while (i < src.length) {
+    const ch = src[i]
+    if (ch === "'" || ch === '"' || ch === '`') {
+      const q = ch
+      i++
+      while (i < src.length) {
+        if (src[i] === '\\') i += 2
+        else if (src[i] === q) break
+        else i++
+      }
+      i++
+      continue
+    }
+    if (ch === '/' && src[i + 1] === '/') {
+      while (i < src.length && src[i] !== '\n') i++
+      continue
+    }
+    if (ch === '/' && src[i + 1] === '*') {
+      i += 2
+      while (i < src.length && !(src[i] === '*' && src[i + 1] === '/')) i++
+      i += 2
+      continue
+    }
+    if (ch === '{') depth++
+    else if (ch === '}') {
+      depth--
+      if (depth === 0) return i
+    }
+    i++
+  }
+  return -1
+}
+
+/**
+ * fence/行内码/围栏感知地把正文 `{expr}` 换成 @@VP_EXPR_n@@:
+ * 仅当表达式首标识符命中白名单(script 绑定)时才替换,否则保持字面。
+ */
+function maskJsxExpressions(
+  src: string,
+  allowed: ReadonlySet<string>,
+  store: string[]
+): string {
+  let out = ''
+  let i = 0
+  let fence = false
+  let fenceChar = ''
+  let inBacktick = false
+  let inFrontmatter = src.startsWith('---')
+
+  while (i < src.length) {
+    const c = src[i]
+    const rest = src.slice(i)
+
+    if (inFrontmatter) {
+      const nl = rest.indexOf('\n')
+      const seg = nl === -1 ? rest : rest.slice(0, nl + 1)
+      out += seg
+      i += seg.length
+      if (nl !== -1 && rest.slice(0, nl).trim() === '---') inFrontmatter = false
+      continue
+    }
+
+    // 代码围栏:整行 `` ` ```` `` 或 ~~~
+    if (c === '`' || c === '~') {
+      const m = /^(\s{0,3})(`{3,}|~{3,})/.exec(rest)
+      if (m && !fence) {
+        const eol = rest.indexOf('\n')
+        const line = eol === -1 ? rest : rest.slice(0, eol + 1)
+        out += line
+        i += line.length
+        fence = true
+        fenceChar = m[2][0]
+        continue
+      }
+      if (fence && fenceChar === c && /^\s*`{3,}\s*$|^\s*~{3,}\s*$/.test(rest)) {
+        // fence 结束行:等长或超长的同字符围栏
+        const closeRe = new RegExp(`^\\s{0,3}${fenceChar === '`' ? '`{3,}' : '~{3,}'}\\s*$`)
+        if (closeRe.test(rest)) {
+          const eol = rest.indexOf('\n')
+          const line = eol === -1 ? rest : rest.slice(0, eol + 1)
+          out += line
+          i += line.length
+          fence = false
+          continue
+        }
+      }
+    }
+    if (fence) {
+      out += c
+      i++
+      continue
+    }
+
+    if (c === '`') {
+      // 行内码(近似:单个反引号切换)
+      inBacktick = !inBacktick
+      out += c
+      i++
+      continue
+    }
+    if (inBacktick) {
+      out += c
+      i++
+      continue
+    }
+
+    if (c === '{') {
+      const end = findMatchingBrace(src, i)
+      if (end > i) {
+        const inner = src.slice(i + 1, end).trim()
+        if (inner) {
+          const head = /^([A-Za-z_$][\w$]*)/.exec(inner)
+          if (head && allowed.has(head[1])) {
+            const token = `@@VP_EXPR_${store.length}@@`
+            store.push(inner)
+            out += token
+            i = end + 1
+            continue
+          }
+        }
+      }
+    }
+    out += c
+    i++
+  }
+  return out
+}
+
+/** 还原 env.headers 标题里的表达式占位为源码 `{expr}`(大纲等静态文本用) */
+function restoreHeaderExpressions(headers: any[], store: string[]): void {
+  const fix = (s: any): any =>
+    typeof s === 'string'
+      ? s.replace(/@@VP_EXPR_(\d+)@@/g, (_, n) => `{${store[Number(n)] ?? ''}}`)
+      : s
+  const walk = (h: any) => {
+    if (!h || typeof h !== 'object') return
+    if (typeof h.title === 'string') h.title = fix(h.title)
+    if (Array.isArray(h.children)) h.children.forEach(walk)
+  }
+  headers.forEach(walk)
+}
+
 /** __pageData 顶层导出(契约与上游一致:主题 useData() 读取) */
 function injectPageDataCode(data: PageData): string {
   return `export const __pageData = JSON.parse(${JSON.stringify(
@@ -509,22 +743,75 @@ function stripExportDefault(code: string): string {
 const scriptClientRE = /<script\b[^>]*client\b[^>]*>/i
 
 /**
+ * 把 script 顶层代码按行分拣:
+ * - import 语句 → 模块顶层(imports)
+ * - export * 语句(含跨行的 function/const)→ 模块顶层(restModule)
+ * - 其余语句/声明 → Page() 组件体内(pageCode,可合法使用 hooks)
+ * 用花括号深度判断跨行语句边界;单行无括号的语句各自成行。
+ */
+function splitTopLevel(code: string): {
+  imports: string[]
+  restModule: string[]
+  body: string[]
+} {
+  const lines = code.split('\n')
+  const imports: string[] = []
+  const restModule: string[] = []
+  const body: string[] = []
+  let bucket: 'import' | 'module' | 'body' | null = null
+  let depth = 0
+  const braces = (s: string) => {
+    let d = 0
+    for (const c of s) {
+      if (c === '{') d++
+      else if (c === '}') d--
+    }
+    return d
+  }
+  for (const line of lines) {
+    if (bucket === null) {
+      const t = line.trim()
+      if (!t) {
+        body.push(line)
+        continue
+      }
+      if (/^import\s/.test(t)) bucket = 'import'
+      else if (/^export\b/.test(t)) bucket = 'module'
+      else bucket = 'body'
+    }
+    const target =
+      bucket === 'import' ? imports : bucket === 'module' ? restModule : body
+    target.push(line)
+    depth += braces(line)
+    if (depth <= 0) bucket = null
+  }
+  return { imports, restModule, body }
+}
+
+/**
  * 组装 React 页面模块(TSX 文本;由 plugin.ts 内 oxc automatic JSX 编译):
  *
  *   // generated by vitepress-react
- *   // ---- <script> blocks (hoisted to module top; shared scope) ----
- *   <用户 script 块代码:去 export default、import 去重后提升到模块顶层>
+ *   // ---- <script> imports / named exports (module top; shared scope) ----
+ *   <import 语句(去重)>
+ *   <export function/const … 等具名导出,模块顶层>
  *   export const __pageData = JSON.parse(…)
  *   [<style> 块:客户端运行时注入 style 标签(SSR 不注入)]
- *   export default function Page() { return ( <div className="vp-doc">…JSX…</div> ) }
+ *   export default function Page() {
+ *     // ---- <script> page scope (component body) ----
+ *     <script 里其余语句:可含 useState 等 hooks,与正文 {expr} 共享作用域>
+ *     return ( <div className="vp-doc">…JSX…</div> )
+ *   }
  *
- * 正文动态能力契约(D1):正文里 {{ }} / {expr} 一律字面文本(序列化器把文本
- * 包成字符串字面量);需要动态内容时在 <script> 里定义组件、正文用组件引用。
+ * 正文动态能力契约(D2):正文 `{expr}` 若引用 script 绑定,由序列化器还原成
+ * 真实表达式(与 Page 同一作用域,可响应 hooks 更新);未命中的花括号仍为
+ * 字面文本。需要完整交互时仍用 <script> 定义的组件标签。
  */
 function createReactPageSrc(
   html: string,
   sfcBlocks: MarkdownEnv['sfcBlocks'],
-  pageData: PageData
+  pageData: PageData,
+  expressions: string[]
 ): string {
   const parts: string[] = []
   parts.push(`// generated by vitepress-react (md → React page module)`)
@@ -536,7 +823,9 @@ function createReactPageSrc(
       : []
   const styles = sfcBlocks?.styles ?? []
 
-  const topLevelCode: string[] = []
+  const moduleImports: string[] = []
+  const moduleRest: string[] = []
+  const pageCode: string[] = []
   for (const block of scripts) {
     if (scriptClientRE.test(block.tagOpen)) {
       parts.push(`// <script client> (MPA client JS)`)
@@ -548,20 +837,30 @@ function createReactPageSrc(
       )
       continue
     }
-    topLevelCode.push(stripExportDefault(block.contentStripped))
-  }
-
-  // 收集模块顶层大写标识符(正文组件引用解析用;与提升内容同源)
-  const componentNames = new Set<string>()
-  for (const code of topLevelCode) {
-    for (const n of extractComponentNames(code)) componentNames.add(n)
-  }
-
-  if (topLevelCode.length) {
-    parts.push(
-      `// ---- <script> blocks (hoisted to module top; shared scope) ----`
+    const { imports, restModule, body } = splitTopLevel(
+      stripExportDefault(block.contentStripped)
     )
-    parts.push(dedupeImports(topLevelCode))
+    moduleImports.push(...imports)
+    moduleRest.push(...restModule)
+    pageCode.push(...body)
+  }
+
+  // 组件引用解析名:imports/具名导出(模块顶层)+ Page 作用域局部声明
+  const componentNames = new Set<string>()
+  for (const n of extractComponentNames(
+    [...moduleImports, ...moduleRest, ...pageCode].join('\n')
+  )) {
+    componentNames.add(n)
+  }
+
+  if (moduleImports.length || moduleRest.length) {
+    parts.push(
+      `// ---- <script> imports / named exports (module top; shared scope) ----`
+    )
+    if (moduleImports.length) {
+      parts.push(dedupeImports([moduleImports.join('\n')]))
+    }
+    if (moduleRest.length) parts.push(moduleRest.join('\n'))
   }
   parts.push(injectPageDataCode(pageData))
 
@@ -579,14 +878,22 @@ function createReactPageSrc(
     )
   }
 
-  // 正文 → JSX(组件标签解析为顶层标识符引用;{{ }} 一律字面,见 serialize)
-  const body = serializeHtmlToJsx(html, componentNames)
+  // 正文 → JSX(组件标签解析为标识符引用;@@VP_EXPR_n@@ 还原为表达式)
+  const exprMap: Record<string, string> = {}
+  expressions.forEach((e, i) => {
+    exprMap[`${i}`] = e
+  })
+  const body = serializeHtmlToJsx(html, componentNames, exprMap)
   if (body.warnings.length) {
     parts.push(`// NOTE (markdownToReact):`)
     for (const w of body.warnings) parts.push(`//   - ${w}`)
   }
 
   parts.push(`export default function Page() {`)
+  if (pageCode.length) {
+    parts.push(`  // ---- <script> page scope (component body) ----`)
+    for (const l of pageCode) parts.push(`  ${l}`)
+  }
   parts.push(`  return (`)
   parts.push(`    ${body.code.split('\n').join('\n    ')}`)
   parts.push(`  )`)

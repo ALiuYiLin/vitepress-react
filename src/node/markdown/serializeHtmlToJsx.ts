@@ -489,6 +489,7 @@ export function decodeEntities(str: string): string {
 export function serializeHtmlToJsx(
   html: string,
   componentNames: ReadonlySet<string> = new Set(),
+  expressions: Record<string, string> = {},
   indent = '  '
 ): { code: string; warnings: string[] } {
   const root: JsxNode = { tag: '', attrs: [], children: [] }
@@ -571,12 +572,39 @@ export function serializeHtmlToJsx(
   // 序列化
   const lines: string[] = []
 
-  // 文本一律输出为 {"字符串字面量"}:正文里的 {{ }} / {expr} 永远不会被
-  // 当作 JSX 表达式求值(D1 字面语义),需要动态内容请用 script 块组件。
+  /**
+   * 把一段已解码文本渲染成 JSX 表达式片段:
+   * 含 `@@VP_EXPR_n@@` 占位时,把占位还原成 {code} 表达式(见 markdownToReact
+   * 的 maskJsxExpressions),其余仍为字符串字面量段:{"a "}{expr}{" b"}
+   */
+  const VP_EXPR_RE = /@@VP_EXPR_(\d+)@@/g
+  const textWithExpr = (decoded: string): string => {
+    if (!decoded.includes('@@VP_EXPR_')) return `{${JSON.stringify(decoded)}}`
+    VP_EXPR_RE.lastIndex = 0
+    const parts: string[] = []
+    let last = 0
+    let m: RegExpExecArray | null
+    let hasExpr = false
+    while ((m = VP_EXPR_RE.exec(decoded))) {
+      hasExpr = true
+      const pre = decoded.slice(last, m.index)
+      if (pre) parts.push(`{${JSON.stringify(pre)}}`)
+      const expr = expressions[`${Number(m[1])}`]
+      parts.push(expr != null ? `{${expr}}` : `{${JSON.stringify(m[0])}}`)
+      last = m.index + m[0].length
+    }
+    const tail = decoded.slice(last)
+    if (tail) parts.push(`{${JSON.stringify(tail)}}`)
+    if (!hasExpr) return `{${JSON.stringify(decoded)}}`
+    return parts.join('')
+  }
+
+  // 文本一律输出为 {"字符串字面量"} / 表达式段:正文里的 {{ }} / {expr} 默认
+  // 永远是字面文本;命中 @@VP_EXPR_n@@ 的段会被还原成 JSX 表达式。
   const renderText = (raw: string, pad: string): string => {
     const decoded = decodeEntities(raw)
     if (!decoded) return ''
-    return `${pad}{${JSON.stringify(decoded)}}`
+    return `${pad}${textWithExpr(decoded)}`
   }
   const renderChildren = (children: (JsxNode | string)[], depth: number) => {
     for (const child of children) {
@@ -703,9 +731,7 @@ export function serializeHtmlToJsx(
       if (decoded.trim() === '') {
         lines.push(`${pad}<${tag}${attrStr} />`)
       } else {
-        lines.push(
-          `${pad}<${tag}${attrStr}>{${JSON.stringify(decoded)}}</${tag}>`
-        )
+        lines.push(`${pad}<${tag}${attrStr}>${textWithExpr(decoded)}</${tag}>`)
       }
       return
     }
