@@ -23,6 +23,23 @@ export default defineConfig({
             { text: 'Guide', link: '/guide' }
           ]
         }
+      ],
+      '/guide/': [
+        {
+          text: 'Guide',
+          items: [
+            { text: 'Guide Page', link: '/guide' },
+            { text: 'Getting Started', link: '/guide/getting-started' },
+            { text: 'Configuration', link: '/guide/configuration' },
+            {
+              text: 'Deploy',
+              items: [
+                { text: 'Deploy', link: '/guide/deploy/' },
+                { text: 'Static Hosting', link: '/guide/deploy/static' }
+              ]
+            }
+          ]
+        }
       ]
     },
     footer: {
