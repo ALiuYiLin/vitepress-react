@@ -29,7 +29,9 @@ export function VPNavTranslations({
 }) {
   const { theme } = useData()
   const t = theme as { langMenuLabel?: string }
-  const { localeLinks, currentLang } = useLangs()
+  const { localeLinks, currentLang } = useLangs({
+    linkToCorrespondingPage: true
+  })
   const show = Boolean(localeLinks.length && currentLang.label)
 
   // 只有顶栏内联 flyout 参与溢出引擎
