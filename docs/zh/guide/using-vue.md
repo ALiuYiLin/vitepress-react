@@ -24,9 +24,12 @@ Vue 版文档里的插值语法在这里**不会求值**,会原样显示为文�
 
 **输出**
 
-```text
-{{ 1 + 1 }}
-```
+<script>
+const [count, setCount] = useState(100) 
+</script>
+# Count demo: {count}
+
+{1+1}
 
 内联 HTML 同样按字面输出;Vue 指令(`v-if`、`v-pre`、`@click`、`:class` 等)不属于 React,请勿在页面中依赖它们(序列化时会按字面处理或剔除并给出提示)。
 

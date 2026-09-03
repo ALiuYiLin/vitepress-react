@@ -489,7 +489,7 @@ export function decodeEntities(str: string): string {
 export function serializeHtmlToJsx(
   html: string,
   componentNames: ReadonlySet<string> = new Set(),
-  expressions: Record<string, string> = {},
+  expressions: Record<string, { expr?: string; literal?: string }> = {},
   indent = '  '
 ): { code: string; warnings: string[] } {
   const root: JsxNode = { tag: '', attrs: [], children: [] }
@@ -574,12 +574,13 @@ export function serializeHtmlToJsx(
 
   /**
    * 把一段已解码文本渲染成 JSX 表达式片段:
-   * 含 `@@VP_EXPR_n@@` 占位时,把占位还原成 {code} 表达式(见 markdownToReact
-   * 的 maskJsxExpressions),其余仍为字符串字面量段:{"a "}{expr}{" b"}
+   * 含 @@VP_EXPR_n@@(还原成 {code} 表达式)或 @@VP_TXT_n@@(还原成字面
+   * 花括号文本,见 markdownToReact 的 maskJsxExpressions),其余仍为字符串
+   * 字面量段:{"a "}{expr}{" b"}
    */
-  const VP_EXPR_RE = /@@VP_EXPR_(\d+)@@/g
+  const VP_EXPR_RE = /@@VP_(EXPR|TXT)_(\d+)@@/g
   const textWithExpr = (decoded: string): string => {
-    if (!decoded.includes('@@VP_EXPR_')) return `{${JSON.stringify(decoded)}}`
+    if (!decoded.includes('@@VP_')) return `{${JSON.stringify(decoded)}}`
     VP_EXPR_RE.lastIndex = 0
     const parts: string[] = []
     let last = 0
@@ -589,8 +590,14 @@ export function serializeHtmlToJsx(
       hasExpr = true
       const pre = decoded.slice(last, m.index)
       if (pre) parts.push(`{${JSON.stringify(pre)}}`)
-      const expr = expressions[`${Number(m[1])}`]
-      parts.push(expr != null ? `{${expr}}` : `{${JSON.stringify(m[0])}}`)
+      const entry = expressions[`${Number(m[2])}`]
+      if (m[1] === 'EXPR' && entry?.expr != null) {
+        parts.push(`{${entry.expr}}`)
+      } else if (m[1] === 'TXT' && entry?.literal != null) {
+        parts.push(`{${JSON.stringify(entry.literal)}}`)
+      } else {
+        parts.push(`{${JSON.stringify(m[0])}}`)
+      }
       last = m.index + m[0].length
     }
     const tail = decoded.slice(last)
