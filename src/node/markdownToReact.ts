@@ -628,6 +628,16 @@ function maskJsxExpressions(
     const c = src[i]
     const rest = src.slice(i)
 
+    // 行首的代码片段导入指令(<<< @/path{lines} …):整行原样保留,
+    // 其 {…} 是 snippet 插件选项,不能进入表达式/字面掩码
+    if ((i === 0 || src[i - 1] === '\n') && /^[ \t]*<<<[ \t]+/.test(rest)) {
+      const eol = rest.indexOf('\n')
+      const seg = eol === -1 ? rest : rest.slice(0, eol + 1)
+      out += seg
+      i += seg.length
+      continue
+    }
+
     if (inFrontmatter) {
       const nl = rest.indexOf('\n')
       const seg = nl === -1 ? rest : rest.slice(0, nl + 1)
