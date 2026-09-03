@@ -212,3 +212,24 @@ export function useAppearance(): {
     toggle: () => store.setDark(!isDark)
   }
 }
+
+/** SPA 导航(主题内链接点击直接跳转,替代直接改 location) */
+export function useNavigate(): (to: string) => void {
+  const router = useRouter()
+  return (to) => {
+    void router.go(to)
+  }
+}
+
+/**
+ * 多语言切换:返回 [localeIndex, setLocale];setLocale 跳转到目标语言根路径。
+ * (当前为极简行为——语言内容按独立前缀路径组织;如目标语言首页不存在,
+ * 由框架的 404 兜底,后续可丰富为同页跨语言映射。)
+ */
+export function useLocale(): [string, (v: string) => void] {
+  const data = useData()
+  const navigate = useNavigate()
+  const localeIndex = data.localeIndex
+  const setLocale = (v: string) => navigate(v === 'root' ? '/' : `/${v}/`)
+  return [localeIndex, setLocale]
+}

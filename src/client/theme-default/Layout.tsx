@@ -1,73 +1,53 @@
-import { useState } from 'react'
-import { Content, useData } from 'vitepress'
+import { useEffect, useState } from 'react'
+import { Content, useRoute } from 'vitepress'
 
-import { TopNav } from './TopNav'
-import { SidebarList } from './Sidebar'
 import { AsideOutline } from './AsideOutline'
-import { Footer, PrevNext } from './layout-parts'
+import { Footer } from './Footer'
+import { MobileNav } from './MobileNav'
+import { PrevNext } from './PrevNext'
+import { Sidebar } from './Sidebar'
+import { TopNav } from './TopNav'
 
-/**
- * 参考默认主题 Layout(React 版;对上游 default theme 的结构近似,
- * 视觉自由——迁移 D6)。组件按需订阅 useData() 快照。
- */
-export default function Layout() {
-  const data = useData()
-  const [menuOpen, setMenuOpen] = useState(false)
+/** 文档页整体布局(md 内容走框架 <Content />,由 .vp-doc 排版;页面骨架为 shadcn 风格) */
+export function Layout() {
+  const route = useRoute()
+  const [mobileOpen, setMobileOpen] = useState(false)
 
-  const page = data.page
-  const frontmatter = (page.frontmatter ?? {}) as {
-    sidebar?: boolean
-    aside?: boolean | 'left'
-    outline?: false | { level?: number | number[] | 'deep' }
-    layout?: string
-  }
-  const cfg = data.theme as {
-    aside?: boolean | 'left'
-    outline?: unknown
-    footer?: unknown
-    sidebar?: unknown
-  }
-
-  const is404 = page.isNotFound === true
-
-  // 大纲:取 h2/h3(h1 是页面主标题;上限按 level 过滤,默认展示到 h3)
-  const outlineLevels = new Set<number>([2, 3])
-  const headers = page.headers.filter((h) => outlineLevels.has(h.level))
-  const showAside =
-    !is404 &&
-    headers.length >= 2 &&
-    cfg.aside !== false &&
-    cfg.outline !== false &&
-    frontmatter.aside !== false &&
-    frontmatter.outline !== false
-  const showSidebar = !is404 && frontmatter.sidebar !== false
+  // 路由变化时关闭移动端抽屉
+  useEffect(() => {
+    setMobileOpen(false)
+  }, [route.path])
 
   return (
-    <div className="vp-layout">
-      <TopNav onMenu={() => setMenuOpen(true)} />
+    <div className="flex min-h-screen flex-col">
+      <TopNav
+        mobileOpen={mobileOpen}
+        onToggleMobile={() => setMobileOpen((v) => !v)}
+      />
+      {mobileOpen && <MobileNav onClose={() => setMobileOpen(false)} />}
 
-      {menuOpen ? (
-        <>
-          <div className="vp-drawer-backdrop" onClick={() => setMenuOpen(false)} />
-          <div className="vp-drawer" role="dialog" aria-label="Navigation">
-            <SidebarList />
+      <div className="mx-auto flex w-full max-w-6xl flex-1 gap-8 px-4 sm:px-6 lg:px-8">
+        {/* 左:侧边栏(桌面) */}
+        <aside className="hidden w-60 shrink-0 lg:block">
+          <div className="sticky top-14 max-h-[calc(100vh-3.5rem)] overflow-y-auto py-8 pr-1">
+            <Sidebar />
           </div>
-        </>
-      ) : null}
+        </aside>
 
-      <div className="vp-shell">
-        {showSidebar ? (
-          <aside className="vp-sidebar" aria-label="Sidebar">
-            <SidebarList />
-          </aside>
-        ) : null}
-        <div className={`vp-main${showAside ? ' has-aside' : ''}`}>
-          <div className="vp-doc-container">
+        {/* 中:正文(md 内容由 .vp-doc 排版) */}
+        <main className="min-w-0 flex-1 py-8">
+          <article className="min-w-0">
             <Content />
-            {!is404 ? <PrevNext /> : null}
+          </article>
+          <PrevNext />
+        </main>
+
+        {/* 右:本页目录(大屏) */}
+        <aside className="hidden w-52 shrink-0 xl:block">
+          <div className="sticky top-14 max-h-[calc(100vh-3.5rem)] overflow-y-auto py-8">
+            <AsideOutline />
           </div>
-          {showAside ? <AsideOutline headers={headers} /> : null}
-        </div>
+        </aside>
       </div>
 
       <Footer />

@@ -1,166 +1,163 @@
-import { useAppearance, useData, useRoute } from 'vitepress'
+import {
+  Languages,
+  Menu,
+  Moon,
+  Sun,
+  X
+} from 'lucide-react'
+import { useAppearance, useData, useLocale, useNavigate, useRoute } from 'vitepress'
 
-import { isExternal, normalizePath } from './theme-utils'
-import type { NavItem } from './theme-utils'
+import { Button } from './components/ui/button'
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuLabel,
+  DropdownMenuRadioGroup,
+  DropdownMenuRadioItem,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger
+} from './components/ui/dropdown-menu'
+import { cn } from './lib/utils'
+import {
+  isNavActive,
+  normalizePath,
+  type VpNavItem
+} from './theme-utils'
 
-function SunIcon() {
-  return (
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-      <circle cx="12" cy="12" r="4" />
-      <path d="M12 2v2m0 16v2M4.93 4.93l1.41 1.41m11.32 11.32 1.41 1.41M2 12h2m16 0h2M4.93 19.07l1.41-1.41M17.66 6.34l1.41-1.41" />
-    </svg>
-  )
+export interface TopNavProps {
+  mobileOpen: boolean
+  onToggleMobile: () => void
 }
 
-function MoonIcon() {
-  return (
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-      <path d="M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9Z" />
-    </svg>
-  )
-}
-
-function NavItemLink({
-  item,
-  routePath
-}: {
-  item: NavItem
-  routePath: string
-}) {
-  if (!item.link) return null
-  const active =
-    normalizePath(routePath) === normalizePath(item.link) ||
-    (item.activeMatch ? new RegExp(item.activeMatch).test(routePath) : false)
-  const cls = `vp-nav-link${active ? ' active' : ''}`
-  if (isExternal(item.link)) {
-    return (
-      <a className={cls} href={item.link} target="_blank" rel="noopener">
-        {item.text}
-      </a>
-    )
-  }
-  return (
-    <a className={cls} href={item.link}>
-      {item.text}
-    </a>
-  )
-}
-
-/** 顶部导航栏(品牌 + 桌面 nav + 语言/外观 + 移动菜单按钮) */
-export function TopNav({ onMenu }: { onMenu?: () => void }) {
-  const { site, theme } = useData()
+export function TopNav({ mobileOpen, onToggleMobile }: TopNavProps) {
+  const { site, theme, localeIndex } = useData()
   const route = useRoute()
-  const { isDark, toggle } = useAppearance()
-  const cfg = theme as {
-    nav?: NavItem[]
-    siteTitle?: string | false
-    logo?: string
-    darkModeSwitchLabel?: string
-  }
-  const appearance = (site as any).appearance as
-    | boolean
-    | 'dark'
-    | 'force-dark'
-    | 'force-auto'
-    | undefined
+  const navigate = useNavigate()
+  const { isDark, toggle: toggleDark } = useAppearance()
+  const [, setLocale] = useLocale()
 
-  // 品牌:logo 为字符串时显示图片,否则站点标题(可被 themeConfig.siteTitle 覆盖/关闭)
+  const cfg = theme as {
+    nav?: VpNavItem[]
+    logo?: string
+    siteTitle?: string | false
+  }
+  const currentPath = normalizePath(route.path)
+  const currentLocaleLabel =
+    (site.locales as Record<string, { label?: string }>)?.[localeIndex]?.label ??
+    localeIndex
   const brandTitle =
     cfg.siteTitle === false ? '' : (cfg.siteTitle ?? site.title)
   const logo = typeof cfg.logo === 'string' ? cfg.logo : undefined
 
-  // 语言菜单:site.locales 除 root 之外的语言
-  const locales = (site.locales ?? {}) as Record<
-    string,
-    { label?: string } | undefined
-  >
-  const langKeys = Object.keys(locales).filter((k) => k !== 'root')
-  const showLang = langKeys.length > 0
-  const currentLangLabel =
-    site.localeIndex && site.localeIndex !== 'root'
-      ? locales[site.localeIndex]?.label || site.localeIndex
-      : undefined
-
-  const showAppearance = appearance !== false
-
-  const nav = cfg.nav ?? []
-  const routePath = route.path
+  const renderNav = (items: VpNavItem[], mobile = false) =>
+    items.map((item) => {
+      const link = item.link
+      if (!link) return null
+      const active = isNavActive(item, currentPath)
+      return (
+        <a
+          key={link ?? item.text}
+          href={link}
+          onClick={(e) => {
+            e.preventDefault()
+            navigate(link)
+          }}
+          className={
+            mobile
+              ? cn(
+                  'block rounded-md px-3 py-2 text-base font-medium transition-colors',
+                  active
+                    ? 'bg-accent text-foreground'
+                    : 'text-muted-foreground hover:text-foreground'
+                )
+              : cn(
+                  'rounded-md px-3 py-2 text-sm font-medium transition-colors',
+                  active
+                    ? 'text-foreground'
+                    : 'text-muted-foreground hover:text-foreground'
+                )
+          }
+        >
+          {item.text}
+        </a>
+      )
+    })
 
   return (
-    <header className="vp-header">
-      <div className="vp-header-inner">
-        <a className="vp-brand" href="/">
-          {logo ? <img src={logo} alt="" /> : null}
-          {brandTitle}
+    <header className="sticky top-0 z-40 border-b bg-background/90 backdrop-blur supports-[backdrop-filter]:bg-background/70">
+      <div className="mx-auto flex h-14 max-w-6xl items-center gap-4 px-4 sm:px-6 lg:px-8">
+        {/* 移动端菜单按钮 */}
+        <Button
+          variant="ghost"
+          size="icon"
+          className="lg:hidden"
+          onClick={onToggleMobile}
+          aria-label="切换菜单"
+        >
+          {mobileOpen ? <X className="size-5" /> : <Menu className="size-5" />}
+        </Button>
+
+        {/* 品牌(左侧) */}
+        <a
+          href="/"
+          onClick={(e) => {
+            e.preventDefault()
+            navigate('/')
+          }}
+          className="flex shrink-0 items-center gap-2 font-semibold"
+        >
+          {logo ? (
+            <img src={logo} alt="" className="size-6" />
+          ) : (
+            <span className="flex size-6 items-center justify-center rounded-md bg-primary text-[13px] font-bold text-primary-foreground">
+              {brandTitle.slice(0, 1) || 'V'}
+            </span>
+          )}
+          <span className="hidden sm:inline">{brandTitle}</span>
         </a>
 
-        {nav.length ? (
-          <nav className="vp-nav" aria-label="Main Navigation">
-            {nav.map((item, i) =>
-              item.items?.length ? (
-                <div key={i} className="vp-nav-item">
-                  <a className="vp-nav-link" href="#">
-                    {item.text ?? ''} ▾
-                  </a>
-                  <div className="vp-nav-dropdown">
-                    {item.items.map((sub, j) =>
-                      sub.items?.length ? (
-                        // 二级分组下拉中仅渲染可点项
-                        <span key={j}>
-                          {sub.items.map((leaf, k) => (
-                            <NavItemLink key={k} item={leaf} routePath={routePath} />
-                          ))}
-                        </span>
-                      ) : (
-                        <NavItemLink key={j} item={sub as NavItem} routePath={routePath} />
-                      )
-                    )}
-                  </div>
-                </div>
-              ) : (
-                <NavItemLink key={i} item={item} routePath={routePath} />
-              )
-            )}
-          </nav>
-        ) : null}
+        {/* 导航项(桌面):指南 → 参考 … */}
+        <nav className="hidden items-center gap-1 lg:flex">
+          {renderNav(cfg.nav ?? [])}
+        </nav>
 
-        <div className="vp-header-actions">
-          {showLang ? (
-            <div className="vp-nav-item">
-              <button className="vp-icon-btn" aria-label="Change language">
-                {currentLangLabel ?? '🌐'}
-              </button>
-              <div className="vp-nav-dropdown" style={{ right: 0, left: 'auto' }}>
-                {langKeys.map((key) => (
-                  <a key={key} href={`/${key}/`}>
-                    {locales[key]?.label || key}
-                  </a>
-                ))}
-              </div>
-            </div>
-          ) : null}
+        <div className="flex-1" />
 
-          {showAppearance ? (
-            <button
-              type="button"
-              className="vp-icon-btn"
-              aria-label={cfg.darkModeSwitchLabel ?? (isDark ? 'Switch to light theme' : 'Switch to dark theme')}
-              onClick={() => toggle()}
-            >
-              {isDark ? <SunIcon /> : <MoonIcon />}
-            </button>
-          ) : null}
+        {/* 右端簇:语言 → 外观 */}
+        <div className="flex items-center gap-1">
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button variant="ghost" size="sm" className="gap-1.5">
+                <Languages className="size-4" />
+                <span className="max-w-24 truncate">{currentLocaleLabel}</span>
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end" className="w-44">
+              <DropdownMenuLabel>语言 / Language</DropdownMenuLabel>
+              <DropdownMenuSeparator />
+              <DropdownMenuRadioGroup
+                value={localeIndex}
+                onValueChange={(v: string) => setLocale(v)}
+              >
+                {Object.entries(site.locales as Record<string, { label?: string }>).map(
+                  ([key, loc]) => (
+                    <DropdownMenuRadioItem key={key} value={key}>
+                      {loc.label}
+                    </DropdownMenuRadioItem>
+                  )
+                )}
+              </DropdownMenuRadioGroup>
+            </DropdownMenuContent>
+          </DropdownMenu>
 
-          <button
-            type="button"
-            className="vp-icon-btn vp-hamburger"
-            aria-label="Menu"
-            onClick={() => onMenu?.()}
+          <Button
+            variant="ghost"
+            size="icon"
+            onClick={toggleDark}
+            aria-label="切换外观"
           >
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" aria-hidden="true">
-              <path d="M4 6h16M4 12h16M4 18h16" />
-            </svg>
-          </button>
+            {isDark ? <Sun className="size-4" /> : <Moon className="size-4" />}
+          </Button>
         </div>
       </div>
     </header>

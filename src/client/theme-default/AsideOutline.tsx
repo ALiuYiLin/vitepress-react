@@ -1,59 +1,95 @@
 import { useEffect, useRef, useState } from 'react'
+import { useData } from 'vitepress'
 
-export interface OutlineHeader {
-  level: number
-  title: string
-  slug: string
+import { cn } from './lib/utils'
+import { headerTree, type VpHeader } from './theme-utils'
+
+function scrollToHeading(id: string) {
+  const el = document.getElementById(id)
+  el?.scrollIntoView({ behavior: 'smooth', block: 'start' })
+  history.replaceState(null, '', `#${id}`)
 }
 
-/**
- * 右侧大纲(基于 page.headers):点击平滑滚动、滚动时高亮当前章节。
- */
-export function AsideOutline({ headers }: { headers: OutlineHeader[] }) {
-  const [activeId, setActiveId] = useState('')
+// 右侧"本页目录":渲染 page.headers(树)+ 滚动侦测高亮
+export function AsideOutline() {
+  const { page } = useData()
+  const headers = headerTree(page.headers)
+  const [activeId, setActiveId] = useState<string | undefined>()
   const ticking = useRef(false)
 
   useEffect(() => {
+    setActiveId(undefined)
+    if (!headers.length) return
+    const ids = new Set<string>()
+    const collect = (hs: VpHeader[]) =>
+      hs.forEach((h) => {
+        ids.add(h.slug)
+        collect(h.children)
+      })
+    collect(headers)
+
+    // 滚动定位:选"第一个越过视口顶部的标题"
     const onScroll = () => {
       if (ticking.current) return
       ticking.current = true
       requestAnimationFrame(() => {
         ticking.current = false
-        // 选第一个位于视口上缘附近的标题
-        let current = ''
-        for (const h of headers) {
-          const el = document.getElementById(h.slug)
-          if (!el) continue
-          if (el.getBoundingClientRect().top <= 90) {
-            current = h.slug
-          } else if (current) {
-            break
+        let current: string | undefined
+        for (const id of ids) {
+          const el = document.getElementById(id)
+          if (el && el.getBoundingClientRect().top - 90 <= 0) {
+            current = id
           }
         }
-        // 页面滚到底部时高亮最后一节
-        if (!current && window.innerHeight + window.scrollY >= document.body.scrollHeight - 4) {
-          current = headers[headers.length - 1]?.slug ?? ''
-        }
-        setActiveId(current)
+        setActiveId((prev) => (prev !== current ? current : prev))
       })
     }
-    onScroll()
     window.addEventListener('scroll', onScroll, { passive: true })
+    onScroll()
     return () => window.removeEventListener('scroll', onScroll)
   }, [headers])
 
+  if (!headers.length) return null
+
+  const renderList = (hs: VpHeader[], depth = 0) => (
+    <ul
+      className={cn('space-y-0.5', depth === 0 ? 'border-l' : '')}
+      style={depth === 0 ? { borderColor: 'var(--border)' } : undefined}
+    >
+      {hs.map((h) => {
+        const active = h.slug === activeId
+        return (
+          <li key={h.slug}>
+            <a
+              href={`#${h.slug}`}
+              onClick={(e) => {
+                e.preventDefault()
+                scrollToHeading(h.slug)
+                setActiveId(h.slug)
+              }}
+              className={cn(
+                '-ml-px block border-l py-1 text-[13px] leading-5 transition-colors',
+                depth === 0 ? 'pl-3' : 'pl-6',
+                active
+                  ? 'border-primary font-medium text-foreground'
+                  : 'border-transparent text-muted-foreground hover:text-foreground'
+              )}
+            >
+              {h.title}
+            </a>
+            {h.children.length > 0 && renderList(h.children, depth + 1)}
+          </li>
+        )
+      })}
+    </ul>
+  )
+
   return (
-    <nav className="vp-outline" aria-label="Page outline">
-      <p className="vp-outline-title">On this page</p>
-      {headers.map((h) => (
-        <a
-          key={h.slug}
-          href={`#${h.slug}`}
-          className={`${h.level >= 3 ? 'l3' : ''}${activeId === h.slug ? ' active' : ''}`}
-        >
-          {h.title}
-        </a>
-      ))}
-    </nav>
+    <div className="pt-10 text-sm">
+      <div className="mb-3 text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+        本页目录
+      </div>
+      {renderList(headers)}
+    </div>
   )
 }

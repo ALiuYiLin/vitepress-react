@@ -11,7 +11,14 @@ import { ClientOnly } from './app/components/ClientOnly'
 import { Content } from './app/components/Content'
 
 // composables / data access
-export { useAppearance, useData, useRoute, useRouter } from './app/data'
+export {
+  useAppearance,
+  useData,
+  useLocale,
+  useNavigate,
+  useRoute,
+  useRouter
+} from './app/data'
 
 // utilities
 export {

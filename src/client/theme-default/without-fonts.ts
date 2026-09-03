@@ -1,18 +1,16 @@
-// 参考默认主题(React 版;样式复用上游 VitePress theme-default 的 styles
-// 资产——vars/base/fonts/utils 与 vp-doc/vp-code/custom-block 等,布局组件
-// 样式在本目录 layout.css,全部 import 顺序即生效顺序)。
+// 参考默认主题(React 版;shadcn/ui 风格页面骨架 + md 正文用上游 vp-doc 排版)。
+// 页面骨架样式由 index.css 经 scripts/build-theme-css.mjs 预编译成 tailwind.css
+// (Tailwind v4 + shadcn tokens);md 正文 .vp-doc 排版复用上游 vars.css 与
+// components/vp-*.css。
+import './tailwind.css'
 import './styles/vars.css'
-import './styles/base.css'
-import './styles/fonts.css'
-import './styles/utils.css'
 import './styles/components/vp-doc.css'
 import './styles/components/vp-code.css'
 import './styles/components/vp-code-group.css'
 import './styles/components/custom-block.css'
-import './layout.css'
 
-import Layout from './Layout'
-import { NotFound } from './layout-parts'
+import { Layout } from './Layout'
+import { NotFound } from './NotFound'
 
 export { Layout, NotFound }
 

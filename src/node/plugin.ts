@@ -132,6 +132,8 @@ export async function createVitePressPlugin(
 
     config() {
       const baseConfig: UserConfig = {
+        // 默认主题样式由 scripts/build-theme-css.mjs 预编译成纯 CSS(tailwind.css),
+        // 因此站点构建链不再注入 Tailwind @tailwindcss/vite 插件。
         resolve: {
           alias: resolveAliases(siteConfig.root)
         },

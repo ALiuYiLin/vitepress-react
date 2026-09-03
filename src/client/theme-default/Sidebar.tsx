@@ -1,99 +1,111 @@
-import { useData, useRoute } from 'vitepress'
+import { useData, useNavigate, useRoute } from 'vitepress'
 
+import { cn } from './lib/utils'
 import {
-  isActivePath,
-  isExternal,
   normalizePath,
-  sidebarForPath
+  sidebarGroupsFor,
+  type VpSidebarConfig,
+  type VpSidebarItem
 } from './theme-utils'
-import type { SidebarConfig, SidebarItem } from './theme-utils'
 
-/** 单个可点项/分组(递归) */
-function SidebarEntry({
+function isItemActive(item: VpSidebarItem, current: string): boolean {
+  return !!item.link && normalizePath(item.link) === current
+}
+
+function SidebarItemLink({
   item,
   depth,
-  routePath
+  onNavigate
 }: {
-  item: SidebarItem
+  item: VpSidebarItem
   depth: number
-  routePath: string
+  onNavigate?: () => void
 }) {
-  const hasChildren = !!item.items?.length
-  if (hasChildren && !item.link) {
-    // 分组标题
+  const current = normalizePath(useRoute().path)
+  const navigate = useNavigate()
+  const active = isItemActive(item, current)
+
+  if (item.link) {
     return (
-      <li>
-        {item.text ? (
-          <p className="vp-sidebar-group-title">{item.text}</p>
-        ) : null}
-        {item.items ? (
-          <ul
-            className="vp-sidebar-sub"
-            style={{ listStyle: 'none', margin: 0, paddingLeft: depth > 1 ? 16 : 0 }}
-          >
-            {item.items.map((sub, i) => (
-              <SidebarEntry
-                key={i}
-                item={sub}
-                depth={depth + 1}
-                routePath={routePath}
-              />
-            ))}
-          </ul>
-        ) : null}
-      </li>
+      <a
+        href={item.link}
+        onClick={(e) => {
+          e.preventDefault()
+          navigate(item.link!)
+          onNavigate?.()
+        }}
+        className={cn(
+          'block rounded-md px-3 py-1.5 text-sm transition-colors',
+          depth > 0 ? 'pl-6' : '',
+          active
+            ? 'bg-accent font-medium text-foreground'
+            : 'text-muted-foreground hover:text-foreground'
+        )}
+      >
+        {item.text}
+      </a>
     )
   }
-  // 可点项(自身 link,或同时带子项:渲染链接 + 子分组)
-  const active =
-    !!item.link && isActivePath(item.link, routePath, (item as any).activeMatch)
   return (
-    <li>
-      {item.link ? (
-        <a
-          className={`vp-sidebar-link${active ? ' active' : ''}`}
-          href={isExternal(item.link) ? item.link : normalizeHref(item.link)}
-          {...(isExternal(item.link) ? { target: '_blank', rel: 'noopener' } : {})}
-        >
-          {item.text}
-        </a>
-      ) : item.text ? (
-        <p className="vp-sidebar-group-title">{item.text}</p>
-      ) : null}
-      {item.items ? (
-        <ul className="vp-sidebar-sub" style={{ listStyle: 'none', margin: 0, paddingLeft: depth > 1 ? 16 : 0 }}>
-          {item.items.map((sub, i) => (
-            <SidebarEntry
-              key={i}
-              item={sub}
-              depth={depth + 1}
-              routePath={routePath}
-            />
-          ))}
-        </ul>
-      ) : null}
-    </li>
+    <div
+      className={cn(
+        'px-3 py-1.5 text-sm font-semibold',
+        depth > 0 ? 'pl-6 font-medium' : ''
+      )}
+    >
+      {item.text}
+    </div>
   )
 }
 
-/** 当前路由的 sidebar 内容(桌面栏与移动抽屉共用) */
-export function SidebarList() {
-  const { theme } = useData()
-  const route = useRoute()
-  const cfg = theme as { sidebar?: SidebarConfig }
-  const items = sidebarForPath(cfg.sidebar, route.path)
-  if (!items.length) return null
+function SidebarItems({
+  items,
+  depth = 0,
+  onNavigate
+}: {
+  items: VpSidebarItem[]
+  depth?: number
+  onNavigate?: () => void
+}) {
   return (
-    <ul style={{ listStyle: 'none', margin: 0, padding: 0 }}>
+    <>
       {items.map((item, i) => (
-        <SidebarEntry key={i} item={item} depth={1} routePath={route.path} />
+        <div key={i} className="space-y-0.5">
+          <SidebarItemLink item={item} depth={depth} onNavigate={onNavigate} />
+          {item.items && (
+            <div className="mt-0.5 space-y-0.5">
+              <SidebarItems
+                items={item.items}
+                depth={depth + 1}
+                onNavigate={onNavigate}
+              />
+            </div>
+          )}
+        </div>
       ))}
-    </ul>
+    </>
   )
 }
 
-function normalizeHref(link: string): string {
-  // 站内路径统一归一(尾斜杠/扩展名交由框架拦截处理,这里只做展示归一)
-  const n = normalizePath(link)
-  return n === '/' ? '/' : n
+/** 侧边栏主体(桌面常驻;移动端由 MobileNav 复用) */
+export function Sidebar({ onNavigate }: { onNavigate?: () => void }) {
+  const { theme } = useData()
+  const path = useRoute().path
+  const cfg = theme as { sidebar?: VpSidebarConfig }
+  const groups = sidebarGroupsFor(path, cfg.sidebar)
+
+  return (
+    <div className="space-y-6">
+      {groups.map((group, gi) => (
+        <div key={gi}>
+          {group.text && (
+            <div className="mb-2 px-3 text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+              {group.text}
+            </div>
+          )}
+          <SidebarItems items={group.items} onNavigate={onNavigate} />
+        </div>
+      ))}
+    </div>
+  )
 }
