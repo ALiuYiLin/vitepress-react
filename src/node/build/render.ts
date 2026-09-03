@@ -1,7 +1,6 @@
 import { mkdir, realpath, rm, writeFile } from 'node:fs/promises'
 import path from 'node:path'
 
-import { isBooleanAttr } from '@vue/shared'
 import { minify, normalizePath, type Rolldown } from 'vite'
 
 import { version } from '../../../package.json' with { type: 'json' }
@@ -102,10 +101,11 @@ export async function renderPage(
   const dir = pageData.frontmatter.dir || siteData.dir || 'ltr'
   const isDefault404 = page === '404.md' && !hasCustom404
 
-  // the initial load only needs the lean page js — the static content is
-  // already in the HTML
+  // the initial load needs the page js chunk — the static content is already
+  // in the HTML, but hydration replaces it wholesale (no lean.js in the React
+  // runtime, migration D4)
   const pageHash = pageToHashMap[pageName.toLowerCase()]
-  const pageClientJsFileName = `${config.assetsDir}/${pageName}.${pageHash}.lean.js`
+  const pageClientJsFileName = `${config.assetsDir}/${pageName}.${pageHash}.js`
 
   let preloadLinks: string[] = []
   if (result && appChunk && !config.mpa && !isDefault404) {
@@ -290,6 +290,37 @@ async function renderHead(head: HeadConfig[]): Promise<string> {
   )
   return tags.join('\n    ')
 }
+
+// (React runtime: local copy of the boolean-attribute list previously imported
+// from @vue/shared, so the node bundle no longer depends on Vue packages)
+const BOOLEAN_ATTRS = new Set([
+  'allowfullscreen',
+  'async',
+  'autofocus',
+  'autoplay',
+  'checked',
+  'controls',
+  'default',
+  'defer',
+  'disabled',
+  'formnovalidate',
+  'hidden',
+  'inert',
+  'ismap',
+  'itemscope',
+  'loop',
+  'multiple',
+  'muted',
+  'nomodule',
+  'novalidate',
+  'open',
+  'playsinline',
+  'readonly',
+  'required',
+  'reversed',
+  'selected'
+])
+const isBooleanAttr = (key: string) => BOOLEAN_ATTRS.has(key)
 
 function renderAttrs(attrs: Record<string, string>): string {
   return Object.keys(attrs)

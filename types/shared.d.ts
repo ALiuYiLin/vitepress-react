@@ -1,7 +1,5 @@
 // types shared between server and client
-import type { UseDarkOptions } from '@vueuse/core'
-import type { Component, Ref } from 'vue'
-import type { SSRContext } from 'vue/server-renderer'
+import type { ComponentType } from 'react'
 export type { DefaultTheme } from './default-theme.js'
 
 /**
@@ -210,7 +208,7 @@ export interface SiteData<ThemeConfig = any> {
   /**
    * The dark mode behavior: `true` for a toggleable dark mode, `'dark'` to
    * default to it, `'force-dark'`/`'force-auto'` to force the mode, or
-   * options for `useDark` from `@vueuse/core`. `false` disables it.
+   * options for the appearance store (storage key etc). `false` disables it.
    * @default true
    */
   appearance:
@@ -218,7 +216,7 @@ export interface SiteData<ThemeConfig = any> {
     | 'dark'
     | 'force-dark'
     | 'force-auto'
-    | (Omit<UseDarkOptions, 'initialValue'> & { initialValue?: 'dark' })
+    | { storageKey?: string; disableTransition?: boolean; initialValue?: 'dark' }
   /**
    * The config of the active theme.
    */
@@ -258,52 +256,55 @@ export interface SiteData<ThemeConfig = any> {
 
 /**
  * Reactive data exposed by the `useData` composable.
+ *
+ * (React runtime: plain values of the current snapshot — see migration D3-S2;
+ * re-renders are driven by the framework store, not per-field refs.)
  */
 export interface VitePressData<T = any> {
   /**
    * The site-level data for the active locale.
    */
-  site: Ref<SiteData<T>>
+  site: SiteData<T>
   /**
    * The config of the active theme.
    */
-  theme: Ref<T>
+  theme: T
   /**
    * The data of the current page.
    */
-  page: Ref<PageData>
+  page: PageData
   /**
    * The frontmatter of the current page.
    */
-  frontmatter: Ref<PageData['frontmatter']>
+  frontmatter: PageData['frontmatter']
   /**
    * The route params of the current page.
    */
-  params: Ref<PageData['params']>
+  params: PageData['params']
   /**
    * The resolved title of the current page.
    */
-  title: Ref<string>
+  title: string
   /**
    * The resolved description of the current page.
    */
-  description: Ref<string>
+  description: string
   /**
    * The `lang` attribute of the active locale.
    */
-  lang: Ref<string>
+  lang: string
   /**
    * The text direction of the active locale.
    */
-  dir: Ref<string>
+  dir: string
   /**
    * The key of the active locale.
    */
-  localeIndex: Ref<string>
+  localeIndex: string
   /**
    * Whether dark mode is currently active.
    */
-  isDark: Ref<boolean>
+  isDark: boolean
 }
 
 /**
@@ -329,7 +330,7 @@ export interface Route {
   /**
    * The component of the matched page, once resolved.
    */
-  component: Component | null
+  component: ComponentType | null
 }
 
 /**
@@ -355,19 +356,23 @@ export interface PageDataPayload {
 }
 
 /**
- * The SSR context used when rendering a page to static HTML.
+ * The SSR context used when rendering a page to static HTML (React runtime).
  */
-export interface SSGContext extends SSRContext {
+export interface SSGContext {
   /**
    * The rendered HTML content of the page.
    */
   content: string
   /**
-   * The icons used on the page, registered during SSR (via `useIcon`) so
-   * that only their styles are emitted. Names are fully qualified as
-   * `collection:name`.
+   * The icons used on the page, registered during SSR so that only their
+   * styles are emitted. Names are fully qualified as `collection:name`.
    */
-  vpIcons: Set<string>
+  vpIcons?: Set<string>
+  /**
+   * Additional body-level content collected during SSR (e.g. portals).
+   */
+  teleports?: Record<string, string>
+  [key: string]: unknown
 }
 
 /**

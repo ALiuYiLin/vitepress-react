@@ -1,13 +1,17 @@
-// entry for SSR
-import { renderToString } from 'vue/server-renderer'
+// entry for SSR (static generation, node side)
+import { renderToString } from 'react-dom/server'
 
 import type { SSGContext } from '../shared'
 import { createApp } from './index'
 
-export async function render(path: string) {
-  const { app, router } = await createApp()
+export async function render(path: string): Promise<SSGContext> {
+  const { router, element } = await createApp()
   await router.go(path)
-  const ctx: SSGContext = { content: '', vpIcons: new Set<string>() }
-  ctx.content = await renderToString(app, ctx)
+  const content = renderToString(element)
+  const ctx: SSGContext = {
+    content,
+    vpIcons: new Set<string>(),
+    teleports: {}
+  }
   return ctx
 }

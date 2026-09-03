@@ -1,30 +1,21 @@
 // exports in this file are exposed to themes and md files via 'vitepress'
-// so the user can do `import { useRoute, useData } from 'vitepress'`
+// so the user can do `import { useData, useRoute } from 'vitepress'`
 
-// generic types
-export type { Router } from './app/router'
-export type { Route, VitePressData } from './shared'
-
-// theme types
+// types
+export type { Router, Route } from './app/router'
 export type { EnhanceAppContext, Theme } from './app/theme'
-
-// shared types
-import type { PageData } from '../../types/shared'
-export type { HeadConfig, Header, PageData, SiteData } from '../../types/shared'
+export type { VitePressData } from './shared'
 
 // components
 import { ClientOnly } from './app/components/ClientOnly'
 import { Content } from './app/components/Content'
 
-// composables
-export { useIcon } from './app/composables/icon'
-export { dataSymbol, useData } from './app/data'
-export { useRoute, useRouter } from './app/router'
+// composables / data access
+export { useData, useRoute, useRouter } from './app/data'
 
 // utilities
 export {
   _escapeHtml,
-  defineClientComponent,
   inBrowser,
   onContentUpdated,
   withBase
@@ -32,15 +23,3 @@ export {
 
 // components
 export { ClientOnly, Content }
-
-declare module 'vue' {
-  interface GlobalComponents {
-    ClientOnly: typeof ClientOnly
-    Content: typeof Content
-  }
-
-  interface ComponentCustomProperties {
-    $frontmatter: PageData['frontmatter']
-    $params: PageData['params']
-  }
-}

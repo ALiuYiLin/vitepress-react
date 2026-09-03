@@ -1,19 +1,14 @@
-import { tryOnUnmounted } from '@vueuse/core'
-import { h, onMounted, shallowRef, type AsyncComponentLoader } from 'vue'
-
+import { getSiteDataBase } from './data'
 import {
   EXTERNAL_URL_RE,
   RELATIVE_BASE_SENTINEL,
   inBrowser,
   isRelativeBase,
   joinPath,
-  sanitizeFileName,
-  type Awaitable
+  sanitizeFileName
 } from '../shared'
-import { siteDataRef } from './data'
 
-export { escapeHtml as _escapeHtml, inBrowser } from '../shared'
-export { joinPath } from '../shared'
+export { escapeHtml as _escapeHtml, inBrowser, joinPath } from '../shared'
 
 let resolvedBase: string | undefined
 
@@ -29,7 +24,7 @@ let resolvedBase: string | undefined
  */
 export function runtimeBase(): string {
   if (resolvedBase === undefined) {
-    const base = siteDataRef.value.base
+    const base = getSiteDataBase()
     if (!isRelativeBase(base)) return (resolvedBase = base)
     if (!inBrowser) return (resolvedBase = RELATIVE_BASE_SENTINEL)
     if (import.meta.env.DEV) return (resolvedBase = '/')
@@ -66,8 +61,6 @@ export function pathToFile(path: string) {
     // /foo/bar.html -> ./foo_bar.md
     if (inBrowser) {
       const base = runtimeBase()
-      // the site root may arrive without its trailing slash; anything
-      // outside the base has no page chunk at all
       if (pagePath + '/' === base) pagePath = base
       if (!pagePath.startsWith(base)) return null
       pagePath =
@@ -100,33 +93,11 @@ export let contentUpdatedCallbacks: (() => any)[] = []
 
 /**
  * Register callback that is called every time the markdown content is updated
- * in the DOM.
+ * in the DOM. Returns an unsubscribe function (React-friendly).
  */
 export function onContentUpdated(fn: () => any) {
   contentUpdatedCallbacks.push(fn)
-  tryOnUnmounted(() => {
+  return () => {
     contentUpdatedCallbacks = contentUpdatedCallbacks.filter((f) => f !== fn)
-  })
-}
-
-export function defineClientComponent(
-  loader: AsyncComponentLoader,
-  args?: any[],
-  cb?: () => Awaitable<void>
-) {
-  return {
-    setup() {
-      const comp = shallowRef()
-      onMounted(async () => {
-        let res = await loader()
-        // interop module default
-        if (res && (res.__esModule || res[Symbol.toStringTag] === 'Module')) {
-          res = res.default
-        }
-        comp.value = res
-        await cb?.()
-      })
-      return () => (comp.value ? h(comp.value, ...(args ?? [])) : null)
-    }
   }
 }

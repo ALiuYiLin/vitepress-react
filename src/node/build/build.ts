@@ -22,7 +22,7 @@ import {
   resolveConfig,
   type SiteConfig
 } from '../config'
-import { clearCache } from '../markdownToVue'
+import { clearCache } from '../markdownToReact'
 import type { PageMeta } from '../plugin'
 import {
   EXTERNAL_URL_RE,
@@ -66,7 +66,7 @@ export async function build(
   }
   delete buildOptions.onAfterConfigResolve
 
-  const unlinkVue = await linkVue()
+  const unlinkReact = await linkReact()
 
   if (buildOptions.base) {
     if (typeof buildOptions.base !== 'string') {
@@ -110,7 +110,7 @@ export async function build(
 
     await task('rendering pages', render.bind(null, siteConfig, out))
   } finally {
-    await unlinkVue()
+    await unlinkReact()
     if (!process.env.DEBUG) {
       await rm(siteConfig.tempDir, {
         recursive: true,
@@ -135,16 +135,23 @@ export async function build(
   )
 }
 
-async function linkVue() {
+async function linkReact() {
   const root = await packageDirectory()
   if (root) {
-    const dest = path.resolve(root, 'node_modules/vue')
-    // if user did not install vue by themselves, link VitePress' version
-    if (!fs.existsSync(dest)) {
-      const src = path.dirname(createRequire(import.meta.url).resolve('vue'))
-      await mkdir(path.dirname(dest), { recursive: true })
-      await symlink(src, dest, 'junction')
-      return () => unlink(dest)
+    const cleanups: (() => unknown)[] = []
+    for (const pkg of ['react', 'react-dom']) {
+      const dest = path.resolve(root, 'node_modules', pkg)
+      // if user did not install react themselves, link VitePress' own copy
+      // (migration D8: zero-install for the user, mirrors upstream linkVue)
+      if (!fs.existsSync(dest)) {
+        const src = path.dirname(createRequire(import.meta.url).resolve(pkg))
+        await mkdir(path.dirname(dest), { recursive: true })
+        await symlink(src, dest, 'junction')
+        cleanups.push(() => unlink(dest))
+      }
+    }
+    return async () => {
+      for (const cleanup of cleanups) await cleanup()
     }
   }
   return async () => {}

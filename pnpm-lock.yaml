@@ -56,6 +56,12 @@ importers:
       minisearch:
         specifier: ^7.2.0
         version: 7.2.0
+      react:
+        specifier: ^19.0.0
+        version: 19.2.8
+      react-dom:
+        specifier: ^19.0.0
+        version: 19.2.8(react@19.2.8)
       shiki:
         specifier: ^4.4.3
         version: 4.4.3
@@ -135,6 +141,12 @@ importers:
       '@types/picomatch':
         specifier: ^4.0.3
         version: 4.0.3
+      '@types/react':
+        specifier: ^19.0.0
+        version: 19.2.18
+      '@types/react-dom':
+        specifier: ^19.0.0
+        version: 19.2.5(@types/react@19.2.18)
       '@types/semver':
         specifier: ^7.8.0
         version: 7.8.0

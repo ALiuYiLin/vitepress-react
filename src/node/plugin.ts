@@ -6,6 +6,7 @@ import {
   mergeConfig,
   normalizePath,
   searchForWorkspaceRoot,
+  transformWithOxc,
   type EnvironmentModuleNode,
   type Plugin,
   type ResolvedConfig,
@@ -24,9 +25,9 @@ import {
 import { isAdditionalConfigFile, resolvePages, type SiteConfig } from './config'
 import {
   clearCache,
-  createMarkdownToVueRenderFn,
+  createMarkdownToReactRenderFn,
   type MarkdownCompileResult
-} from './markdownToVue'
+} from './markdownToReact'
 import { assetsBasePlugin } from './plugins/assetsBasePlugin'
 import { iconsPlugin } from './plugins/iconsPlugin'
 import { dynamicRoutesPlugin } from './plugins/dynamicRoutesPlugin'
@@ -49,14 +50,6 @@ const startsWithThemeRE = /^@theme(?:\/|$)/
 const docsearchRE = /\bdocsearch\b/ // narrow it if any issue arises
 
 const hashRE = /\.([-\w]+)\.js$/
-const staticInjectMarkerRE = /\bcreateStaticVNode\((?:(".*")|('.*')), (\d+)\)/g
-const staticStripRE = /['"`]__VP_STATIC_START__[^]*?__VP_STATIC_END__['"`]/g
-const staticRestoreRE = /__VP_STATIC_(START|END)__/g
-
-// matches client-side js blocks in MPA mode.
-// in the future we may add different execution strategies like visible or
-// media queries.
-const scriptClientRE = /<script\b[^>]*client\b[^>]*>([^]*?)<\/script>/
 
 const isPageChunk = <T extends Rolldown.OutputChunk | Rolldown.RenderedChunk>(
   chunk: Rolldown.OutputAsset | T
@@ -74,11 +67,24 @@ export interface PageMeta {
   lastUpdated?: number
 }
 
+/**
+ * markdownToReact 产出的 TSX 文本 → 可执行 JS:
+ * 在 vitepress 插件内部用 vite 的 oxc 变换编译(automatic JSX runtime,
+ * import react/jsx-runtime),避免依赖对 .md 扩展名开放的第三方 babel 插件。
+ * (vite 8 不再内置 esbuild,故用 transformWithOxc)
+ */
+async function compileReactSrc(src: string): Promise<string> {
+  const result = await transformWithOxc(src, 'page.md.tsx', {
+    jsx: { runtime: 'automatic' }
+  })
+  return result.code
+}
+
 export async function createVitePressPlugin(
   siteConfig: SiteConfig,
   ssr = false,
   pageToHashMap?: Record<string, string>,
-  clientJSMap?: Record<string, string>,
+  _clientJSMap?: Record<string, string>,
   pageMetaMap?: Record<string, PageMeta>,
   restartServer?: () => Promise<void>
 ) {
@@ -88,30 +94,14 @@ export async function createVitePressPlugin(
     configDeps,
     markdown,
     site,
-    vue: userVuePluginOptions,
     vite: userViteConfig,
     lastUpdated,
     cleanUrls
   } = siteConfig
 
-  let markdownToVue: Awaited<ReturnType<typeof createMarkdownToVueRenderFn>>
-
-  // lazy require plugin-vue to respect NODE_ENV in @vue/compiler-x
-  const vuePlugin = await import('@vitejs/plugin-vue').then((r) =>
-    r.default({
-      include: /\.(?:vue|md)$/,
-      ...userVuePluginOptions
-    })
-  )
-
-  const processClientJS = (code: string, id: string) => {
-    return scriptClientRE.test(code)
-      ? code.replace(scriptClientRE, (_, content) => {
-          if (ssr && clientJSMap) clientJSMap[id] = content
-          return `\n`.repeat(_.split('\n').length - 1)
-        })
-      : code
-  }
+  let markdownToReact: Awaited<
+    ReturnType<typeof createMarkdownToReactRenderFn>
+  >
 
   let siteData = site
   let allDeadLinks: MarkdownCompileResult['deadLinks'] = []
@@ -128,7 +118,7 @@ export async function createVitePressPlugin(
       siteConfig.publicDir = config.publicDir
       // pre-resolve git timestamps
       if (lastUpdated) await cacheAllGitTimestamps(srcDir)
-      markdownToVue = await createMarkdownToVueRenderFn(
+      markdownToReact = await createMarkdownToReactRenderFn(
         srcDir,
         markdown ?? {},
         // the site base, not the vite base: the ssr build runs under the
@@ -143,7 +133,7 @@ export async function createVitePressPlugin(
     config() {
       const baseConfig: UserConfig = {
         resolve: {
-          alias: resolveAliases(siteConfig.root, ssr)
+          alias: resolveAliases(siteConfig.root)
         },
         define: {
           __VP_LOCAL_SEARCH__: site.themeConfig?.search?.provider === 'local',
@@ -152,16 +142,18 @@ export async function createVitePressPlugin(
             !!site.themeConfig?.algolia, // legacy
           __CARBON__: !!site.themeConfig?.carbonAds,
           __ASSETS_DIR__: JSON.stringify(siteConfig.assetsDir),
-          __ASSETS_BASE__: JSON.stringify(siteConfig.assetsBase ?? ''),
-          __VUE_PROD_HYDRATION_MISMATCH_DETAILS__: !!process.env.DEBUG
+          __ASSETS_BASE__: JSON.stringify(siteConfig.assetsBase ?? '')
         },
         optimizeDeps: {
-          // force include vue to avoid duplicated copies when linked + optimized
+          // force include react to avoid duplicated copies when linked +
+          // optimized; jsx runtime entries are imported by every compiled md
+          // page module (automatic JSX runtime), so they must be pre-bundled
           include: [
-            'vue',
-            'vitepress > @vue/devtools-api',
-            'vitepress > @vueuse/core'
-          ].filter((d) => d != null),
+            'react',
+            'react-dom',
+            'react/jsx-runtime',
+            'react/jsx-dev-runtime'
+          ],
           exclude: ['@docsearch/js', '@docsearch/sidepanel-js', 'vitepress']
         },
         server: {
@@ -218,26 +210,28 @@ export async function createVitePressPlugin(
     },
 
     transform: {
-      filter: { id: [docsearchRE, /\.vue$/, /\.md$/] },
+      // dev 页面请求形如 /index.md?t=<ts>,需容忍 query(rolldown-vite 传给
+      // filter 的 id 会带 query;build 阶段无 query)
+      filter: { id: [docsearchRE, /\.md(\?.*)?$/] },
       async handler(code, id) {
-        if (id.endsWith('.vue')) {
-          return processClientJS(code, id)
-        }
-        if (id.endsWith('.md')) {
+        const cleanId = id.split('?')[0]
+        if (cleanId.endsWith('.md')) {
           const watchIncludes = (files: string[] = []) => {
             files.forEach((i) => {
-              ;(importerMap[slash(i)] ??= new Set()).add(slash(id))
+              ;(importerMap[slash(i)] ??= new Set()).add(slash(cleanId))
               this.addWatchFile(i)
             })
           }
 
-          // transform .md files into vueSrc so plugin-vue can handle it
-          const { vueSrc, deadLinks, includes, pageData } = await markdownToVue(
+          // transform .md files into a React page module (TSX), then compile
+          // it to JS with oxc so the browser/dev-server just sees a
+          // regular JS module (mirrors upstream's md→vueSrc + plugin-vue flow)
+          const { reactSrc, deadLinks, includes, pageData } = await markdownToReact(
             code,
-            id
+            cleanId
           ).catch((e: { includes?: string[] }) => {
-            // watch the files the failed render did reach, so that creating a
-            // missing snippet or include recovers the page
+            // watch the files the failed render did reach, so that creating
+            // a missing snippet or include recovers the page
             watchIncludes(e.includes)
             throw e
           })
@@ -264,7 +258,7 @@ export async function createVitePressPlugin(
               data: payload
             })
           }
-          return processClientJS(vueSrc, id)
+          return compileReactSrc(reactSrc)
         }
         if (docsearchRE.test(normalizePath(id))) {
           return code
@@ -330,24 +324,6 @@ export async function createVitePressPlugin(
       }
     },
 
-    renderChunk(code, chunk) {
-      if (!ssr && isPageChunk(chunk)) {
-        // For each page chunk, inject marker for start/end of static strings.
-        // we do this here because in generateBundle the chunks would have been
-        // minified and we won't be able to safely locate the strings.
-        // Using a regexp relies on specific output from Vue compiler core,
-        // which is a reasonable trade-off considering the massive perf win over
-        // a full AST parse.
-        code = code.replace(staticInjectMarkerRE, (_, str1, str2, flag) => {
-          const str = str1 || str2
-          const quote = str[0]
-          return `createStaticVNode(${quote}__VP_STATIC_START__${str.slice(1, -1)}__VP_STATIC_END__${quote}, ${flag})`
-        })
-        return code
-      }
-      return null
-    },
-
     generateBundle: {
       order: ssr ? null : 'post',
       handler(_options, bundle) {
@@ -361,24 +337,15 @@ export async function createVitePressPlugin(
         }
 
         // client build:
-        // for each .md entry chunk, adjust its name to its correct path.
+        // for each .md entry chunk, record page -> hash relations so the
+        // client can resolve the hashed chunk file name at runtime.
+        // (the upstream lean.js duplicate chunks are intentionally dropped —
+        //  D4: no lean.js equivalent in the React runtime)
         for (const name in bundle) {
           const chunk = bundle[name]
           if (isPageChunk(chunk)) {
-            // record page -> hash relations
             const hash = chunk.fileName.match(hashRE)![1]
             pageToHashMap![chunk.name.toLowerCase()] = hash
-
-            // inject another chunk with the content stripped
-            this.emitFile({
-              type: 'asset',
-              name: name + '-lean',
-              fileName: chunk.fileName.replace(/\.js$/, '.lean.js'),
-              source: chunk.code.replace(staticStripRE, `""`)
-            })
-
-            // remove static markers from original code
-            chunk.code = chunk.code.replace(staticRestoreRE, '')
           }
         }
       }
@@ -458,7 +425,6 @@ export async function createVitePressPlugin(
   return [
     vitePressPlugin,
     rewritesPlugin(siteConfig),
-    vuePlugin,
     hmrFix,
     webFontsPlugin(siteConfig.useWebFonts),
     ...(userViteConfig?.plugins || []),

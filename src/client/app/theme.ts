@@ -1,27 +1,37 @@
-import type { App, Component, Ref } from 'vue'
+import type { ComponentType, ReactNode } from 'react'
 
 import type { Awaitable, SiteData } from '../shared'
 import type { Router } from './router'
 
 export interface EnhanceAppContext {
-  app: App
+  /**
+   * The router instance (SPA navigation etc).
+   */
   router: Router
-  siteData: Ref<SiteData>
+  /**
+   * The site data.
+   */
+  siteData: SiteData
+  /**
+   * Register extra components usable by markdown-generated pages
+   * (future-proof; unused in the M0 skeleton).
+   */
+  registerComponent?: (name: string, component: ComponentType) => void
 }
 
 export interface Theme {
-  Layout?: Component
+  Layout?: ComponentType<{ children?: ReactNode }>
   enhanceApp?: (ctx: EnhanceAppContext) => Awaitable<void>
   extends?: Theme
 
   /**
-   * Runs inside the root component's `setup()` (during SSR too). With
-   * `extends`, setups run base-first, like `enhanceApp`.
+   * Runs on the client inside the root component's effect (SSR-safe body:
+   * guard DOM access). With `extends`, setups run base-first.
    */
   setup?: () => void
 
   /**
-   * @deprecated Render not found page by checking `useData().page.value.isNotFound` in Layout instead.
+   * @deprecated Render not found page by checking `useData().page.isNotFound` in Layout instead.
    */
-  NotFound?: Component
+  NotFound?: ComponentType
 }

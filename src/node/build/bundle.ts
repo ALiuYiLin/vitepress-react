@@ -34,13 +34,8 @@ const clientDir = normalizePath(
 
 // these deps are also being used in the client code (outside of the theme)
 // exclude them from the theme chunk so there is no circular dependency
-const excludedModules = [
-  '/@siteData',
-  'node_modules/@vueuse/core/',
-  'node_modules/@vueuse/shared/',
-  'node_modules/vue/',
-  clientDir
-]
+// (React runtime: vue/vueuse entries removed with the Vue client code)
+const excludedModules = ['/@siteData', clientDir]
 
 const cache = new Map<string, boolean>()
 const cacheTheme = new Map<string, boolean>()
@@ -227,12 +222,15 @@ function chunkName(
 
   // move known framework code into a stable chunk so that
   // custom theme changes do not invalidate hash for all pages
+  // (React runtime: react/react-dom/scheduler; the vue/@vueuse rules were
+  // dropped with the Vue client code)
   if (
     id.startsWith('\0vite') ||
-    id.includes('plugin-vue:export-helper') ||
     (id.includes(`${clientDir}/app`) && id !== `${clientDir}/app/index.js`) ||
     (isEagerChunk(id, getModuleInfo) &&
-      /@vue\/(runtime|shared|reactivity)/.test(id))
+      /node_modules\/(?:react|react-dom|scheduler|use-sync-external-store)\//.test(
+        id
+      ))
   ) {
     return 'framework'
   }

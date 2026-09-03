@@ -2,7 +2,6 @@ import { readdirSync, readFileSync, rmSync, writeFileSync } from 'node:fs'
 import path from 'node:path'
 
 import { defineConfig, type Rolldown, type UserConfig } from 'tsdown'
-import { vueSfcPlugin } from 'vue-sfc-transformer/rolldown'
 
 const ROOT = import.meta.dirname
 
@@ -265,21 +264,9 @@ interface BundledPackage {
 }
 
 // third-party content vendored into src rather than resolved from
-// node_modules: the Inter font files shipped under theme-default/fonts
-const VENDORED_PACKAGES: BundledPackage[] = [
-  {
-    name: 'Inter',
-    license: 'OFL-1.1',
-    authors: 'The Inter Project Authors',
-    repository: 'https://github.com/rsms/inter',
-    licenseText: readFileSync(
-      path.join(ROOT, 'src/client/theme-default/fonts/LICENSE.txt'),
-      'utf8'
-    )
-      .replaceAll('\r\n', '\n')
-      .trim()
-  }
-]
+// node_modules. (The upstream Inter font files under theme-default/fonts
+// were removed with the Vue theme in the React migration — M0/M4.)
+const VENDORED_PACKAGES: BundledPackage[] = []
 
 // localeCompare consults the host locale; the output must be byte-stable
 // across machines, so sort by code units everywhere
@@ -624,32 +611,29 @@ function withStableOutputs(config: UserConfig): UserConfig {
 }
 
 const client: UserConfig = {
-  entry: ['src/client/**/*.ts', '!src/client/**/*.d.ts'],
+  entry: [
+    'src/client/**/*.ts',
+    'src/client/**/*.tsx',
+    '!src/client/**/*.d.ts'
+  ],
   outDir: 'dist/client',
   platform: 'neutral',
   unbundle: true,
   fixedExtension: false,
-  dts: { vue: true },
+  dts: true,
   tsconfig: 'tsconfig.client.json',
   deps: {
     // self-imports and dev-server virtual modules, resolved at site build time
     neverBundle: [
       /^vitepress(?:\/|$)/,
+      /^react(?:\/|$)/,
+      /^react-dom(?:\/|$)/,
       '@siteData',
       '@theme/index',
       '@localSearchIndex'
     ]
   },
-  plugins: [
-    syncShared('client'),
-    rootTypesSpecifiers(),
-    clientAssets(),
-    vueSfcPlugin({
-      srcDir: 'src/client',
-      cwd: ROOT,
-      tsconfig: './tsconfig.client.json'
-    })
-  ],
+  plugins: [syncShared('client'), rootTypesSpecifiers(), clientAssets()],
   checks: { pluginTimings: false }
 }
 

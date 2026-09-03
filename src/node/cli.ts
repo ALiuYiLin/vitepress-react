@@ -10,7 +10,7 @@ import {
   serve
 } from '.'
 import { init } from './init/init'
-import { clearCache } from './markdownToVue'
+import { clearCache } from './markdownToReact'
 import { bindShortcuts } from './shortcuts'
 import { logVersion } from './utils/logVersion'
 

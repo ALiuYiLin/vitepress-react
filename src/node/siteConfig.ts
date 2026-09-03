@@ -1,5 +1,3 @@
-import type { Options as VuePluginOptions } from '@vitejs/plugin-vue'
-import type { UseDarkOptions } from '@vueuse/core'
 import type { SitemapStreamOptions } from 'sitemap'
 import type { Logger, UserConfig as ViteConfig } from 'vite'
 
@@ -190,7 +188,7 @@ export interface UserConfig<
    * - `false`: no dark mode
    * - `'force-dark'`: always dark
    * - `'force-auto'`: always follow the system preference
-   * - options for `@vueuse/core`'s `useDark`
+   * - options object: storage key / transition / initial value
    * @default true
    */
   appearance?:
@@ -198,7 +196,7 @@ export interface UserConfig<
     | 'dark'
     | 'force-dark'
     | 'force-auto'
-    | (Omit<UseDarkOptions, 'initialValue'> & { initialValue?: 'dark' })
+    | { storageKey?: string; disableTransition?: boolean; initialValue?: 'dark' }
   /**
    * Show the timestamp of each page's last git commit.
    * @default false
@@ -212,10 +210,6 @@ export interface UserConfig<
    * Markdown rendering options.
    */
   markdown?: MarkdownOptions
-  /**
-   * Options passed to `@vitejs/plugin-vue`.
-   */
-  vue?: VuePluginOptions
   /**
    * Vite config to merge with the default one. `configFile` can point
    * to an additional vite config file to load, or be `false` to load
@@ -333,7 +327,6 @@ export interface UserConfig<
 export interface SiteConfig<ThemeConfig = any> extends Pick<
   UserConfig<ThemeConfig>,
   | 'markdown'
-  | 'vue'
   | 'vite'
   | 'shouldPreload'
   | 'router'

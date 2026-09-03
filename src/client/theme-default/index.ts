@@ -1,5 +1,4 @@
-import './without-fonts'
-import './styles/fonts.css'
+import theme from './without-fonts'
 
 export * from './without-fonts'
-export { default as default } from './without-fonts'
+export default theme
