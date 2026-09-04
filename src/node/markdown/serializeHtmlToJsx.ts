@@ -489,7 +489,10 @@ export function decodeEntities(str: string): string {
 export function serializeHtmlToJsx(
   html: string,
   componentNames: ReadonlySet<string> = new Set(),
-  expressions: Record<string, { expr?: string; literal?: string }> = {},
+  expressions: Record<
+    string,
+    { expr?: string; literal?: string; html?: string }
+  > = {},
   indent = '  '
 ): { code: string; warnings: string[] } {
   const root: JsxNode = { tag: '', attrs: [], children: [] }
@@ -573,12 +576,13 @@ export function serializeHtmlToJsx(
   const lines: string[] = []
 
   /**
-   * 把一段已解码文本渲染成 JSX 表达式片段:
-   * 含 @@VP_EXPR_n@@(还原成 {code} 表达式)或 @@VP_TXT_n@@(还原成字面
-   * 花括号文本,见 markdownToReact 的 maskJsxExpressions),其余仍为字符串
-   * 字面量段:{"a "}{expr}{" b"}
+   * 把一段已解码文本渲染成 JSX:
+   * - @@VP_EXPR_n@@ → 表达式 `{code}`(与 Page 作用域共享);
+   * - @@VP_TXT_n@@  → 字面花括号文本;
+   * - @@VP_HTML_n@@ → 原样恢复作者写的 JSX 标签代码(整行占位,见
+   *   markdownToReact 的 maskJsxHtmlLines),其余为字符串字面量段。
    */
-  const VP_EXPR_RE = /@@VP_(EXPR|TXT)_(\d+)@@/g
+  const VP_EXPR_RE = /@@VP_(EXPR|TXT|HTML)_(\d+)@@/g
   const textWithExpr = (decoded: string): string => {
     if (!decoded.includes('@@VP_')) return `{${JSON.stringify(decoded)}}`
     VP_EXPR_RE.lastIndex = 0
@@ -595,6 +599,8 @@ export function serializeHtmlToJsx(
         parts.push(`{${entry.expr}}`)
       } else if (m[1] === 'TXT' && entry?.literal != null) {
         parts.push(`{${JSON.stringify(entry.literal)}}`)
+      } else if (m[1] === 'HTML' && entry?.html != null) {
+        parts.push(entry.html)
       } else {
         parts.push(`{${JSON.stringify(m[0])}}`)
       }

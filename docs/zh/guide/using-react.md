@@ -49,53 +49,56 @@ Vue 版文档里的 `{{ }}` 在这里不存在。**单层 `{…}`** 按下列规
 
 **输入**
 
-````tsx
+````md
 <script>
 import { useState } from 'react'
 
-const [count, setCount] = useState(100)
-</script>
-
-# 当前计数: {count}
-
-<button onClick={() => setCount(count + 1)}>+1</button>
-````
-
-**实际渲染**
-
-<script>
-import { useState } from 'react'
-
-export function CountDemo() {
-  const [count, setCount] = useState(100)
-  return (
-    <p>
-      当前计数: <strong>{count}</strong>{' '}
-      <button
-        style={{
-          border: '1px solid var(--vp-c-brand-1)',
-          borderRadius: 8,
-          padding: '2px 12px',
-          cursor: 'pointer'
-        }}
-        onClick={() => setCount(count + 1)}
-      >
-        +1
-      </button>
-    </p>
-  )
+export function Counter() {
+  const [count, setCount] = useState(0)
+  return <button onClick={() => setCount(count + 1)}>count: {count}</button>
 }
 </script>
 
-<CountDemo />
+## Markdown Content
 
-**说明**:`count` 随 `setCount`/`useEffect`/路由数据更新而**响应式重渲染**;它等价于把这段代码写进一个 React 组件函数再返回 JSX。需要完整交互(按钮、表单)时,更推荐定义成具名组件后用 `<组件 />` 引用(如上演示)——因为正文里裸写的 `<button onClick=…>` 不会保留为真实事件。
+<Counter />
+````
+
+**输出(实际渲染)**
+
+<Counter />
+
+<script>
+const [count, setCount] = useState(100)
+</script>
+
+<button onClick={() => setCount(count + 1)}>+1</button>
+
+**说明**:`count` 随 `setCount`/`useEffect`/路由数据更新而**响应式重渲染**;它等价于把这段代码写进一个 React 组件函数再返回 JSX。
+
+### 直接在正文写一行 JSX {#inline-jsx}
+
+独立成行、**含 `={` 的 HTML 标签**会被当作真正的 JSX 处理(整行先占位、渲染后恢复给 oxc 编译),因此 `onClick={…}` 事件与 `{expr}` 绑定都会生效:
+
+```md
+<script>
+import { useState } from 'react'
+
+const [count, setCount] = useState(0)
+</script>
+
+<button onClick={() => setCount(count + 1)}>+1</button>
+```
+
+**注意**:需要先用 page-scope 的 script 声明 `setCount`(如上),事件才能引用到它;交互更复杂时仍建议用具名组件。
+
+不含 `={` 的普通 HTML(如 `<b>bold</b>`、`<Badge type="tip" text="x" />`)仍走 HTML→JSX 序列化:属性保持字符串;`<Badge>` 会自动从主题导入。
 
 ### 在 Markdown 中导入并使用组件 {#using-components}
 
 如果组件只被少数页面使用,可以在页面的 `<script>` 里显式导入(可正确代码分割):
 
-````md
+````ts
 <script>
 import CustomComponent from '../../components/CustomComponent.tsx'
 </script>
