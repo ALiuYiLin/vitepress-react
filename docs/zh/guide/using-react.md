@@ -68,29 +68,41 @@ export function Counter() {
 
 <Counter />
 
-<script>
-const [count, setCount] = useState(100)
-</script>
-
-<button onClick={() => setCount(count + 1)}>+1</button>
-
 **说明**:`count` 随 `setCount`/`useEffect`/路由数据更新而**响应式重渲染**;它等价于把这段代码写进一个 React 组件函数再返回 JSX。
 
 ### 直接在正文写一行 JSX {#inline-jsx}
 
-独立成行、**含 `={` 的 HTML 标签**会被当作真正的 JSX 处理(整行先占位、渲染后恢复给 oxc 编译),因此 `onClick={…}` 事件与 `{expr}` 绑定都会生效:
+独立成行、**含 `={` 的 HTML 标签**会被当作真正的 JSX 处理(整行先占位、渲染后恢复给 oxc 编译),因此 `onClick={…}` 事件与 `{expr}` 绑定都会生效。
+
+下面的计数就同时用到了 page-scope 的 `{count}` 显示与"直接写 JSX 行"的按钮:
+
+**实际渲染**
+
+<script>
+import { useState } from 'react'
+
+const [count, setCount] = useState(100)
+</script>
+
+当前计数: {count}
+
+<button onClick={() => setCount(count + 1)}>+1</button>
+
+写成 Markdown 就是:
 
 ```md
 <script>
 import { useState } from 'react'
 
-const [count, setCount] = useState(0)
+const [count, setCount] = useState(100)
 </script>
+
+当前计数: {count}
 
 <button onClick={() => setCount(count + 1)}>+1</button>
 ```
 
-**注意**:需要先用 page-scope 的 script 声明 `setCount`(如上),事件才能引用到它;交互更复杂时仍建议用具名组件。
+**注意**:page-scope 的 script 要先声明 `setCount`,`onClick` 才能引用到它;交互更复杂时仍建议用具名组件(见上文 `<Counter />`)。
 
 不含 `={` 的普通 HTML(如 `<b>bold</b>`、`<Badge type="tip" text="x" />`)仍走 HTML→JSX 序列化:属性保持字符串;`<Badge>` 会自动从主题导入。
 
