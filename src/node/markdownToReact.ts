@@ -606,13 +606,154 @@ function isSafeJsExpr(inner: string, allowed: ReadonlySet<string>): boolean {
   return true
 }
 
+/** void 元素(自闭合,不增加标签深度) */
+const VOID_HTML_TAGS = new Set([
+  'area', 'base', 'br', 'col', 'embed', 'hr', 'img', 'input',
+  'link', 'meta', 'param', 'source', 'track', 'wbr'
+])
+
 /**
- * fence/行内码感知地把"整行原生 HTML 且含 ={" 的 JSX 用法"占位:
- * 例如 <button onClick={() => setCount(count + 1)}>+1</button> 这类行在
- * markdown-it 眼里只是 HTML 字符串,事件属性会被当字符串/丢弃;
- * 先整体占位,渲染后由序列化器原样恢复成 JSX 交给 oxc 编译 →
- * onClick={…} 成为真实函数(与 Page 作用域共享,响应式生效)。
- * 不含 ={ 的普通 HTML 行不受影响(仍走 HTML→JSX 序列化,属性保持字符串)。
+ * 计算一段文本里"标签深度":<tag>+1、</tag>-1;跳过引号/注释;
+ * `{…}`(JSX 表达式)里的 <tag/> 也按标签计数,可被完整成对抵消。
+ * 返回最终深度(>0 表示还有未闭合的标签)。
+ */
+function tagDepth(text: string): number {
+  let depth = 0
+  let i = 0
+  let inQuote: string | null = null
+  while (i < text.length) {
+    const c = text[i]
+    if (inQuote) {
+      if (c === '\\') i += 2
+      else {
+        if (c === inQuote) inQuote = null
+        i++
+      }
+      continue
+    }
+    if (c === '"' || c === "'" || c === '`') {
+      inQuote = c
+      i++
+      continue
+    }
+    if (c === '<' && text.startsWith('<!--', i)) {
+      const end = text.indexOf('-->', i)
+      if (end === -1) break
+      i = end + 3
+      continue
+    }
+    if (c === '<' && text[i + 1] === '/') {
+      depth--
+      i += 2
+      while (i < text.length && text[i] !== '>') i++
+      i++
+      continue
+    }
+    if (c === '<' && /[A-Za-z]/.test(text[i + 1] ?? '')) {
+      // 找标签名
+      let j = i + 1
+      while (j < text.length && /[A-Za-z0-9-]/.test(text[j])) j++
+      const name = text.slice(i + 1, j).toLowerCase()
+      // 扫到该开标签结束的 '>'(引号内跳过)
+      let inQ: string | null = null
+      let end = j
+      for (; end < text.length; end++) {
+        const ch = text[end]
+        if (inQ) {
+          if (ch === inQ) inQ = null
+          continue
+        }
+        if (ch === '"' || ch === "'") {
+          inQ = ch
+          continue
+        }
+        if (ch === '>') break
+      }
+      const isSelfClose = text.slice(j, end + 1).endsWith('/>')
+      if (!isSelfClose && !VOID_HTML_TAGS.has(name)) depth++
+      i = Math.min(end + 1, text.length)
+      continue
+    }
+    i++
+  }
+  return depth
+}
+
+/** 定位一行文本里第一个"真标签"的 '<' 下标;行内码(反引号)内跳过;找不到返回 -1 */
+function firstTagIndex(line: string): number {  let inCode = false
+  let codeLen = 0
+  for (let i = 0; i < line.length; i++) {
+    const ch = line[i]
+    if (ch === '`') {
+      // 近似:连续的 ` 视为一个代码段定界
+      if (!inCode) {
+        codeLen = 1
+        while (i + codeLen < line.length && line[i + codeLen] === '`') codeLen++
+        inCode = true
+        i += codeLen - 1
+        continue
+      }
+      let close = 1
+      while (i + close < line.length && line[i + close] === '`') close++
+      if (close >= codeLen) inCode = false
+      i += close - 1
+      continue
+    }
+    if (inCode) continue
+    if (ch === '<' && /[A-Za-z]/.test(line[i + 1] ?? '')) return i
+    if (ch === '<' && line.startsWith('</', i) && /[A-Za-z]/.test(line[i + 2] ?? '')) {
+      return i
+    }
+  }
+  return -1
+}
+
+/**
+ * 该文本是否含 Vue 指令属性(:members/@click/v-if/#slot 等)。
+ * 有则不属于"React 接管"区域,交由旧 HTML→JSX 路径处理(丢弃/提示),
+ * 避免把 Vue 语法当 JSX 交给 oxc 报错。引号内与 {…} 表达式内不计。
+ */
+function hasVueishAttr(text: string): boolean {
+  let inQuote: string | null = null
+  let brace = 0
+  for (let i = 0; i < text.length; i++) {
+    const c = text[i]
+    if (inQuote) {
+      if (c === '\\') i++
+      else if (c === inQuote) inQuote = null
+      continue
+    }
+    if (c === '"' || c === "'" || c === '`') {
+      inQuote = c
+      continue
+    }
+    if (c === '{') {
+      brace++
+      continue
+    }
+    if (c === '}') {
+      brace = Math.max(0, brace - 1)
+      continue
+    }
+    if (brace > 0) continue
+    if ((c === ':' || c === '@') && /[A-Za-z_]/.test(text[i + 1] ?? '')) {
+      return true
+    }
+    if (c === '#') {
+      const prev = i === 0 ? ' ' : text[i - 1]
+      if (/\s/.test(prev) && /[A-Za-z_]/.test(text[i + 1] ?? '')) return true
+    }
+  }
+  return false
+}
+
+/**
+ * JSX 区域采集 —— 目标是"所有 HTML/组件标签都由 React 接管":
+ * ① 显式容器 `::: react … :::`(任意内容、可跨行、含 JS 表达式);
+ * ② 自动:独立成行、以 '<' 开头的标签块(可跨行直到标签配平);
+ * ③ 自动:正文行内的标签片段(同一行配平)也整体占位。
+ * 命中内容整段替换为 @@VP_HTML_n@@(渲染后由序列化器原样恢复成 JSX)。
+ * fence/行内码/frontmatter/注释/DOCTYPE/代码片段(<<<)不在此列。
  */
 function maskJsxHtmlLines(
   src: string,
@@ -621,29 +762,120 @@ function maskJsxHtmlLines(
   const lines = src.split('\n')
   const out: string[] = []
   let fence: string | null = null
-  for (const line of lines) {
+
+  const emit = (raw: string, lineNo?: number, block = false) => {
+    const n = store.length
+    // 错误定位注释:oxc 报错时可据此回到 md 行(lineNo 为近似行号)
+    const marked =
+      lineNo != null ? `{/* JSX md:${lineNo} */}\n${raw}` : raw
+    store.push({ html: marked })
+    // 块级占位用 <div data-vp-jsx>:markdown-it 视为 html_block,不会包进 <p>
+    return block
+      ? `<div data-vp-jsx="${n}"></div>`
+      : `@@VP_HTML_${n}@@`
+  }
+
+  let i = 0
+  while (i < lines.length) {
+    const line = lines[i]
     const trimmed = line.trim()
+
     if (fence) {
       out.push(line)
       if (/^\s{0,3}[`~]{3,}\s*$/.test(line)) fence = null
+      i++
       continue
     }
     const fm = /^\s{0,3}(`{3,}|~{3,})/.exec(line)
     if (fm) {
       fence = fm[1][0]
       out.push(line)
+      i++
       continue
     }
+
+    // ① `::: react` 显式容器
+    if (/^::: *react\s*$/.test(trimmed)) {
+      const raw: string[] = []
+      let j = i + 1
+      while (j < lines.length && !/^:::\s*$/.test(lines[j].trim())) {
+        raw.push(lines[j])
+        j++
+      }
+      if (raw.length === 0) raw.push('') // 空容器仍占位
+      out.push(emit(raw.join('\n'), i + 1, true))
+      i = j + (j < lines.length ? 1 : 0) // 跳过内容与结束标记
+      continue
+    }
+
+    const tagPos = firstTagIndex(line)
+    if (tagPos === -1) {
+      out.push(line)
+      i++
+      continue
+    }
+
+    // <script>/<style> 及其占位由 plugin-sfc/页面模块处理,不属于"React 接管"区域
+    const firstTagMatch = line.slice(tagPos).match(/^<\/?([A-Za-z][A-Za-z0-9-]*)/)
+    const firstName = firstTagMatch ? firstTagMatch[1].toLowerCase() : ''
     if (
-      trimmed.startsWith('<') &&
-      !trimmed.startsWith('<!--') &&
-      /={/.test(line)
+      firstName === 'script' ||
+      firstName === 'style' ||
+      /^__VP_SCRIPT_BLOCK_\d+__$/.test(trimmed)
     ) {
-      store.push({ html: trimmed })
-      out.push(`@@VP_HTML_${store.length - 1}@@`)
+      out.push(line)
+      i++
+      continue
+    }
+
+    const prefix = line.slice(0, tagPos)
+    const rest = line.slice(tagPos)
+
+    // Vue 指令属性(:members/@click/v-if/#slot)不属于 React 接管 → 退回旧路径
+    if (hasVueishAttr(rest)) {
+      out.push(line)
+      i++
+      continue
+    }
+
+    // ②/③:尝试把从该标签开始的后续行配平成一个 JSX 区域(不吞空行/容器结束行)
+    const scan: string[] = [rest]
+    let depth = tagDepth(rest)
+    let j = i
+    let ok = true
+    while (depth > 0 && j + 1 < lines.length) {
+      const next = lines[j + 1]
+      const nt = next.trim()
+      if (
+        nt === '' ||
+        /^:::\s*$/.test(nt) ||
+        hasVueishAttr(next)
+      ) {
+        ok = false
+        break
+      }
+      scan.push(next)
+      depth += tagDepth(next)
+      j++
+    }
+    if (depth > 0) ok = false
+
+    if (ok) {
+      const raw = scan.join('\n')
+      out.push(prefix === '' ? emit(raw, i + 1, true) : prefix + emit(raw, i + 1))
+      i = j + 1
+      continue
+    }
+
+    // 配平失败:退回"该行内自配平片段"(同一行)的保守处理
+    const singleDepth = tagDepth(rest)
+    if (singleDepth === 0 && rest.includes('>')) {
+      out.push(prefix + emit(rest.trim(), i + 1))
+      i++
       continue
     }
     out.push(line)
+    i++
   }
   return out.join('\n')
 }
@@ -1069,3 +1301,5 @@ function createReactPageSrc(
 
   return parts.join('\n')
 }
+
+

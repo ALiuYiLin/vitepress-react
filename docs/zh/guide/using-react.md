@@ -70,11 +70,11 @@ export function Counter() {
 
 **说明**:`count` 随 `setCount`/`useEffect`/路由数据更新而**响应式重渲染**;它等价于把这段代码写进一个 React 组件函数再返回 JSX。
 
-### 直接在正文写一行 JSX {#inline-jsx}
+### 在正文直接写 HTML/JSX 行 {#inline-jsx}
 
-独立成行、**含 `={` 的 HTML 标签**会被当作真正的 JSX 处理(整行先占位、渲染后恢复给 oxc 编译),因此 `onClick={…}` 事件与 `{expr}` 绑定都会生效。
+**独立成行、以 `<` 开头的 HTML 标签或 React 组件行**,会被整行占位、渲染后原样恢复成 JSX 交给 React/oxc 编译——不区分是否含 `={`。因此 `onClick={…}`、`{expr}`、组件引用(<Badge/> 等)都按 JSX 语义生效;同时意味着属性要按 JSX 写(`class` → `className`、`style` → 对象、事件用驼峰函数)。想展示字面代码请放进代码块。
 
-下面的计数就同时用到了 page-scope 的 `{count}` 显示与"直接写 JSX 行"的按钮:
+下面的计数就用到了 page-scope 的 `{count}` 显示与直接写的 JSX 按钮行:
 
 **实际渲染**
 
@@ -104,7 +104,17 @@ const [count, setCount] = useState(100)
 
 **注意**:page-scope 的 script 要先声明 `setCount`,`onClick` 才能引用到它;交互更复杂时仍建议用具名组件(见上文 `<Counter />`)。
 
-不含 `={` 的普通 HTML(如 `<b>bold</b>`、`<Badge type="tip" text="x" />`)仍走 HTML→JSX 序列化:属性保持字符串;`<Badge>` 会自动从主题导入。
+**多行 / 含 JS 表达式的 JSX 块**请用 `::: react` 容器包裹(内容对 markdown-it 完全不透明、原样交给 React):
+
+````md
+::: react
+<ul>
+  {items.map(item => <li key={item.id}>{item.name}</li>)}
+</ul>
+:::
+````
+
+只要是"独立成行的标签行"都按上面的规则处理:普通 HTML 行(如 `<b>bold</b>`)、组件行(如 `<Badge type="tip" text="x" />`,自动从主题导入)同样由 React 接管;含 Vue 指令(`:members`、`@click`、`<template #slot>`)的行不属于 React 接管范围,仍按旧 HTML 路径处理并提示。
 
 ### 在 Markdown 中导入并使用组件 {#using-components}
 

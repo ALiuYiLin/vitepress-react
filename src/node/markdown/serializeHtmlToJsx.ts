@@ -632,6 +632,20 @@ export function serializeHtmlToJsx(
   const renderNode = (node: JsxNode, depth: number) => {
     const pad = indent.repeat(depth)
     const rawTag = node.tag
+
+    // 块级 JSX 占位(<div data-vp-jsx="n">):还原为原始 JSX(不进 <p>)
+    if (node.tag.toLowerCase() === 'div') {
+      const sentinel = node.attrs.find(
+        ([k]) => k.toLowerCase() === 'data-vp-jsx'
+      )
+      if (sentinel) {
+        const raw = expressions[`${String(sentinel[1])}`]?.html
+        if (raw != null) {
+          for (const rl of raw.split('\n')) lines.push(rl ? `${pad}${rl}` : pad)
+          return
+        }
+      }
+    }
     // 大写开头但不在具名导出集合:JSX 中大写标签必为组件变量(未定义会
     // ReferenceError),不能原样输出 → 渲染为转义文本(语法展示等场景)
     if (COMPONENT_TAG_RE.test(rawTag) && !componentNames.has(rawTag)) {
