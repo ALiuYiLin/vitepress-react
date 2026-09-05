@@ -283,8 +283,8 @@ importers:
   docs:
     devDependencies:
       '@10coding/vite-plugin-jsx-scoped':
-        specifier: ^0.3.0
-        version: 0.3.0(supports-color@7.2.0)(vite@8.2.2(@types/node@26.2.0)(jiti@1.21.7)(yaml@2.9.0))
+        specifier: ^0.4.0
+        version: 0.4.0(supports-color@7.2.0)(vite@8.2.2(@types/node@26.2.0)(jiti@1.21.7)(yaml@2.9.0))
       '@10coding/vitepress-react':
         specifier: workspace:*
         version: link:..
@@ -309,15 +309,6 @@ importers:
 
 packages:
 
-  '@10coding/plugin-jsx-scoped@0.1.0':
-    resolution: {integrity: sha512-QWZCw2p6LjGTvJM+aDowzjWDFeor3j2iTxAvK0w7vxhuOK8XMmvLigL19NTHd/PII3V5dToCAlHMck+NSMKgwQ==}
-    engines: {node: '>=18'}
-    peerDependencies:
-      '@babel/core': '>=7.13.0'
-    peerDependenciesMeta:
-      '@babel/core':
-        optional: true
-
   '@10coding/plugin-jsx-scoped@0.2.0':
     resolution: {integrity: sha512-hUXJ9Hu5eZ3GRO2XDkcr7CRu6XP02hv/+wH9XYZZ7nvXek3s0lmzpbssvgjfbPd5s4hNyECQuoysKjzAPi59Vw==}
     engines: {node: '>=18'}
@@ -330,19 +321,6 @@ packages:
   '@10coding/postcss-jsx-scoped@0.1.0':
     resolution: {integrity: sha512-0xZwagNsr91it9zG3sS9+8bHI9EPmhxTMHgDOshPVRz9JoLQhQgmyg8KY7l848mvhfPopSA7RIjQb9D6lPU3Jg==}
     engines: {node: '>=18'}
-
-  '@10coding/vite-plugin-jsx-scoped@0.3.0':
-    resolution: {integrity: sha512-MSZptYRP0lxH6ONZpDxsJrs9mC66srpOzwn/J+J3mH0TDZfVHiVOCv+cSoG5OYEWEr1fT4k9sF5O8olsfpQx2g==}
-    engines: {node: '>=18'}
-    peerDependencies:
-      less: '*'
-      sass: '*'
-      vite: ^5.0.0 || ^6.0.0 || ^7.0.0
-    peerDependenciesMeta:
-      less:
-        optional: true
-      sass:
-        optional: true
 
   '@10coding/vite-plugin-jsx-scoped@0.4.0':
     resolution: {integrity: sha512-Wrk22LuGkFmVmLrQscJGR8HXMmgQZSPjF+L+JKlrVW/D2pQxJN2rALfaW9E3DYlVco35qqxsLs1SlJn4OLJH+Q==}
@@ -2827,12 +2805,6 @@ packages:
 
 snapshots:
 
-  '@10coding/plugin-jsx-scoped@0.1.0(@babel/core@7.29.7(supports-color@7.2.0))':
-    dependencies:
-      '@babel/parser': 7.29.8
-    optionalDependencies:
-      '@babel/core': 7.29.7(supports-color@7.2.0)
-
   '@10coding/plugin-jsx-scoped@0.2.0(@babel/core@7.29.7(supports-color@7.2.0))':
     dependencies:
       '@babel/parser': 7.29.8
@@ -2843,15 +2815,6 @@ snapshots:
     dependencies:
       postcss: 8.5.26
       postcss-selector-parser: 7.1.6
-
-  '@10coding/vite-plugin-jsx-scoped@0.3.0(supports-color@7.2.0)(vite@8.2.2(@types/node@26.2.0)(jiti@1.21.7)(yaml@2.9.0))':
-    dependencies:
-      '@10coding/plugin-jsx-scoped': 0.1.0(@babel/core@7.29.7(supports-color@7.2.0))
-      '@10coding/postcss-jsx-scoped': 0.1.0
-      '@babel/core': 7.29.7(supports-color@7.2.0)
-      vite: 8.2.2(@types/node@26.2.0)(jiti@1.21.7)(yaml@2.9.0)
-    transitivePeerDependencies:
-      - supports-color
 
   '@10coding/vite-plugin-jsx-scoped@0.4.0(supports-color@7.2.0)(vite@8.2.2(@types/node@26.2.0)(jiti@1.21.7)(yaml@2.9.0))':
     dependencies:
