@@ -10,7 +10,7 @@ description: 为 VitePress 站点设置本地搜索或 Algolia 搜索功能。
 得益于 [minisearch](https://github.com/lucaong/minisearch/)，VitePress 支持使用浏览器内索引进行模糊全文搜索。要启用此功能，只需在 `.vitepress/config.ts` 文件中将 `themeConfig.search.provider` 选项设置为 `'local'` 即可：
 
 ```ts
-import { defineConfig } from 'vitepress'
+import { defineConfig } from '@10coding/vitepress-react'
 
 export default defineConfig({
   themeConfig: {
@@ -32,7 +32,7 @@ export default defineConfig({
 你可以使用这样的配置来使用多语言搜索：
 
 ```ts
-import { defineConfig } from 'vitepress'
+import { defineConfig } from '@10coding/vitepress-react'
 
 export default defineConfig({
   themeConfig: {
@@ -75,7 +75,7 @@ export default defineConfig({
 你可以像这样配置 MiniSearch ：
 
 ```ts
-import { defineConfig } from 'vitepress'
+import { defineConfig } from '@10coding/vitepress-react'
 
 export default defineConfig({
   themeConfig: {
@@ -111,7 +111,7 @@ export default defineConfig({
 可以在索引之前自定义用于渲染 Markdown 内容的函数：
 
 ```ts
-import { defineConfig } from 'vitepress'
+import { defineConfig } from '@10coding/vitepress-react'
 
 export default defineConfig({
   themeConfig: {
@@ -120,7 +120,7 @@ export default defineConfig({
       options: {
         /**
          * @param {string} src
-         * @param {import('vitepress').MarkdownEnv} env
+         * @param {import('@10coding/vitepress-react').MarkdownEnv} env
          * @param {import('markdown-it-async')} md
          */
         async _render(src, env, md) {
@@ -139,7 +139,7 @@ export default defineConfig({
 你可以通过将 `search: false` 添加到页面的 `frontmatter` 来从搜索中排除页面。或者：
 
 ```ts
-import { defineConfig } from 'vitepress'
+import { defineConfig } from '@10coding/vitepress-react'
 
 export default defineConfig({
   themeConfig: {
@@ -165,7 +165,7 @@ export default defineConfig({
 #### 示例：转换内容——添加锚点 {#example-transforming-content-adding-anchors}
 
 ```ts
-import { defineConfig } from 'vitepress'
+import { defineConfig } from '@10coding/vitepress-react'
 
 export default defineConfig({
   themeConfig: {
@@ -189,7 +189,7 @@ export default defineConfig({
 VitePress 支持使用 [Algolia DocSearch](https://docsearch.algolia.com/docs/what-is-docsearch) 搜索文档站点。请参阅他们的入门指南。在你的 `.vitepress/config.ts` 中，你至少需要提供以下内容才能使其正常工作：
 
 ```ts
-import { defineConfig } from 'vitepress'
+import { defineConfig } from '@10coding/vitepress-react'
 
 export default defineConfig({
   themeConfig: {
@@ -222,7 +222,7 @@ export default defineConfig({
 如果需要启用 **Ask AI**，只需在 `options` 中添加 `askAi`：
 
 ```ts
-import { defineConfig } from 'vitepress'
+import { defineConfig } from '@10coding/vitepress-react'
 
 export default defineConfig({
   themeConfig: {
@@ -257,7 +257,7 @@ export default defineConfig({
 DocSearch v4.5+ 支持可选的 **Ask AI 侧边栏**。启用后，默认可通过 **Ctrl/Cmd+I** 打开。完整的选项列表请参阅[侧边栏 API 参考](https://docsearch.algolia.com/docs/sidepanel/api-reference)。
 
 ```ts
-import { defineConfig } from 'vitepress'
+import { defineConfig } from '@10coding/vitepress-react'
 
 export default defineConfig({
   themeConfig: {
@@ -289,7 +289,7 @@ export default defineConfig({
 如果需要禁用键盘快捷键，请使用侧边栏的 `keyboardShortcuts` 选项：
 
 ```ts
-import { defineConfig } from 'vitepress'
+import { defineConfig } from '@10coding/vitepress-react'
 
 export default defineConfig({
   themeConfig: {
@@ -327,7 +327,7 @@ export default defineConfig({
 如果你想**仅使用 Ask AI 侧边栏**，可以省略顶级关键词搜索配置，并在 `askAi` 下提供凭据：
 
 ```ts
-import { defineConfig } from 'vitepress'
+import { defineConfig } from '@10coding/vitepress-react'
 
 export default defineConfig({
   themeConfig: {

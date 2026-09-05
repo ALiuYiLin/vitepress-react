@@ -30,7 +30,7 @@ export default {
 如果需要动态生成配置，也可以默认导出一个函数，例如：
 
 ```ts
-import { defineConfig } from 'vitepress'
+import { defineConfig } from '@10coding/vitepress-react'
 
 export default async () => {
   const posts = await (await fetch('https://my-cms.com/blog-posts')).json()
@@ -57,7 +57,7 @@ export default async () => {
 也可以在最外层使用 `await`。例如：
 
 ```ts
-import { defineConfig } from 'vitepress'
+import { defineConfig } from '@10coding/vitepress-react'
 
 const posts = await (await fetch('https://my-cms.com/blog-posts')).json()
 
@@ -86,7 +86,7 @@ export default defineConfig({
 使用 `defineConfig` 辅助函数将为配置选项提供 TypeScript 支持的智能提示。假设 IDE 支持它，那么在 JavaScript 和 TypeScript 中都将触发智能提示。
 
 ```js
-import { defineConfig } from 'vitepress'
+import { defineConfig } from '@10coding/vitepress-react'
 
 export default defineConfig({
   // ...
@@ -98,7 +98,7 @@ export default defineConfig({
 默认情况下，`defineConfig` 辅助函数期望默认主题的主题配置数据类型为：
 
 ```ts
-import { defineConfig } from 'vitepress'
+import { defineConfig } from '@10coding/vitepress-react'
 
 export default defineConfig({
   themeConfig: {
@@ -110,7 +110,7 @@ export default defineConfig({
 如果使用自定义主题并希望对主题配置进行类型检查，则需要改用 `defineConfigWithTheme`，并通过通用参数传递自定义主题的配置类型：
 
 ```ts
-import { defineConfigWithTheme } from 'vitepress'
+import { defineConfigWithTheme } from '@10coding/vitepress-react'
 import type { ThemeConfig } from 'your-theme'
 
 export default defineConfigWithTheme<ThemeConfig>({
@@ -515,7 +515,7 @@ export default {
 }
 ```
 
-查看[类型声明和 jsdocs](https://github.com/vuejs/vitepress/blob/main/src/node/markdown/markdown.ts) 以获得所有可配置的选项。
+查看[类型声明和 jsdocs](https://github.com/ALiuYiLin/vitepress-react/blob/main/src/node/markdown/markdown.ts) 以获得所有可配置的选项。
 
 ### vite
 

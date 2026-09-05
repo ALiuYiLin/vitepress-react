@@ -31,7 +31,7 @@ VitePress 自定义主题是一个对象，该对象具有如下接口：
 
 ```ts
 import type { ComponentType, ReactNode } from 'react'
-import type { Router, SiteData } from 'vitepress'
+import type { Router, SiteData } from '@10coding/vitepress-react'
 
 interface Theme {
   /** 每个页面的根布局组件 */
@@ -72,7 +72,7 @@ export default {
 最基本的布局组件需要渲染 [`<Content />`](../reference/runtime-api#content)，它负责输出当前页面的 markdown 内容：
 
 ```tsx [.vitepress/theme/Layout.tsx]
-import { Content } from 'vitepress'
+import { Content } from '@10coding/vitepress-react'
 
 export default function Layout() {
   return (
@@ -87,7 +87,7 @@ export default function Layout() {
 上面的布局只是把每个页面的 markdown 渲染为 HTML。我们添加的第一个改进是处理 404 错误：
 
 ```tsx [.vitepress/theme/Layout.tsx]
-import { Content, useData } from 'vitepress'
+import { Content, useData } from '@10coding/vitepress-react'
 
 export default function Layout() {
   const { page } = useData()
@@ -120,7 +120,7 @@ layout: home
 主题据此分支渲染：
 
 ```tsx [.vitepress/theme/Layout.tsx]
-import { Content, useData } from 'vitepress'
+import { Content, useData } from '@10coding/vitepress-react'
 
 export default function Layout() {
   const { page, frontmatter } = useData()
@@ -153,7 +153,7 @@ export default function Layout() {
 当然你可以把布局拆成多个组件：
 
 ```tsx [.vitepress/theme/Layout.tsx]
-import { useData } from 'vitepress'
+import { useData } from '@10coding/vitepress-react'
 import NotFound from './NotFound.tsx'
 import Home from './Home.tsx'
 import Page from './Page.tsx'
@@ -176,7 +176,7 @@ export default function Layout() {
 ```
 
 ```tsx [.vitepress/theme/Page.tsx]
-import { Content } from 'vitepress'
+import { Content } from '@10coding/vitepress-react'
 
 export default function Page() {
   return <Content />
@@ -240,7 +240,7 @@ export default {
 
 ```ts [.vitepress/config.ts]
 import baseConfig from 'awesome-vitepress-theme/config'
-import { defineConfig } from 'vitepress'
+import { defineConfig } from '@10coding/vitepress-react'
 import type { ThemeConfig } from 'awesome-vitepress-theme'
 
 export default defineConfig({

@@ -52,7 +52,7 @@ layout: foo
 ```
 
 ```tsx [.vitepress/theme/Layout.tsx]
-import { Content, useData } from 'vitepress'
+import { Content, useData } from '@10coding/vitepress-react'
 import FooPage from './FooPage.tsx'
 
 export default function Layout() {

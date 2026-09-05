@@ -25,7 +25,7 @@ Other CI/CD platforms have similar settings.
 If such options aren't available, you can prepend the `docs:build` command in your `package.json` with a manual fetch:
 
 ```json
-"docs:build": "git fetch --unshallow && vitepress build docs"
+"docs:build": "git fetch --unshallow && vitepress-react build docs"
 ```
 :::
 

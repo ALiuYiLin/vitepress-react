@@ -64,7 +64,7 @@ Pages and internal links get generated with the `.html` suffix by default.
 Outbound links automatically get `target="_blank" rel="noreferrer"`:
 
 - [vuejs.org](https://vuejs.org)
-- [VitePress on GitHub](https://github.com/vuejs/vitepress)
+- [VitePress on GitHub](https://github.com/ALiuYiLin/vitepress-react)
 
 ## Frontmatter
 
@@ -394,7 +394,7 @@ Wraps in a `<div class="vp-raw">`
 - Create a file named `docs/postcss.config.mjs` and add this to it:
 
   ```js
-  import { postcssIsolateStyles } from 'vitepress'
+  import { postcssIsolateStyles } from '@10coding/vitepress-react'
 
   export default {
     plugins: [postcssIsolateStyles()]
@@ -837,7 +837,7 @@ You can group multiple code blocks like this:
 
 ```js [config.js]
 /**
- * @type {import('vitepress').UserConfig}
+ * @type {import('@10coding/vitepress-react').UserConfig}
  */
 const config = {
   // ...
@@ -847,7 +847,7 @@ export default config
 ```
 
 ```ts [config.ts]
-import type { UserConfig } from 'vitepress'
+import type { UserConfig } from '@10coding/vitepress-react'
 
 const config: UserConfig = {
   // ...
@@ -865,7 +865,7 @@ export default config
 
 ```js [config.js]
 /**
- * @type {import('vitepress').UserConfig}
+ * @type {import('@10coding/vitepress-react').UserConfig}
  */
 const config = {
   // ...
@@ -875,7 +875,7 @@ export default config
 ```
 
 ```ts [config.ts]
-import type { UserConfig } from 'vitepress'
+import type { UserConfig } from '@10coding/vitepress-react'
 
 const config: UserConfig = {
   // ...
@@ -1168,7 +1168,7 @@ export default {
 VitePress uses [markdown-it](https://github.com/markdown-it/markdown-it) as the Markdown renderer. A lot of the extensions above are implemented via custom plugins. You can further customize the `markdown-it` instance using the `markdown` option in `.vitepress/config.js`:
 
 ```js
-import { defineConfig } from 'vitepress'
+import { defineConfig } from '@10coding/vitepress-react'
 import { headerLink } from '@mdit/plugin-anchor'
 import markdownItFoo from 'markdown-it-foo'
 

@@ -30,7 +30,7 @@ export default {
 If you need to dynamically generate the config, you can also default export a function. For example:
 
 ```ts
-import { defineConfig } from 'vitepress'
+import { defineConfig } from '@10coding/vitepress-react'
 
 export default async () => {
   const posts = await (await fetch('https://my-cms.com/blog-posts')).json()
@@ -57,7 +57,7 @@ export default async () => {
 You can also use top-level `await`. For example:
 
 ```ts
-import { defineConfig } from 'vitepress'
+import { defineConfig } from '@10coding/vitepress-react'
 
 const posts = await (await fetch('https://my-cms.com/blog-posts')).json()
 
@@ -86,7 +86,7 @@ export default defineConfig({
 Using the `defineConfig` helper will provide TypeScript-powered intellisense for config options. Assuming your IDE supports it, this should work in both JavaScript and TypeScript.
 
 ```js
-import { defineConfig } from 'vitepress'
+import { defineConfig } from '@10coding/vitepress-react'
 
 export default defineConfig({
   // ...
@@ -98,7 +98,7 @@ export default defineConfig({
 By default, `defineConfig` helper expects the theme config type from default theme:
 
 ```ts
-import { defineConfig } from 'vitepress'
+import { defineConfig } from '@10coding/vitepress-react'
 
 export default defineConfig({
   themeConfig: {
@@ -110,7 +110,7 @@ export default defineConfig({
 If you use a custom theme and want type checks for the theme config, you'll need to use `defineConfigWithTheme` instead, and pass the config type for your custom theme via a generic argument:
 
 ```ts
-import { defineConfigWithTheme } from 'vitepress'
+import { defineConfigWithTheme } from '@10coding/vitepress-react'
 import type { ThemeConfig } from 'your-theme'
 
 export default defineConfigWithTheme<ThemeConfig>({
@@ -153,7 +153,7 @@ The `defineAdditionalConfig` helper can be used to get TypeScript-powered intell
 For example, for a site with multiple languages we might want a different `description` for each language. We could add `es/config.ts` with the following content:
 
 ```ts
-import { defineAdditionalConfig } from 'vitepress'
+import { defineAdditionalConfig } from '@10coding/vitepress-react'
 
 export default defineAdditionalConfig({
   description: 'Generador de Sitios Estáticos desarrollado con Vite y Vue.'
@@ -384,7 +384,7 @@ export default {
 }
 ```
 
-Can also be set per build with `vitepress build --base /base/`.
+Can also be set per build with `vitepress-react build --base /base/`.
 
 ## Routing
 
@@ -487,7 +487,7 @@ The emitted asset URL is `assetsBase` joined with the output-relative file path,
 
 When `assetsBase` points at another origin, VitePress adds `crossorigin` to the emitted script and preload tags — the CDN must send `Access-Control-Allow-Origin` for your site's origin (module scripts are always fetched in CORS mode).
 
-Only production builds are affected. `vitepress preview` serves a root-absolute `assetsBase` (like `/cdn/`) from the local dist; an external one is requested from the real URL. Can also be set per build with `vitepress build --assetsBase https://cdn.example.com/`.
+Only production builds are affected. `vitepress-react preview` serves a root-absolute `assetsBase` (like `/cdn/`) from the local dist; an external one is requested from the real URL. Can also be set per build with `vitepress-react build --assetsBase https://cdn.example.com/`.
 
 ### icons
 
@@ -601,7 +601,7 @@ export default {
 }
 ```
 
-Check the [type declaration and jsdocs](https://github.com/vuejs/vitepress/blob/main/src/node/markdown/markdown.ts) for all the options available.
+Check the [type declaration and jsdocs](https://github.com/ALiuYiLin/vitepress-react/blob/main/src/node/markdown/markdown.ts) for all the options available.
 
 Set `markdown.headers` to `true` or pass [`@mdit-vue/plugin-headers`](https://github.com/mdit-vue/mdit-vue/tree/main/packages/plugin-headers) options to collect headings into [`useData().page.headers`](./runtime-api#usedata). This option is disabled by default.
 

@@ -1,31 +1,29 @@
-# VitePress 📝💨
+# VitePress React 📝💨
 
-[![test](https://github.com/vuejs/vitepress/actions/workflows/test.yml/badge.svg?branch=main)](https://github.com/vuejs/vitepress/actions/workflows/test.yml)
-[![npm](https://img.shields.io/npm/v/vitepress/next)](https://www.npmjs.com/package/vitepress/v/next)
-[![nightly releases](https://img.shields.io/badge/nightly-releases-orange)](https://nightly.akryum.dev/vuejs/vitepress)
-[![chat](https://img.shields.io/badge/chat-discord-blue?logo=discord)](https://chat.vuejs.org)
+[![test](https://github.com/ALiuYiLin/vitepress-react/actions/workflows/test.yml/badge.svg?branch=main)](https://github.com/ALiuYiLin/vitepress-react/actions/workflows/test.yml)
+[![npm](https://img.shields.io/npm/v/@10coding/vitepress-react/next)](https://www.npmjs.com/package/@10coding/vitepress-react/v/next)
 
 ---
 
-VitePress is a Vue-powered static site generator and a spiritual successor to [VuePress](https://vuepress.vuejs.org), built on top of [Vite](https://github.com/vitejs/vite).
+**VitePress React** is a React-powered static site generator forked from [VitePress](https://github.com/vuejs/vitepress), built on top of [Vite](https://github.com/vitejs/vite) and [React 19](https://react.dev). Write docs in Markdown, sprinkle in React components, expressions and theme components.
 
 ## Documentation
 
-To check out docs, visit [vitepress.dev](https://vitepress.dev).
+To check out docs, visit the [site](https://aliuyilin.github.io/vitepress-react/).
 
 ## Changelog
 
-Detailed changes for each release are documented in the [CHANGELOG](https://github.com/vuejs/vitepress/blob/main/CHANGELOG.md).
+Detailed changes for each release are documented in the [CHANGELOG](https://github.com/ALiuYiLin/vitepress-react/blob/main/CHANGELOG.md).
 
 ## Contribution
 
-Please make sure to read the [Contributing Guide](https://github.com/vuejs/vitepress/blob/main/.github/contributing.md) before making a pull request.
+Please make sure to read the [Contributing Guide](https://github.com/ALiuYiLin/vitepress-react/blob/main/.github/contributing.md) before making a pull request.
 
 ## License
 
-[MIT](https://github.com/vuejs/vitepress/blob/main/LICENSE)
+[MIT](https://github.com/ALiuYiLin/vitepress-react/blob/main/LICENSE)
 
-Copyright (c) 2019-present, Yuxi (Evan) You
+Forked from VitePress (c) 2019-present, Yuxi (Evan) You
 
 ## Special Thanks
 

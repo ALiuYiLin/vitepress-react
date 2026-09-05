@@ -219,7 +219,7 @@ interface Outline {
 export default {
   themeConfig: {
     socialLinks: [
-      { icon: 'github', link: 'https://github.com/vuejs/vitepress' },
+      { icon: 'github', link: 'https://github.com/ALiuYiLin/vitepress-react' },
       { icon: 'twitter', link: '...' },
       // 可以通过将 SVG 作为字符串传递来添加自定义图标：
       {
@@ -279,7 +279,7 @@ export interface Footer {
 export default {
   themeConfig: {
     editLink: {
-      pattern: 'https://github.com/vuejs/vitepress/edit/main/docs/:path',
+      pattern: 'https://github.com/ALiuYiLin/vitepress-react/edit/main/docs/:path',
       text: 'Edit this page on GitHub'
     }
   }
@@ -340,7 +340,7 @@ export interface AlgoliaSearchOptions extends DocSearchProps {
 }
 ```
 
-在[这里](https://github.com/vuejs/vitepress/blob/main/types/docsearch.d.ts)查看完整配置。
+在[这里](https://github.com/ALiuYiLin/vitepress-react/blob/main/types/docsearch.d.ts)查看完整配置。
 
 ## carbonAds {#carbon-ads}
 

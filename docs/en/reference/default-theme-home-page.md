@@ -35,7 +35,7 @@ hero:
       link: /guide/what-is-vitepress
     - theme: alt
       text: View on GitHub
-      link: https://github.com/vuejs/vitepress
+      link: https://github.com/ALiuYiLin/vitepress-react
 ---
 ```
 
@@ -190,7 +190,7 @@ You can get started using VitePress right away using `npx`!
 
 ```sh
 npm init
-npx vitepress init
+npx vitepress-react init
 ```
 ````
 

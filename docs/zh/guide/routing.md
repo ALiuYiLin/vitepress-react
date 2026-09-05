@@ -37,7 +37,7 @@ VitePress 项目的文件结构中有两个重要的概念：项目根目录 (**
 
 项目根目录是 VitePress 将尝试寻找 `.vitepress` 特殊目录的地方。`.vitepress` 目录是 VitePress 配置文件、开发服务器缓存、构建输出和可选主题自定义代码的预留位置。
 
-当从命令行运行 `vitepress dev` 或 `vitepress build` 时，VitePress 将使用当前工作目录作为项目根目录。要将子目录指定为根目录，需要将相对路径传递给命令。例如，如果 VitePress 项目位于 `./docs`，应该运行 `vitepress dev docs`：
+当从命令行运行 `vitepress-react dev` 或 `vitepress-react build` 时，VitePress 将使用当前工作目录作为项目根目录。要将子目录指定为根目录，需要将相对路径传递给命令。例如，如果 VitePress 项目位于 `./docs`，应该运行 `vitepress-react dev docs`：
 
 ```
 .
@@ -49,7 +49,7 @@ VitePress 项目的文件结构中有两个重要的概念：项目根目录 (**
 ```
 
 ```sh
-vitepress dev docs
+vitepress-react dev docs
 ```
 
 这将导致以下源代码到 HTML 的映射：
@@ -329,7 +329,7 @@ export default {
 
 ```md
 <script>
-import { useData } from 'vitepress'
+import { useData } from '@10coding/vitepress-react'
 
 const { params } = useData()
 </script>

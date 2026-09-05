@@ -14,8 +14,8 @@ The following guides are based on some shared assumptions:
   ```json [package.json]
   {
     "scripts": {
-      "docs:build": "vitepress build docs",
-      "docs:preview": "vitepress preview docs"
+      "docs:build": "vitepress-react build docs",
+      "docs:preview": "vitepress-react preview docs"
     }
   }
   ```
@@ -41,7 +41,7 @@ The following guides are based on some shared assumptions:
    ```json
    {
      "scripts": {
-       "docs:preview": "vitepress preview docs --port 8080"
+       "docs:preview": "vitepress-react preview docs --port 8080"
      }
    }
    ```

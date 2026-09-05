@@ -25,7 +25,7 @@ VitePress 通过每个文件最近一次 Git 提交的时间戳显示"最后更�
 若上述选项不可用，可在 `package.json` 中的 `docs:build` 命令后手动添加获取操作：
 
 ```json
-"docs:build": "git fetch --unshallow && vitepress build docs"
+"docs:build": "git fetch --unshallow && vitepress-react build docs"
 ```
 :::
 

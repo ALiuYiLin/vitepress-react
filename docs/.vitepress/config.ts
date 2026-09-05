@@ -2,7 +2,7 @@ import {
   defineConfig,
   resolveSiteDataByRoute,
   type HeadConfig
-} from 'vitepress'
+} from '@10coding/vitepress-react'
 import jsxScopedVitePlugin from '@10coding/vite-plugin-jsx-scoped'
 import {
   groupIconMdPlugin,
@@ -70,7 +70,7 @@ export default defineConfig({
     logo: { src: '/vitepress-logo-mini.svg', width: 24, height: 24 },
 
     socialLinks: [
-      { icon: 'github', link: 'https://github.com/vuejs/vitepress' }
+      { icon: 'github', link: 'https://github.com/ALiuYiLin/vitepress-react' }
     ],
 
     // 本地搜索(离线,minisearch 索引由 vitepress 构建期生成);

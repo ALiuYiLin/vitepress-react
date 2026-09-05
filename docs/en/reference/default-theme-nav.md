@@ -198,12 +198,12 @@ export default {
 Then, you need to register the component globally:
 
 ```js [.vitepress/theme/index.js]
-import DefaultTheme from 'vitepress/theme'
+import DefaultTheme from '@10coding/vitepress-react/theme'
 
 import MyCustomComponent from './components/MyCustomComponent.vue'
 import AnotherCustomComponent from './components/AnotherCustomComponent.vue'
 
-/** @type {import('vitepress').Theme} */
+/** @type {import('@10coding/vitepress-react').Theme} */
 export default {
   extends: DefaultTheme,
   enhanceApp({ app }) {
@@ -218,4 +218,4 @@ Your component will be rendered in the navigation bar. VitePress will provide th
 - `screenMenu`: an optional boolean indicating whether the component is inside mobile navigation menu
 - `menu`: an optional boolean indicating whether the component is inside a dropdown panel — for example, the `⋯` menu that nav items collapse into when they don't fit the bar. In both these contexts, render a flat list instead of a floating flyout, which would end up nested inside the panel
 
-You can check an example in the e2e tests [here](https://github.com/vuejs/vitepress/tree/main/__tests__/e2e/.vitepress).
+You can check an example in the e2e tests [here](https://github.com/ALiuYiLin/vitepress-react/tree/main/__tests__/e2e/.vitepress).

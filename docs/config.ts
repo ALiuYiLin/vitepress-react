@@ -1,8 +1,8 @@
-import { defineAdditionalConfig, type DefaultTheme } from 'vitepress'
-import { version } from 'vitepress/package.json' with { type: 'json' }
+import { defineAdditionalConfig, type DefaultTheme } from '@10coding/vitepress-react'
+import { version } from '@10coding/vitepress-react/package.json' with { type: 'json' }
 
 export default defineAdditionalConfig({
-  description: 'Vite & Vue powered static site generator.',
+  description: 'Vite & React powered static site generator.',
 
   themeConfig: {
     nav: nav(),
@@ -13,7 +13,7 @@ export default defineAdditionalConfig({
     },
 
     editLink: {
-      pattern: 'https://github.com/vuejs/vitepress/edit/main/docs/:path',
+      pattern: 'https://github.com/ALiuYiLin/vitepress-react/edit/main/docs/:path',
       text: 'Edit this page on GitHub'
     },
 
@@ -40,16 +40,12 @@ function nav(): DefaultTheme.NavItem[] {
       text: version,
       items: [
         {
-          text: '1.6.4',
-          link: 'https://vuejs.github.io/vitepress/v1/'
-        },
-        {
           text: 'Changelog',
-          link: 'https://github.com/vuejs/vitepress/blob/main/CHANGELOG.md'
+          link: 'https://github.com/ALiuYiLin/vitepress-react/blob/main/CHANGELOG.md'
         },
         {
           text: 'Contributing',
-          link: 'https://github.com/vuejs/vitepress/blob/main/.github/contributing.md'
+          link: 'https://github.com/ALiuYiLin/vitepress-react/blob/main/.github/contributing.md'
         }
       ]
     }

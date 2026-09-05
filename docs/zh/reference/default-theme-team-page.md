@@ -3,7 +3,7 @@ description: 使用 VitePress 内置的团队组件创建包含成员资料的�
 ---
 
 <script setup>
-import { VPTeamMembers } from 'vitepress/theme'
+import { VPTeamMembers } from '@10coding/vitepress-react/theme'
 
 const members = [
   {
@@ -37,7 +37,7 @@ const members = [
 
 ```html
 <script setup>
-import { VPTeamMembers } from 'vitepress/theme'
+import { VPTeamMembers } from '@10coding/vitepress-react/theme'
 
 const members = [
   {
@@ -85,7 +85,7 @@ import {
   VPTeamPage,
   VPTeamPageTitle,
   VPTeamMembers
-} from 'vitepress/theme'
+} from '@10coding/vitepress-react/theme'
 
 const members = [
   {
@@ -137,7 +137,7 @@ import {
   VPTeamPageTitle,
   VPTeamMembers,
   VPTeamPageSection
-} from 'vitepress/theme'
+} from '@10coding/vitepress-react/theme'
 
 const coreMembers = [...]
 const partners = [...]

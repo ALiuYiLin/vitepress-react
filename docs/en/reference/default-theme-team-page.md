@@ -3,7 +3,7 @@ description: Create team pages with member profiles using VitePress built-in tea
 ---
 
 <script setup>
-import { VPTeamMembers } from 'vitepress/theme'
+import { VPTeamMembers } from '@10coding/vitepress-react/theme'
 
 const members = [
   {
@@ -37,7 +37,7 @@ You may use `<VPTeamMembers>` component exposed from `vitepress/theme` to displa
 
 ```html
 <script setup>
-import { VPTeamMembers } from 'vitepress/theme'
+import { VPTeamMembers } from '@10coding/vitepress-react/theme'
 
 const members = [
   {
@@ -85,7 +85,7 @@ import {
   VPTeamPage,
   VPTeamPageTitle,
   VPTeamMembers
-} from 'vitepress/theme'
+} from '@10coding/vitepress-react/theme'
 
 const members = [
   {
@@ -137,7 +137,7 @@ import {
   VPTeamPageTitle,
   VPTeamMembers,
   VPTeamPageSection
-} from 'vitepress/theme'
+} from '@10coding/vitepress-react/theme'
 
 const coreMembers = [...]
 const partners = [...]

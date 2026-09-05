@@ -30,7 +30,7 @@ editLink: true
 ---
 
 <script>
-import { useData } from 'vitepress'
+import { useData } from '@10coding/vitepress-react'
 
 const { frontmatter } = useData()
 </script>

@@ -4,7 +4,7 @@ description: Reference of VitePress CLI commands including dev, build, preview, 
 
 # Command Line Interface
 
-## `vitepress dev`
+## `vitepress-react dev`
 
 Start VitePress dev server using designated directory as root. Defaults to current directory. The `dev` command can also be omitted when running in current directory.
 
@@ -15,7 +15,7 @@ Start VitePress dev server using designated directory as root. Defaults to curre
 vitepress
 
 # start in sub directory
-vitepress dev [root]
+vitepress-react dev [root]
 ```
 
 ### Options
@@ -29,14 +29,14 @@ vitepress dev [root]
 | `--strictPort`  | Exit if specified port is already in use (`boolean`)              |
 | `--force`       | Force the optimizer to ignore the cache and re-bundle (`boolean`) |
 
-## `vitepress build`
+## `vitepress-react build`
 
 Build the VitePress site for production.
 
 ### Usage
 
 ```sh
-vitepress build [root]
+vitepress-react build [root]
 ```
 
 ### Options
@@ -50,14 +50,14 @@ vitepress build [root]
 | `--outDir <dir>`               | Output directory relative to **cwd** (default: `<root>/.vitepress/dist`) (`string`)                                 |
 | `--assetsInlineLimit <number>` | Static asset base64 inline threshold in bytes (default: `4096`) (`number`)                                          |
 
-## `vitepress preview`
+## `vitepress-react preview`
 
 Locally preview the production build.
 
 ### Usage
 
 ```sh
-vitepress preview [root]
+vitepress-react preview [root]
 ```
 
 ### Options
@@ -68,12 +68,12 @@ vitepress preview [root]
 | `--assetsBase <url>` | URL prefix the generated assets are served from, e.g. a CDN (`string`) |
 | `--port <port>` | Specify port (`number`)                    |
 
-## `vitepress init`
+## `vitepress-react init`
 
 Start the [Setup Wizard](../guide/getting-started#setup-wizard) in current directory.
 
 ### Usage
 
 ```sh
-vitepress init
+vitepress-react init
 ```

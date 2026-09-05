@@ -2,8 +2,8 @@ import {
   defineAdditionalConfig,
   type DefaultTheme,
   type MarkdownLocaleOptions
-} from 'vitepress'
-import { version } from 'vitepress/package.json' with { type: 'json' }
+} from '@10coding/vitepress-react'
+import { version } from '@10coding/vitepress-react/package.json' with { type: 'json' }
 
 export const markdown: MarkdownLocaleOptions = {
   container: {
@@ -23,7 +23,7 @@ export const markdown: MarkdownLocaleOptions = {
 }
 
 export default defineAdditionalConfig({
-  description: '由 Vite 和 Vue 驱动的静态站点生成器',
+  description: '由 Vite 和 React 驱动的静态站点生成器',
 
   themeConfig: {
     nav: nav(),
@@ -61,7 +61,7 @@ export default defineAdditionalConfig({
     },
 
     editLink: {
-      pattern: 'https://github.com/vuejs/vitepress/edit/main/docs/:path',
+      pattern: 'https://github.com/ALiuYiLin/vitepress-react/edit/main/docs/:path',
       text: '在 GitHub 上编辑此页面'
     },
 
@@ -117,16 +117,12 @@ function nav(): DefaultTheme.NavItem[] {
       text: version,
       items: [
         {
-          text: '1.6.4',
-          link: 'https://vuejs.github.io/vitepress/v1/zh/'
-        },
-        {
           text: '更新日志',
-          link: 'https://github.com/vuejs/vitepress/blob/main/CHANGELOG.md'
+          link: 'https://github.com/ALiuYiLin/vitepress-react/blob/main/CHANGELOG.md'
         },
         {
           text: '参与贡献',
-          link: 'https://github.com/vuejs/vitepress/blob/main/.github/contributing.md'
+          link: 'https://github.com/ALiuYiLin/vitepress-react/blob/main/.github/contributing.md'
         }
       ]
     }

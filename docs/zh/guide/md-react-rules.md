@@ -131,7 +131,7 @@ export default function Page() {
 **编译后的 TSX(示意)**
 
 ```tsx
-// 自动注入:import { VPBadge as Badge } from 'vitepress/theme'
+// 自动注入:import { VPBadge as Badge } from '@10coding/vitepress-react/theme'
 <p>
   {'行内接管: '}
   <b>{'加粗'}</b>

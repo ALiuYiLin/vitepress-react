@@ -22,26 +22,26 @@ VitePress 可以单独使用，也可以安装到现有项目中。在这两种�
 ::: code-group
 
 ```sh [npm]
-$ npm add -D vitepress@next
+$ npm add -D @10coding/vitepress-react@next
 ```
 
 ```sh [pnpm]
-$ pnpm add -D vitepress@next
+$ pnpm add -D @10coding/vitepress-react@next
 ```
 
 ```sh [yarn]
-$ yarn add -D vitepress@next
+$ yarn add -D @10coding/vitepress-react@next
 ```
 
 ```sh [bun]
-$ bun add -D vitepress@next
+$ bun add -D @10coding/vitepress-react@next
 ```
 
 :::
 
 ::: tip 注意
 
-VitePress 是仅 ESM 的软件包。不要使用 `require()` 导入它，并确保最新的 `package.json` 包含 `"type": "module"`，或者更改相关文件的文件扩展名，例如 `.vitepress/config.js` 到 `.mjs`/`.mts`。更多详情请参考 [Vite 故障排除指南](http://vite.dev/guide/troubleshooting.html#this-package-is-esm-only)。此外，在异步 CJS 上下文中，可以使用 `await import('vitepress')` 代替。
+VitePress 是仅 ESM 的软件包。不要使用 `require()` 导入它，并确保最新的 `package.json` 包含 `"type": "module"`，或者更改相关文件的文件扩展名，例如 `.vitepress/config.js` 到 `.mjs`/`.mts`。更多详情请参考 [Vite 故障排除指南](http://vite.dev/guide/troubleshooting.html#this-package-is-esm-only)。此外，在异步 CJS 上下文中，可以使用 `await import('@10coding/vitepress-react')` 代替。
 
 :::
 
@@ -52,19 +52,19 @@ VitePress 附带一个命令行设置向导，可以帮助你构建一个基本�
 ::: code-group
 
 ```sh [npm]
-$ npx vitepress init
+$ npx vitepress-react init
 ```
 
 ```sh [pnpm]
-$ pnpm vitepress init
+$ pnpm vitepress-react init
 ```
 
 ```sh [yarn]
-$ yarn vitepress init
+$ yarn vitepress-react init
 ```
 
 ```sh [bun]
-$ bun vitepress init
+$ bun vitepress-react init
 ```
 
 :::
@@ -134,9 +134,9 @@ VitePress 还提供了生成简洁 URL、重写路径和动态生成页面的能
 {
   ...
   "scripts": {
-    "docs:dev": "vitepress dev docs",
-    "docs:build": "vitepress build docs",
-    "docs:preview": "vitepress preview docs"
+    "docs:dev": "vitepress-react dev docs",
+    "docs:build": "vitepress-react build docs",
+    "docs:preview": "vitepress-react preview docs"
   },
   ...
 }
@@ -169,19 +169,19 @@ $ bun run docs:dev
 ::: code-group
 
 ```sh [npm]
-$ npx vitepress dev docs
+$ npx vitepress-react dev docs
 ```
 
 ```sh [pnpm]
-$ pnpm vitepress dev docs
+$ pnpm vitepress-react dev docs
 ```
 
 ```sh [yarn]
-$ yarn vitepress dev docs
+$ yarn vitepress-react dev docs
 ```
 
 ```sh [bun]
-$ bun vitepress dev docs
+$ bun vitepress-react dev docs
 ```
 
 :::

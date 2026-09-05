@@ -58,7 +58,7 @@ export function SomeLogo() {
 在这种情况下，建议使用 VitePress 提供的 [`withBase` helper](../reference/runtime-api#withbase) 来包含路径：
 
 ```tsx [.vitepress/theme/SomeLogo.tsx]
-import { withBase, useData } from 'vitepress'
+import { withBase, useData } from '@10coding/vitepress-react'
 
 export function SomeLogo() {
   const { theme } = useData()

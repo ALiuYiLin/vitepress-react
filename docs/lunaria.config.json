@@ -1,7 +1,7 @@
 {
   "$schema": "./node_modules/@lunariajs/core/config.schema.json",
   "repository": {
-    "name": "vuejs/vitepress",
+    "name": "ALiuYiLin/vitepress-react",
     "rootDir": "docs"
   },
   "files": [

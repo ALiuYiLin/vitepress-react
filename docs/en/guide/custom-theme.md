@@ -97,8 +97,8 @@ The `setup` hook runs inside the root component's `setup()`, so Composition API 
 
 ```ts [.vitepress/theme/index.ts]
 import { watch } from 'vue'
-import { useData } from 'vitepress'
-import DefaultTheme from 'vitepress/theme'
+import { useData } from '@10coding/vitepress-react'
+import DefaultTheme from '@10coding/vitepress-react/theme'
 
 export default {
   extends: DefaultTheme,
@@ -134,7 +134,7 @@ The above layout simply renders every page's markdown as HTML. The first improve
 
 ```vue{1-4,9-12}
 <script setup>
-import { useData } from 'vitepress'
+import { useData } from '@10coding/vitepress-react'
 const { page } = useData()
 </script>
 
@@ -160,7 +160,7 @@ And we can adjust our theme to handle this:
 
 ```vue{3,12-14}
 <script setup>
-import { useData } from 'vitepress'
+import { useData } from '@10coding/vitepress-react'
 const { page, frontmatter } = useData()
 </script>
 
@@ -181,7 +181,7 @@ You can, of course, split the layout into more components:
 
 ```vue{3-5,12-15}
 <script setup>
-import { useData } from 'vitepress'
+import { useData } from '@10coding/vitepress-react'
 import NotFound from './NotFound.vue'
 import Home from './Home.vue'
 import Page from './Page.vue'
@@ -254,7 +254,7 @@ Finally, if the theme provides types for its theme config:
 
 ```ts [.vitepress/config.ts]
 import baseConfig from 'awesome-vitepress-theme/config'
-import { defineConfig } from 'vitepress'
+import { defineConfig } from '@10coding/vitepress-react'
 import type { ThemeConfig } from 'awesome-vitepress-theme'
 
 export default defineConfig<ThemeConfig>({

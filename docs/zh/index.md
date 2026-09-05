@@ -3,19 +3,19 @@ description: VitePress 是一个由 Vite 和 React 驱动的静态站点生成�
 layout: home
 
 hero:
-  name: VitePress
+  name: VitePress-React
   text: 由 Vite 和 React 驱动的静态站点生成器
   tagline: 将 Markdown 变成优雅的文档，只需几分钟
   actions:
     - theme: brand
-      text: 什么是 VitePress?
+      text: 什么是 VitePress-React?
       link: ./guide/what-is-vitepress
     - theme: alt
       text: 快速开始
       link: ./guide/getting-started
     - theme: alt
       text: GitHub
-      link: https://github.com/vuejs/vitepress
+      link: https://github.com/ALiuYiLin/vitepress-react
   image:
       src: /vitepress-logo-large.svg
       alt: VitePress

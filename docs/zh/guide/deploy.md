@@ -14,8 +14,8 @@ description: 将 VitePress 站点部署到 Netlify、Vercel、GitHub Pages 等�
   ```json [package.json]
   {
     "scripts": {
-      "docs:build": "vitepress build docs",
-      "docs:preview": "vitepress preview docs"
+      "docs:build": "vitepress-react build docs",
+      "docs:preview": "vitepress-react preview docs"
     }
   }
   ```
@@ -41,7 +41,7 @@ description: 将 VitePress 站点部署到 Netlify、Vercel、GitHub Pages 等�
    ```json
    {
      "scripts": {
-       "docs:preview": "vitepress preview docs --port 8080"
+       "docs:preview": "vitepress-react preview docs --port 8080"
      }
    }
    ```
@@ -341,4 +341,4 @@ server {
 try_files 解析不能像其他 SPA 应用那样默认回退到 index.html，否则刷新深层链接会返回错误页面。
 :::
 
-更多信息请参见 [nginx 官方文档](https://nginx.org/en/docs/)、这些 GitHub Issue [#2837](https://github.com/vuejs/vitepress/discussions/2837)、[#3235](https://github.com/vuejs/vitepress/issues/3235)以及 Mehdi Merah 发表的[博客](https://blog.mehdi.cc/articles/vitepress-cleanurls-on-nginx-environment#readings)。
+更多信息请参见 [nginx 官方文档](https://nginx.org/en/docs/)、这些 GitHub Issue [#2837](https://github.com/ALiuYiLin/vitepress-react/discussions/2837)、[#3235](https://github.com/ALiuYiLin/vitepress-react/issues/3235)以及 Mehdi Merah 发表的[博客](https://blog.mehdi.cc/articles/vitepress-cleanurls-on-nginx-environment#readings)。

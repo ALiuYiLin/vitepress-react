@@ -49,7 +49,7 @@ interface PageData {
 **在主题组件中使用：**
 
 ```tsx [.vitepress/theme/SomeWidget.tsx]
-import { useData } from 'vitepress'
+import { useData } from '@10coding/vitepress-react'
 
 export function SomeWidget() {
   const { theme } = useData()
@@ -61,7 +61,7 @@ export function SomeWidget() {
 
 ```md
 <script>
-import { useData } from 'vitepress'
+import { useData } from '@10coding/vitepress-react'
 
 const { theme } = useData()
 </script>
@@ -110,7 +110,7 @@ interface Router {
 渲染当前页面的 markdown 内容，在[创建自定义主题](../guide/custom-theme)时使用：
 
 ```tsx
-import { Content } from 'vitepress'
+import { Content } from '@10coding/vitepress-react'
 
 export default function Layout() {
   return (
@@ -137,7 +137,7 @@ export default function Layout() {
 在自定义主题/组件里也可以这样用：
 
 ```tsx
-import { ClientOnly } from 'vitepress'
+import { ClientOnly } from '@10coding/vitepress-react'
 
 export function Demo() {
   return (

@@ -4,7 +4,7 @@ description: 在 VitePress 中启用 MPA（多页面应用）模式，实现零 
 
 # MPA 模式 <Badge type="warning" text="experimental" /> {#mpa-mode}
 
-可以通过命令行输入 `vitepress build --mpa` 或在配置文件中指定 `mpa: true` 配置选项来启用 MPA (Multi-Page Application) 模式。
+可以通过命令行输入 `vitepress-react build --mpa` 或在配置文件中指定 `mpa: true` 配置选项来启用 MPA (Multi-Page Application) 模式。
 
 在 MPA 模式下，所有页面都默认不会包含任何 JavaScript。因此，站点也许可以在评估工具中获得更好的初始访问性能分数。
 

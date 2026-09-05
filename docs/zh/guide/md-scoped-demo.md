@@ -38,7 +38,7 @@ pnpm add -D @10coding/vite-plugin-jsx-scoped
 ```ts
 // .vitepress/config.ts
 import jsxScopedVitePlugin from '@10coding/vite-plugin-jsx-scoped'
-import { defineConfig } from 'vitepress'
+import { defineConfig } from '@10coding/vitepress-react'
 
 export default defineConfig({
   themeConfig: {

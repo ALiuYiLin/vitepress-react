@@ -12,7 +12,7 @@ description: 在文档页面上显示编辑链接，让用户可以在 GitHub �
 export default {
   themeConfig: {
     editLink: {
-      pattern: 'https://github.com/vuejs/vitepress/edit/main/docs/:path'
+      pattern: 'https://github.com/ALiuYiLin/vitepress-react/edit/main/docs/:path'
     }
   }
 }
@@ -46,7 +46,7 @@ export default {
 export default {
   themeConfig: {
     editLink: {
-      pattern: 'https://github.com/vuejs/vitepress/edit/main/docs/:path',
+      pattern: 'https://github.com/ALiuYiLin/vitepress-react/edit/main/docs/:path',
       text: 'Edit this page on GitHub'
     }
   }

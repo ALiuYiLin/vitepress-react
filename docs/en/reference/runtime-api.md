@@ -68,7 +68,7 @@ interface PageData {
 
 ```vue
 <script setup>
-import { useData } from 'vitepress'
+import { useData } from '@10coding/vitepress-react'
 
 const { theme } = useData()
 </script>
@@ -146,7 +146,7 @@ During SSR the name is registered on the page's [`SSGContext`](./site-config#pos
 
 ```vue
 <script setup>
-import { useIcon } from 'vitepress'
+import { useIcon } from '@10coding/vitepress-react'
 import { useTemplateRef } from 'vue'
 
 const el = useTemplateRef('el')

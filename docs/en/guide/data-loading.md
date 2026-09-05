@@ -88,7 +88,7 @@ export default {
 When building a content focused site, we often need to create an "archive" or "index" page: a page where we list all available entries in our content collection, for example blog posts or API pages. We **can** implement this directly with the data loader API, but since this is such a common use case, VitePress also provides a `createContentLoader` helper to simplify this:
 
 ```js [posts.data.js]
-import { createContentLoader } from 'vitepress'
+import { createContentLoader } from '@10coding/vitepress-react'
 
 export default createContentLoader('posts/*.md', /* options */)
 ```
@@ -138,7 +138,7 @@ import { data as posts } from './posts.data.js'
 The default data may not suit all needs - you can opt-in to transform the data using options:
 
 ```js [posts.data.js]
-import { createContentLoader } from 'vitepress'
+import { createContentLoader } from '@10coding/vitepress-react'
 
 export default createContentLoader('posts/*.md', {
   includeSrc: true, // include raw markdown source?
@@ -219,7 +219,7 @@ interface ContentOptions<T = ContentData[]> {
 When using TypeScript, you can type your loader and `data` export like so:
 
 ```ts
-import { defineLoader } from 'vitepress'
+import { defineLoader } from '@10coding/vitepress-react'
 
 export interface Data {
   // data type
@@ -242,7 +242,7 @@ export default defineLoader({
 To get the configuration information inside a loader, you can use some code like this:
 
 ```ts
-import type { SiteConfig } from 'vitepress'
+import type { SiteConfig } from '@10coding/vitepress-react'
 
 const config: SiteConfig = (globalThis as any).VITEPRESS_CONFIG
 ```
