@@ -39,6 +39,7 @@ export function VPButton({
   const useHtml = Boolean(text) && children === undefined
   return (
     <Comp
+      data-direct-scoped
       className={cx('VPButton', size, theme, 'no-icon')}
       href={href ? normalizeLink(href) : undefined}
       target={resolvedTarget}

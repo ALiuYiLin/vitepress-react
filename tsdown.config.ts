@@ -189,16 +189,14 @@ function scopedRelPath(fileAbs: string): string {
   return normalizePath(path.relative(ROOT, fileAbs))
 }
 
-// 无法携带构建期 data-v 属性的组件(元素经变量渲染,如 const Comp = tag || 'a'),
-// 其 css 保持普通全局(需用组件唯一类名保证隔离,如 VPButton 的 .VPButton.*)。
-const NO_SCOPE_OWNERS = new Set(['vpbutton'])
-
+// 变量当标签的组件(如 const Comp = tag || 'a' 后的 <Comp>)通过 marker
+// 属性(data-direct-scoped)让 @10coding/plugin-jsx-scoped 按普通 DOM 元素
+// 注入 data-v(见 VPButton.tsx),故无需 NO_SCOPE 例外。
 function loadScopedOwners(): Map<string, string> {
   const owners = new Map<string, string>()
   for (const entry of readdirSync(COMPONENTS_DIR, { encoding: 'utf8' })) {
     if (!entry.endsWith('.tsx')) continue
     const stem = entry.slice(0, -4)
-    if (NO_SCOPE_OWNERS.has(stem.toLowerCase())) continue
     owners.set(
       stem.toLowerCase(),
       computeScopeAttr(scopedRelPath(path.join(COMPONENTS_DIR, entry)), 8)
@@ -227,7 +225,15 @@ function themeScoped(): Rolldown.Plugin {
           sourceMaps: false,
           parserOpts: { sourceType: 'module', plugins: ['typescript', 'jsx'] },
           plugins: [
-            [jsxScopedBabelPlugin, { scopeAttr: attr, componentScoped: false }]
+            [
+              jsxScopedBabelPlugin,
+              {
+                scopeAttr: attr,
+                componentScoped: false,
+                // 变量当标签(如 <Comp data-direct-scoped />)按普通 DOM 注入
+                directScopedAttributeName: 'data-direct-scoped'
+              }
+            ]
           ]
         })
       } catch {
