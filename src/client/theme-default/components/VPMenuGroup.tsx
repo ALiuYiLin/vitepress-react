@@ -1,5 +1,5 @@
+import '../styles/components/VPMenuGroup.scoped.css'
 import { VPMenuLink } from './VPMenuLink'
-import s from './VPMenuGroup.module.css'
 
 const cx = (...c: (string | false | undefined | null)[]) => c.filter(Boolean).join(' ')
 
@@ -18,9 +18,9 @@ export function VPMenuGroup({
     (item) => !('link' in item) && !('component' in item)
   )
   return (
-    <li className={cx(s.group, 'VPMenuGroup', className)}>
-      {text ? <p className={s.title}>{text}</p> : null}
-      <ul className={cx(hasSubGroups && s.subGroups)}>
+    <li className={cx('group', 'VPMenuGroup', className)}>
+      {text ? <p className="title">{text}</p> : null}
+      <ul className={cx(hasSubGroups && 'subGroups')}>
         {items.map((item, i) => {
           if ('link' in item) return <VPMenuLink key={i} item={item} />
           if ('component' in item) return null

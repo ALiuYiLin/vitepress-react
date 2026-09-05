@@ -1,5 +1,5 @@
 import { VPSocialLink, type VPSocialLinkProps } from './VPSocialLink'
-import s from './vp-social-links.module.css'
+import '../styles/components/vp-social-links.scoped.css'
 
 const cx = (...c: (string | false | undefined | null)[]) => c.filter(Boolean).join(' ')
 
@@ -15,7 +15,7 @@ export function VPSocialLinks({
 }) {
   if (!links.length) return null
   return (
-    <ul className={cx(s.list, 'VPSocialLinks', className)}>
+    <ul className={cx('VPSocialLinks', className)}>
       {links.map((l) => (
         <li key={l.link}>
           <VPSocialLink

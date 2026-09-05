@@ -1,4 +1,4 @@
-import s from './vp-sponsors.module.css'
+import '../styles/components/vp-sponsors.scoped.css'
 
 export type VpSponsor = {
   name?: string
@@ -23,13 +23,13 @@ export function VPSponsorsGrid({
   size?: 'xmini' | 'mini' | 'small' | 'medium' | 'big'
 }) {
   return (
-    <div className={s.grid} data-vp-grid={gridCols[size] ?? 4}>
+    <div className="grid" data-vp-grid={gridCols[size] ?? 4}>
       {sponsors.map((sp, i) => (
-        <a key={i} className={s.item} href={sp.link} target="_blank" rel="noreferrer">
+        <a key={i} className="item" href={sp.link} target="_blank" rel="noreferrer">
           {sp.img ? (
-            <img className={s.logo} src={sp.img} alt={sp.name ?? ''} />
+            <img className="logo" src={sp.img} alt={sp.name ?? ''} />
           ) : (
-            <span className={s.fallback}>{sp.name}</span>
+            <span className="fallback">{sp.name}</span>
           )}
         </a>
       ))}

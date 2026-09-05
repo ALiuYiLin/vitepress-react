@@ -3,8 +3,8 @@ import { useData } from 'vitepress'
 import { useLangs } from '../composables/use-langs'
 import { useLayout } from '../composables/use-layout'
 import { normalizeLink } from '../support/utils'
+import '../styles/components/VPNavBarTitle.scoped.css'
 import { VPImage } from './VPImage'
-import s from './VPNavBarTitle.module.css'
 
 const cx = (...c: (string | false | undefined | null)[]) => c.filter(Boolean).join(' ')
 
@@ -49,7 +49,7 @@ export function VPNavBarTitle({
   return (
     <div className={cx('VPNavBarTitle', hasSidebar && 'has-sidebar')}>
       <a
-        className={cx(s.title, 'title')}
+        className="title"
         href={logoLink ?? normalizeLink(currentLang.link || '/')}
         rel={rel}
         target={target}

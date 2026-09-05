@@ -1,8 +1,8 @@
 import { useEffect, useState } from 'react'
 
 import { type VpSidebarItem } from '../theme-utils'
+import '../styles/components/VPSidebarGroup.scoped.css'
 import { VPSidebarItem } from './VPSidebarItem'
-import s from './VPSidebarGroup.module.css'
 
 const cx = (...c: (string | false | undefined | null)[]) => c.filter(Boolean).join(' ')
 
@@ -24,9 +24,8 @@ export function VPSidebarGroup({ items }: { items: VpSidebarItem[] }) {
         <div
           key={item.text ?? i}
           className={cx(
-            s.group,
             'group',
-            disableTransition && cx(s.noTransition, 'no-transition')
+            disableTransition && cx('noTransition', 'no-transition')
           )}
         >
           <VPSidebarItem item={item} depth={0} />
