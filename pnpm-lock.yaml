@@ -54,9 +54,18 @@ importers:
         specifier: ^8.2.1
         version: 8.2.2(@types/node@26.2.0)(jiti@1.21.7)(yaml@2.9.0)
     devDependencies:
+      '@10coding/plugin-jsx-scoped':
+        specifier: 0.1.0
+        version: 0.1.0(@babel/core@7.29.7(supports-color@7.2.0))
+      '@10coding/postcss-jsx-scoped':
+        specifier: 0.1.0
+        version: 0.1.0
       '@arethetypeswrong/cli':
         specifier: ^0.18.5
         version: 0.18.5
+      '@babel/core':
+        specifier: ^7.26.0
+        version: 7.29.7(supports-color@7.2.0)
       '@clack/prompts':
         specifier: ^1.7.0
         version: 1.7.0

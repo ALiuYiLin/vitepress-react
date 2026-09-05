@@ -109,7 +109,10 @@
     "vite": "^8.2.1"
   },
   "devDependencies": {
+    "@10coding/plugin-jsx-scoped": "0.1.0",
+    "@10coding/postcss-jsx-scoped": "0.1.0",
     "@arethetypeswrong/cli": "^0.18.5",
+    "@babel/core": "^7.26.0",
     "@clack/prompts": "^1.7.0",
     "@iconify/utils": "^3.1.4",
     "@mdit-vue/plugin-component": "^3.0.2",

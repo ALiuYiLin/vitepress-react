@@ -1,6 +1,12 @@
 import { readdirSync, readFileSync, rmSync, writeFileSync } from 'node:fs'
 import path from 'node:path'
 
+import { transformSync } from '@babel/core'
+import {
+  computeScopeAttr,
+  jsxScopedBabelPlugin
+} from '@10coding/plugin-jsx-scoped'
+import { transformScopedCss } from '@10coding/postcss-jsx-scoped'
 import { defineConfig, type Rolldown, type UserConfig } from 'tsdown'
 
 const ROOT = import.meta.dirname
@@ -112,6 +118,81 @@ function clientAssets(): Rolldown.Plugin {
           fileName: normalizePath(entry),
           source: readFileSync(file)
         })
+      }
+    }
+  }
+}
+
+// ---- jsx-scoped theme styles(可移植的构建期预编译)----------------------
+// 组件级 scoped 样式:构建期用 @10coding/plugin-jsx-scoped 的 babel 插件给
+// 主题组件注入 data-v-{hash}(hash 以仓库内相对路径为种子,机器无关),并把
+// styles/components/*.scoped.css 静态转成带 [data-v-{hash}] 的 css 产物;
+// dist 里 css 导入保持普通相对路径(clientAssets 的 external),消费站点的
+// bundler 当普通 css 处理——不需要运行时虚拟模块,跨机器可发布。
+const COMPONENTS_DIR = path.join(
+  ROOT,
+  'src/client/theme-default/components'
+)
+
+function scopedRelPath(fileAbs: string): string {
+  return normalizePath(path.relative(ROOT, fileAbs))
+}
+
+function loadScopedOwners(): Map<string, string> {
+  const owners = new Map<string, string>()
+  for (const entry of readdirSync(COMPONENTS_DIR, { encoding: 'utf8' })) {
+    if (!entry.endsWith('.tsx')) continue
+    const stem = entry.slice(0, -4)
+    owners.set(
+      stem.toLowerCase(),
+      computeScopeAttr(scopedRelPath(path.join(COMPONENTS_DIR, entry)), 8)
+    )
+  }
+  return owners
+}
+
+function themeScoped(): Rolldown.Plugin {
+  const owners = loadScopedOwners()
+  return {
+    name: 'vitepress:theme-scoped',
+    transform(code, id) {
+      const normalized = normalizePath(id)
+      if (!normalized.endsWith('.tsx')) return
+      if (!normalized.startsWith(normalizePath(COMPONENTS_DIR + path.sep)))
+        return
+      if (!/\.scoped\.css/.test(code)) return
+      const attr = computeScopeAttr(scopedRelPath(id), 8)
+      let result
+      try {
+        result = transformSync(code, {
+          filename: id,
+          babelrc: false,
+          configFile: false,
+          sourceMaps: false,
+          parserOpts: { sourceType: 'module', plugins: ['typescript', 'jsx'] },
+          plugins: [
+            [jsxScopedBabelPlugin, { scopeAttr: attr, componentScoped: false }]
+          ]
+        })
+      } catch {
+        return null
+      }
+      return result?.code != null ? { code: result.code, map: null } : null
+    },
+    async generateBundle(_options, bundle) {
+      for (const file of Object.values(bundle)) {
+        if (file.type !== 'asset') continue
+        if (!file.fileName.endsWith('.scoped.css')) continue
+        const stem = path
+          .basename(file.fileName)
+          .slice(0, -'.scoped.css'.length)
+        const attr = owners.get(stem.toLowerCase())
+        if (!attr) continue
+        const raw =
+          typeof file.source === 'string'
+            ? file.source
+            : Buffer.from(file.source).toString('utf8')
+        file.source = await transformScopedCss(raw, attr)
       }
     }
   }
@@ -633,7 +714,12 @@ const client: UserConfig = {
       '@localSearchIndex'
     ]
   },
-  plugins: [syncShared('client'), rootTypesSpecifiers(), clientAssets()],
+  plugins: [
+    syncShared('client'),
+    rootTypesSpecifiers(),
+    clientAssets(),
+    themeScoped()
+  ],
   checks: { pluginTimings: false }
 }
 

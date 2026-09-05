@@ -1,7 +1,7 @@
 import type { ReactNode } from 'react'
 
+import '../styles/components/VPBadge.scoped.css'
 import { cx } from '../lib/cx'
-import s from './VPBadge.module.css'
 
 export type VPBadgeType =
   | 'info'
@@ -18,11 +18,10 @@ export type VPBadgeProps = {
   children?: ReactNode
 }
 
-/** 对应 Vue VPBadge.vue(注意其样式在 Vue 侧是全局 <style>)。 */
+/** 对应 Vue VPBadge.vue(样式经 jsx-scoped 构建期转成 [data-v-{hash}])。 */
 export function VPBadge({ text, type = 'tip', children }: VPBadgeProps) {
-  const typeClass = type && (s[type] ?? type)
   return (
-    <span className={cx(s.VPBadge, 'VPBadge', typeClass && cx(typeClass, type))}>
+    <span className={cx('VPBadge', type)}>
       {children ?? text}
     </span>
   )

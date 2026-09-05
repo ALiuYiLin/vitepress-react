@@ -1,5 +1,5 @@
-/* 上游 VPBadge.vue 的样式是全局 <style>(标记 md 内 <Badge> 也会落到这些类)。
-   此处并入 CSS Modules;若构建输出保持类名原样([local]),md 内 Badge 也能命中。 */
+/* 对应 Vue VPBadge.vue 的全局样式,jsx-scoped 构建期转成
+   .VPBadge[data-v-{hash}] 等;VPBadge 元素(含 md 内 <Badge>)都带该属性 */
 
 .VPBadge {
   display: inline-block;
@@ -21,28 +21,27 @@
   transform: translateY(-0.5rem);
 }
 
-/* 下列规则以 :global 限定上下文(目标元素若由本组件渲染,类名仍为本地类) */
-:global(.VPDocFooter) .VPBadge {
+.VPDocFooter .VPBadge {
   display: none;
 }
 
-:global(.vp-doc h1 > .VPBadge),
-:global(.vp-doc h2 > .VPBadge) {
+.vp-doc h1 > .VPBadge,
+.vp-doc h2 > .VPBadge {
   margin: 0 0 0 0.125rem;
   vertical-align: middle;
 }
 
-:global(.vp-doc h2 > .VPBadge) {
+.vp-doc h2 > .VPBadge {
   padding: 0 0.5rem;
 }
 
-:global(.vp-doc h3 > .VPBadge) {
+.vp-doc h3 > .VPBadge {
   vertical-align: middle;
 }
 
-:global(.vp-doc h4 > .VPBadge),
-:global(.vp-doc h5 > .VPBadge),
-:global(.vp-doc h6 > .VPBadge) {
+.vp-doc h4 > .VPBadge,
+.vp-doc h5 > .VPBadge,
+.vp-doc h6 > .VPBadge {
   vertical-align: middle;
   line-height: 1.5;
 }
