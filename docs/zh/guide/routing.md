@@ -325,25 +325,20 @@ export default {
 
 ### 访问页面中的参数 {#accessing-params-in-page}
 
-可以使用参数将附加数据传递到每个页面。Markdown 路由文件可以通过 `$params` 全局属性访问 Vue 表达式中的当前页面参数：
+可以使用参数将附加数据传递到每个页面。本 fork 是 React 语义（没有 `$params` 全局或 `{{ }}` 插值，规则见[在 Markdown 中使用 React](./using-react)）：在页面 `<script>` 的 page-scope 里通过 [`useData()`](../reference/runtime-api#usedata) 读取 `params`，再用正文 `{expr}` 引用：
 
 ```md
-- package name: {{ $params.pkg }}
-- version: {{ $params.version }}
-```
-
-还可以通过 [`useData`](../reference/runtime-api#usedata) 运行时 API 访问当前页面的参数。这在 Markdown 文件和 Vue 组件中都可用：
-
-```vue
-<script setup>
+<script>
 import { useData } from 'vitepress'
 
-// params 是一个 Vue ref
 const { params } = useData()
-
-console.log(params.value)
 </script>
+
+- package name: {params.pkg}
+- version: {params.version}
 ```
+
+`useData()` 是 hook，因此这段读取逻辑必须写在页面的 `<script>` 里（编译进 `Page()` 作用域），不能在模块顶层；`params` 即当前路由的参数对象。
 
 ### 渲染原始内容 {#rendering-raw-content}
 
