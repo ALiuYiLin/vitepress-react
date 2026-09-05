@@ -5,8 +5,6 @@ import { NavContext } from '../nav-context'
 import { useNav } from '../composables/use-nav'
 import { VPNavBar } from './VPNavBar'
 import { VPNavScreen } from './VPNavScreen'
-import './VPNav.module.css'
-
 /**
  * 导航(对应 Vue VPNav.vue):顶栏 + 移动端全屏导航,
  * 拥有屏幕开合状态,并向子树提供 closeScreen。

@@ -6,8 +6,6 @@ import { useNavOverflow } from '../composables/use-nav-overflow'
 import { VPFlyout } from './VPFlyout'
 import { VPLink } from './VPLink'
 import { VPMenuLink } from './VPMenuLink'
-import './VPNavTranslations.module.css'
-
 const cx = (...c: (string | false | undefined | null)[]) => c.filter(Boolean).join(' ')
 
 /**

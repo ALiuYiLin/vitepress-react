@@ -1,2 +1,0 @@
-/* VPLink 在 Vue 侧无 scoped 样式;类名(VPLink/link/no-icon)为全局 DOM 约定,
-   由 icons.css / vp-doc.css 等全局样式消费,故保持字面量、不走本模块。 */

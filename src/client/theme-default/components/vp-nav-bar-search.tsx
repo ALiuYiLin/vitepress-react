@@ -3,7 +3,7 @@ import { useEffect, useRef, useState } from 'react'
 import { useData } from 'vitepress'
 
 import { LocalSearchDialog, resolveLocalSearchText } from './local-search'
-import s from './vp-nav-bar-search.module.css'
+import '../styles/components/vp-nav-bar-search.scoped.css'
 
 const cx = (...c: (string | false | undefined | null)[]) => c.filter(Boolean).join(' ')
 
@@ -89,17 +89,17 @@ export function VPNavBarSearch({ className }: { className?: string }) {
     <div className={cx('VPNavBarSearch', className)}>
       <button
         ref={triggerRef}
-        className={s.button}
+        className="button"
         type="button"
         aria-label={text.buttonAriaLabel}
         aria-keyshortcuts="'/' control+k meta+k"
         onClick={onTriggerClick}
       >
         <span className="vpi-search" aria-hidden="true" />
-        <span className={s.text}>{text.buttonText}</span>
-        <span className={s.keys} aria-hidden="true">
-          <kbd className={s.keyMod}>{isMac ? '⌘' : 'Ctrl'}</kbd>
-          <kbd className={s.keyK}>K</kbd>
+        <span className="text">{text.buttonText}</span>
+        <span className="keys" aria-hidden="true">
+          <kbd className="key-mod">{isMac ? '⌘' : 'Ctrl'}</kbd>
+          <kbd className="key-k">K</kbd>
         </span>
       </button>
       {!isAlgolia && <LocalSearchDialog open={open} onClose={close} />}

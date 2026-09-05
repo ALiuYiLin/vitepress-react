@@ -2,8 +2,6 @@ import { useData } from 'vitepress'
 
 import { useNavOverflow } from '../composables/use-nav-overflow'
 import { VPSocialLinks, type VpSocialLink } from './vp-social-links'
-import './VPNavSocialLinks.module.css'
-
 const cx = (...c: (string | false | undefined | null)[]) => c.filter(Boolean).join(' ')
 
 /**

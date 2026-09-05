@@ -5,8 +5,6 @@ import { normalizePath, type VpNavItem } from '../theme-utils'
 import { VPFlyout } from './VPFlyout'
 import { VPMenuGroup } from './VPMenuGroup'
 import { VPMenuLink } from './VPMenuLink'
-import './VPNavMenuGroup.module.css'
-
 const cx = (...c: (string | false | undefined | null)[]) => c.filter(Boolean).join(' ')
 
 export type VpNavMenuGroupItem = VpNavItem & {

@@ -3,8 +3,6 @@ import { useData } from 'vitepress'
 import { useNavOverflow } from '../composables/use-nav-overflow'
 import { VPNavMenuGroup, type VpNavMenuGroupItem } from './VPNavMenuGroup'
 import { VPNavMenuLink } from './VPNavMenuLink'
-import './VPNavMenu.module.css'
-
 const cx = (...c: (string | false | undefined | null)[]) => c.filter(Boolean).join(' ')
 
 /**

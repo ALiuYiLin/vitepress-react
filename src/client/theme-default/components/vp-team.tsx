@@ -1,4 +1,4 @@
-import s from './vp-team.module.css'
+import '../styles/components/vp-team.scoped.css'
 
 export type VpTeamMember = {
   avatar?: string
@@ -12,23 +12,23 @@ export type VpTeamMember = {
 /** 团队成员项:头像 + 姓名/职位 + 描述 + 链接 */
 export function VPTeamMembersItem({ member }: { member: VpTeamMember }) {
   return (
-    <div className={s.member}>
+    <div className="member">
       {member.avatar && (
-        <img className={s.avatar} src={member.avatar} alt="" width={96} height={96} />
+        <img className="avatar" src={member.avatar} alt="" width={96} height={96} />
       )}
-      <div className={s.memberBody}>
-        <h3 className={s.name}>{member.name}</h3>
+      <div className="memberBody">
+        <h3 className="name">{member.name}</h3>
         {(member.title || member.org) && (
-          <p className={s.role}>
+          <p className="role">
             {member.title}
             {member.org ? ` @ ${member.org}` : ''}
           </p>
         )}
-        {member.desc && <p className={s.desc}>{member.desc}</p>}
+        {member.desc && <p className="desc">{member.desc}</p>}
         {member.links?.length ? (
-          <div className={s.links}>
+          <div className="links">
             {member.links.map((l, i) => (
-              <a key={i} className={s.link} href={l.link} target="_blank" rel="noreferrer">
+              <a key={i} className="link" href={l.link} target="_blank" rel="noreferrer">
                 {l.icon ?? l.link}
               </a>
             ))}
@@ -52,7 +52,7 @@ export function VPTeamMembers({
   if (!list.length) return null
   return (
     <div className={`VPTeamMembers${size ? ` ${size}` : ''}`}>
-      <div className={s.grid}>
+      <div className="grid">
         {list.map((m, i) => (
           <VPTeamMembersItem key={i} member={m} />
         ))}

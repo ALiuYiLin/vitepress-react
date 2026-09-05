@@ -12,8 +12,6 @@ import { VPNavMenu } from './VPNavMenu'
 import { VPNavSocialLinks } from './VPNavSocialLinks'
 import { VPNavTranslations } from './VPNavTranslations'
 import { VPNavBarSearch } from './vp-nav-bar-search'
-import './VPNavBar.module.css'
-
 const cx = (...c: (string | false | undefined | null)[]) => c.filter(Boolean).join(' ')
 
 /**

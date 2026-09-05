@@ -1,0 +1,18 @@
+/* 对应 Vue VPSwitchAppearance 外观切换:太阳/月亮由本组件渲染(带 data-v),
+   html.dark 全局上下文只作祖先条件,规则按 scoped 追加到自身图标元素 */
+
+.sun {
+  opacity: 1;
+}
+
+.moon {
+  opacity: 0;
+}
+
+.dark .sun {
+  opacity: 0;
+}
+
+.dark .moon {
+  opacity: 1;
+}

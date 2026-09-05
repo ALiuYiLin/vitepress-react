@@ -2,8 +2,6 @@ import { useNavContext } from '../nav-context'
 import { useNavItemLink } from '../composables/use-nav'
 import type { VpNavItem } from '../theme-utils'
 import { VPLink } from './VPLink'
-import './VPNavMenuLink.module.css'
-
 const cx = (...c: (string | false | undefined | null)[]) => c.filter(Boolean).join(' ')
 
 /**

@@ -6,8 +6,6 @@ import { VPNavAppearance } from './VPNavAppearance'
 import { VPNavMenu } from './VPNavMenu'
 import { VPNavSocialLinks } from './VPNavSocialLinks'
 import { VPNavTranslations } from './VPNavTranslations'
-import './VPNavScreen.module.css'
-
 /**
  * 移动端全屏导航(对应 Vue VPNavScreen.vue):
  * 打开时锁 body 滚动;Escape 关闭并把焦点还给触发按钮。

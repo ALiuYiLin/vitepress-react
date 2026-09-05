@@ -10,8 +10,6 @@ import { VPNavAppearance } from './VPNavAppearance'
 import { VPNavTranslations } from './VPNavTranslations'
 import { VPSocialLinks, type VpSocialLink } from './vp-social-links'
 import { type VpNavMenuGroupItem } from './VPNavMenuGroup'
-import './VPNavBarExtra.module.css'
-
 const cx = (...c: (string | false | undefined | null)[]) => c.filter(Boolean).join(' ')
 
 /**

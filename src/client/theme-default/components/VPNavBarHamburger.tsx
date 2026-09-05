@@ -2,8 +2,6 @@ import { useEffect, useRef } from 'react'
 import { useData } from 'vitepress'
 
 import { setScreenTriggerEl } from '../composables/use-nav'
-import './VPNavBarHamburger.module.css'
-
 const cx = (...c: (string | false | undefined | null)[]) => c.filter(Boolean).join(' ')
 
 /**

@@ -4,8 +4,6 @@ import { useData } from 'vitepress'
 import { useAppearanceSwitch } from '../composables/use-nav'
 import { useNavOverflow } from '../composables/use-nav-overflow'
 import { VPSwitchAppearance } from './VPSwitchAppearance'
-import './VPNavAppearance.module.css'
-
 const cx = (...c: (string | false | undefined | null)[]) => c.filter(Boolean).join(' ')
 
 /**
