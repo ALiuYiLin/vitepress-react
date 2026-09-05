@@ -1,6 +1,6 @@
 import * as React from 'react'
 
-import s from './VPSwitch.module.css'
+import '../styles/components/VPSwitch.scoped.css'
 
 /** 开关(外观切换用;children 为图标) */
 export function VPSwitch({
@@ -22,7 +22,7 @@ export function VPSwitch({
 }) {
   return (
     <button
-      className={cx(s.switch, 'VPSwitch', className)}
+      className={cx('VPSwitch', 'switch', className)}
       type="button"
       role="switch"
       title={title}
@@ -31,8 +31,8 @@ export function VPSwitch({
       aria-checked={ariaChecked}
       onClick={onClick}
     >
-      <span className={s.check}>
-        {children ? <span className={s.icon}>{children}</span> : null}
+      <span className="check">
+        {children ? <span className="icon">{children}</span> : null}
       </span>
     </button>
   )

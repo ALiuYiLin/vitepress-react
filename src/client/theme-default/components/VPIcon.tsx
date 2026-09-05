@@ -1,5 +1,5 @@
+import '../styles/components/VPIcon.scoped.css'
 import { parseIconName } from '../../shared'
-import s from './VPIcon.module.css'
 
 export type VPIconProps = {
   icon: string | { svg: string }
@@ -15,7 +15,7 @@ export function VPIcon({ icon }: VPIconProps) {
   if (typeof icon === 'object') {
     return (
       <span
-        className={s.VPIcon}
+        className="VPIcon"
         dangerouslySetInnerHTML={{ __html: icon.svg }}
       />
     )

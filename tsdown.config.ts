@@ -7,6 +7,7 @@ import {
   jsxScopedBabelPlugin
 } from '@10coding/plugin-jsx-scoped'
 import { transformScopedCss } from '@10coding/postcss-jsx-scoped'
+import postcss from 'postcss'
 import { defineConfig, type Rolldown, type UserConfig } from 'tsdown'
 
 const ROOT = import.meta.dirname
@@ -129,10 +130,60 @@ function clientAssets(): Rolldown.Plugin {
 // styles/components/*.scoped.css 静态转成带 [data-v-{hash}] 的 css 产物;
 // dist 里 css 导入保持普通相对路径(clientAssets 的 external),消费站点的
 // bundler 当普通 css 处理——不需要运行时虚拟模块,跨机器可发布。
+//
+// css 文件里的 `:global(...)` 规则(后代元素不属于本组件 scope,例如渲染在
+// 子组件里或由 innerHTML 注入的 svg)会被拆到产物的“全局段”:局部段经
+// transformScopedCss 追加 [data-v-{hash}],全局段保持原选择器不追加。
 const COMPONENTS_DIR = path.join(
   ROOT,
   'src/client/theme-default/components'
 )
+
+function unwrapGlobal(selector: string): string {
+  // :global(…) 内部允许一层括号(如 :not(.dark));展开后去掉包装
+  return selector.replaceAll(
+    /:global\(\s*((?:[^()]|\([^()]*\))*?)\s*\)/g,
+    '$1'
+  )
+}
+function hasGlobal(selector: string): boolean {
+  return selector.includes(':global(')
+}
+
+function partitionGlobalCss(css: string): { local: string; global: string } {
+  const root = postcss.parse(css)
+  const localRoot = postcss.root()
+  const globalRoot = postcss.root()
+  for (const node of root.nodes) {
+    if (node.type === 'rule' && hasGlobal(node.selector)) {
+      globalRoot.append(
+        node.clone({ selector: unwrapGlobal(node.selector) })
+      )
+    } else if (node.type === 'atrule' && node.nodes) {
+      const children = node.nodes.filter((n) => n.type === 'rule')
+      const globalChildren = children.filter(
+        (n) => hasGlobal((n as { selector?: string }).selector ?? '')
+      )
+      if (globalChildren.length > 0 && globalChildren.length === children.length) {
+        const copy = node.clone({ nodes: [] })
+        for (const n of globalChildren) {
+          copy.append(
+            n.clone({
+              selector: unwrapGlobal((n as { selector?: string }).selector ?? '')
+            })
+          )
+        }
+        globalRoot.append(copy)
+      } else {
+        // 混合或纯局部:整段走 scoped 处理
+        localRoot.append(node.clone())
+      }
+    } else {
+      localRoot.append(node.clone())
+    }
+  }
+  return { local: localRoot.toString(), global: globalRoot.toString() }
+}
 
 function scopedRelPath(fileAbs: string): string {
   return normalizePath(path.relative(ROOT, fileAbs))
@@ -192,7 +243,9 @@ function themeScoped(): Rolldown.Plugin {
           typeof file.source === 'string'
             ? file.source
             : Buffer.from(file.source).toString('utf8')
-        file.source = await transformScopedCss(raw, attr)
+        const { local, global } = partitionGlobalCss(raw)
+        const scoped = await transformScopedCss(local, attr)
+        file.source = global ? `${scoped}\n${global}` : scoped
       }
     }
   }

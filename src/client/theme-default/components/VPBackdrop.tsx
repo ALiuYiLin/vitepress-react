@@ -1,4 +1,4 @@
-import s from './VPBackdrop.module.css'
+import '../styles/components/VPBackdrop.scoped.css'
 
 const cx = (...c: (string | false | undefined | null)[]) => c.filter(Boolean).join(' ')
 
@@ -14,7 +14,5 @@ export type VPBackdropProps = {
  */
 export function VPBackdrop({ show, onClick, className }: VPBackdropProps) {
   if (!show) return null
-  return (
-    <div className={cx(s.VPBackdrop, 'VPBackdrop', className)} onClick={onClick} />
-  )
+  return <div className={cx('VPBackdrop', className)} onClick={onClick} />
 }

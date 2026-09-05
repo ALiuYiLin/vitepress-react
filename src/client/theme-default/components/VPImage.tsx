@@ -1,7 +1,7 @@
 import { withBase } from 'vitepress'
 
+import '../styles/components/VPImage.scoped.css'
 import { cx } from '../lib/cx'
-import s from './VPImage.module.css'
 
 export type ThemeableImage =
   | string
@@ -31,7 +31,7 @@ export function VPImage({ image, alt, className, ...rest }: VPImageProps) {
     const imageAlt = alt ?? (typeof image === 'string' ? '' : image.alt || '')
     return (
       <img
-        className={cx(s.VPImage, 'VPImage', className)}
+        className={cx('VPImage', className)}
         src={withBase(src)}
         alt={imageAlt}
         {...rest}
@@ -45,13 +45,13 @@ export function VPImage({ image, alt, className, ...rest }: VPImageProps) {
       <VPImage
         image={image.dark}
         alt={image.alt}
-        className={cx(s.dark, className)}
+        className={cx('dark', className)}
         {...rest}
       />
       <VPImage
         image={image.light}
         alt={image.alt}
-        className={cx(s.light, className)}
+        className={cx('light', className)}
         {...rest}
       />
     </>

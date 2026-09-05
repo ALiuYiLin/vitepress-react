@@ -1,6 +1,5 @@
+import '../styles/components/VPSocialLink.scoped.css'
 import { VPIcon } from './VPIcon'
-
-import s from './VPSocialLink.module.css'
 
 const EXTERNAL = /^(https?:|mailto:|tel:)/
 
@@ -26,7 +25,7 @@ export function VPSocialLink({
     typeof icon === 'string' && !icon.includes(':') ? `simple-icons:${icon}` : icon
   return (
     <a
-      className={cx(s.link, 'VPSocialLink no-icon')}
+      className={cx('link', 'VPSocialLink no-icon')}
       href={link}
       aria-label={ariaLabel ?? (typeof icon === 'string' ? icon : '')}
       target={target ?? (external ? '_blank' : undefined)}

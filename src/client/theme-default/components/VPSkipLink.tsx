@@ -1,7 +1,7 @@
 import { useEffect, useRef } from 'react'
 import { useData, useRoute } from 'vitepress'
 
-import s from './VPSkipLink.module.css'
+import '../styles/components/VPSkipLink.scoped.css'
 
 export type VPSkipLinkProps = {
   // Vue 版注释:组件有两个根节点,`inert` 无法自动落到 a 上,需显式传入
@@ -26,7 +26,7 @@ export function VPSkipLink({ inert }: VPSkipLinkProps) {
       <span ref={backToTop} tabIndex={-1} />
       <a
         href="#VPContent"
-        className={`${s.VPSkipLink} visually-hidden`}
+        className="VPSkipLink visually-hidden"
         {...({ inert: inert || undefined } as Record<string, unknown>)}
       >
         {(theme as { skipToContentLabel?: string }).skipToContentLabel ||

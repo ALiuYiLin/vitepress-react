@@ -1,7 +1,0 @@
-:global(html:not(.dark)) .dark {
-  display: none;
-}
-
-:global(html.dark) .light {
-  display: none;
-}
