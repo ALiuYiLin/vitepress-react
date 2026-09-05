@@ -1,9 +1,9 @@
 import { Content } from 'vitepress'
 
 import { useLayout } from '../composables/use-layout'
+import '../styles/components/VPDoc.scoped.css'
 import { VPDocAside } from './VPDocAside'
 import { VPDocFooter } from './VPDocFooter'
-import s from './VPDoc.module.css'
 
 const cx = (...c: (string | false | undefined | null)[]) => c.filter(Boolean).join(' ')
 
@@ -13,26 +13,31 @@ export function VPDoc() {
   return (
     <div
       className={cx(
-        s.doc,
+        'doc',
         'VPDoc',
-        hasSidebar && cx(s.hasSidebar, 'has-sidebar'),
-        hasAside && cx(s.hasAside, 'has-aside')
+        hasSidebar && cx('hasSidebar', 'has-sidebar'),
+        hasAside && cx('hasAside', 'has-aside')
       )}
     >
-      <div className={cx(s.container, 'container')}>
+      <div className="container">
         {hasAside ? (
-          <div className={cx(s.aside, 'aside', leftAside && cx(s.leftAside, 'left-aside'))}>
-            <div className={s.asideCurtain} />
-            <div className={s.asideContainer}>
-              <div className={s.asideContent}>
+          <div
+            className={cx(
+              'aside',
+              leftAside && cx('leftAside', 'left-aside')
+            )}
+          >
+            <div className="asideCurtain" />
+            <div className="asideContainer">
+              <div className="asideContent">
                 <VPDocAside />
               </div>
             </div>
           </div>
         ) : null}
 
-        <div className={cx(s.content, 'content')}>
-          <div className={cx(s.contentContainer, 'content-container')}>
+        <div className="content">
+          <div className={cx('contentContainer', 'content-container')}>
             <main className="main">
               <Content />
             </main>

@@ -1,7 +1,7 @@
 .aside {
   display: none;
 }
-.aside:global(.has-outline) {
+.aside.has-outline {
   display: block;
 }
 
@@ -31,3 +31,4 @@
   font-size: 0.875rem;
   font-weight: 600;
 }
+

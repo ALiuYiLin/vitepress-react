@@ -3,8 +3,8 @@ import { useData } from 'vitepress'
 
 import { useLayout } from '../composables/use-layout'
 import { resolveTitle, useActiveAnchor } from '../composables/use-active-anchor'
+import '../styles/components/VPDocAsideOutline.scoped.css'
 import { VPDocOutlineItem } from './VPDocOutlineItem'
-import s from './VPDocAsideOutline.module.css'
 
 const cx = (...c: (string | false | undefined | null)[]) => c.filter(Boolean).join(' ')
 
@@ -20,13 +20,13 @@ export function VPDocAsideOutline() {
     <nav
       ref={container}
       aria-labelledby="doc-outline-aria-label"
-      className={cx(s.aside, 'VPDocAsideOutline', hasLocalNav && 'has-outline')}
+      className={cx('aside', 'VPDocAsideOutline', hasLocalNav && 'has-outline')}
     >
-      <div className={s.content}>
-        <div className={cx(s.marker, 'outline-marker')} ref={marker} />
+      <div className="content">
+        <div className={cx('marker', 'outline-marker')} ref={marker} />
         <div
           aria-level={2}
-          className={cx(s.title, 'outline-title')}
+          className={cx('title', 'outline-title')}
           id="doc-outline-aria-label"
           role="heading"
         >

@@ -1,7 +1,7 @@
 import { useData } from 'vitepress'
 
+import '../styles/components/VPDocAside.scoped.css'
 import { VPDocAsideOutline } from './VPDocAsideOutline'
-import s from './VPDocAside.module.css'
 
 /** 文档右侧侧栏(大纲 + 可选广告) */
 export function VPDocAside() {
@@ -10,8 +10,8 @@ export function VPDocAside() {
   return (
     <div className="VPDocAside">
       <VPDocAsideOutline />
-      <div className={s.spacer} />
-      {carbonAds ? <div className={s.carbonAds}>Sponsored · Carbon Ads</div> : null}
+      <div className="spacer" />
+      {carbonAds ? <div className="carbonAds">Sponsored · Carbon Ads</div> : null}
     </div>
   )
 }

@@ -1,5 +1,5 @@
 import type { VpHeader } from '../theme-utils'
-import s from './VPDocOutlineItem.module.css'
+import '../styles/components/VPDocOutlineItem.scoped.css'
 
 const cx = (...c: (string | false | undefined | null)[]) => c.filter(Boolean).join(' ')
 
@@ -15,13 +15,13 @@ export function VPDocOutlineItem({
     <ul
       className={cx(
         'VPDocOutlineItem',
-        root ? s.root : s.nested,
+        root ? 'root' : 'nested',
         root ? 'root' : 'nested'
       )}
     >
       {headers.map(({ children, link, title }, i) => (
         <li key={i}>
-          <a className={cx(s.outlineLink, 'outline-link')} href={link} title={title}>
+          <a className={cx('outlineLink', 'outline-link')} href={link} title={title}>
             {title}
           </a>
           {children?.length ? (

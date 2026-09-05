@@ -2,8 +2,8 @@ import { useCallback, useEffect, useId, useRef, useState, type PointerEvent, typ
 import { useRoute } from 'vitepress'
 
 import { useFlyout } from '../composables/use-flyout'
+import '../styles/components/VPFlyout.scoped.css'
 import { VPMenu } from './VPMenu'
-import s from './VPFlyout.module.css'
 
 const cx = (...c: (string | false | undefined | null)[]) => c.filter(Boolean).join(' ')
 
@@ -96,11 +96,11 @@ export function VPFlyout({
   }
 
   return (
-    <div className={cx(s.root, 'VPFlyout', className)} ref={el}>
+    <div className={cx('root', 'VPFlyout', className)} ref={el}>
       <button
         ref={buttonEl}
         type="button"
-        className={cx(s.button, 'button')}
+        className={'button'}
         aria-expanded={open}
         aria-controls={menuId}
         aria-label={label}
@@ -109,21 +109,22 @@ export function VPFlyout({
         onClick={toggle}
       >
         {button || icon ? (
-          <span className={cx(s.text, 'text')}>
+          <span className={'text'}>
             {icon ? (
               <span className={cx(icon, 'option-icon')} aria-hidden="true" />
             ) : null}
             {button ? <span dangerouslySetInnerHTML={{ __html: button }} /> : null}
-            <span className={cx(s.textIcon, 'vpi-chevron-down', 'text-icon')} aria-hidden="true" />
+            <span className={cx('textIcon', 'vpi-chevron-down', 'text-icon')} aria-hidden="true" />
           </span>
         ) : (
-          <span className={cx(s.icon, 'vpi-more-horizontal', 'icon')} aria-hidden="true" />
+          <span className={cx('icon', 'vpi-more-horizontal')} aria-hidden="true" />
         )}
       </button>
 
-      <div ref={menuEl} className={cx(s.menu, 'menu')} id={menuId} onPointerLeave={onPointerLeave}>
+      <div ref={menuEl} className={'menu'} id={menuId} onPointerLeave={onPointerLeave}>
         <VPMenu items={items as any[]}>{children}</VPMenu>
       </div>
     </div>
   )
 }
+
