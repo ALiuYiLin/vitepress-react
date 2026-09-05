@@ -73,17 +73,10 @@ export default defineConfig({
       { icon: 'github', link: 'https://github.com/vuejs/vitepress' }
     ],
 
+    // 本地搜索(离线,minisearch 索引由 vitepress 构建期生成);
+    // 各 locale 的界面文案经 themeConfig.search.options.translations 覆盖
     search: {
-      provider: 'algolia',
-      options: {
-        appId: '8J64VVRP8K',
-        apiKey: '52f578a92b88ad6abde815aae2b0ad7c',
-        indexName: 'vitepress',
-        askAi: {
-          assistantId: 'YaVSonfX5bS8',
-          sidePanel: true
-        }
-      }
+      provider: 'local'
     },
 
     carbonAds: { code: 'CEBDT27Y', placement: 'vuejsorg' },

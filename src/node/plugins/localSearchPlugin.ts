@@ -33,7 +33,9 @@ interface IndexObject {
 export async function localSearchPlugin(
   siteConfig: SiteConfig<DefaultTheme.Config>
 ): Promise<Plugin> {
-  if (siteConfig.site.themeConfig?.search?.provider !== 'local') {
+  // 与主题侧 VPNavBarSearch 保持一致:未配置或 provider: 'local' → 启用;
+  // 显式 provider: 'algolia' → 空索引(theme.algolia 旧配置同样由主题处理)
+  if (siteConfig.site.themeConfig?.search?.provider === 'algolia') {
     return {
       name: 'vitepress:local-search',
       resolveId: {
@@ -54,7 +56,7 @@ export async function localSearchPlugin(
   // created in configResolved to use the resolved publicDir
   let md: Awaited<ReturnType<typeof createMarkdownRenderer>>
 
-  const options = siteConfig.site.themeConfig.search.options || {}
+  const options = siteConfig.site.themeConfig?.search?.options || {}
 
   async function render(file: string, localeIndex: string) {
     const { srcDir, cleanUrls = false } = siteConfig

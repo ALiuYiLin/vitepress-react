@@ -11,7 +11,7 @@ import { VPNavBarTitle } from './VPNavBarTitle'
 import { VPNavMenu } from './VPNavMenu'
 import { VPNavSocialLinks } from './VPNavSocialLinks'
 import { VPNavTranslations } from './VPNavTranslations'
-import { VPNavBarSearchButton } from './vp-nav-bar-search'
+import { VPNavBarSearch } from './vp-nav-bar-search'
 import './VPNavBar.module.css'
 
 const cx = (...c: (string | false | undefined | null)[]) => c.filter(Boolean).join(' ')
@@ -62,7 +62,7 @@ export function VPNavBar({
               ref={(el) => overflow.setContainerEl(el as HTMLElement | null)}
             >
               {contentBefore}
-              <VPNavBarSearchButton className="search" />
+              <VPNavBarSearch className="search" />
               <VPNavMenu className="menu" />
               <VPNavTranslations className="translations" />
               <VPNavAppearance className="appearance" />
