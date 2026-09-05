@@ -261,22 +261,22 @@ importers:
 
   __tests__/base:
     devDependencies:
-      vitepress:
+      '@10coding/vitepress-react':
         specifier: workspace:*
         version: link:../..
 
   __tests__/e2e:
     devDependencies:
+      '@10coding/vitepress-react':
+        specifier: workspace:*
+        version: link:../..
       '@iconify-json/lucide':
         specifier: ^1.2.126
         version: 1.2.126
-      vitepress:
-        specifier: workspace:*
-        version: link:../..
 
   __tests__/init:
     devDependencies:
-      vitepress:
+      '@10coding/vitepress-react':
         specifier: workspace:*
         version: link:../..
 
@@ -285,6 +285,9 @@ importers:
       '@10coding/vite-plugin-jsx-scoped':
         specifier: ^0.3.0
         version: 0.3.0(supports-color@7.2.0)(vite@8.2.2(@types/node@26.2.0)(jiti@1.21.7)(yaml@2.9.0))
+      '@10coding/vitepress-react':
+        specifier: workspace:*
+        version: link:..
       '@lunariajs/core':
         specifier: ^0.1.1
         version: 0.1.1(supports-color@7.2.0)
@@ -297,9 +300,6 @@ importers:
       postcss-rtlcss:
         specifier: ^6.0.0
         version: 6.0.0(postcss@8.5.26)
-      vitepress:
-        specifier: workspace:*
-        version: link:..
       vitepress-plugin-group-icons:
         specifier: ^1.7.6
         version: 1.7.6(vite@8.2.2(@types/node@26.2.0)(jiti@1.21.7)(yaml@2.9.0))

@@ -1,19 +1,19 @@
 {
-  "name": "vitepress",
+  "name": "@10coding/vitepress-react",
   "version": "2.0.0-alpha.19",
-  "description": "Vite & Vue powered static site generator",
+  "description": "Vite & React powered static site generator",
   "keywords": [
     "vite",
-    "vue",
-    "vitepress"
+    "react",
+    "vitepress-react"
   ],
-  "homepage": "https://vitepress.dev/",
+  "homepage": "https://aliuyilin.github.io/vitepress-react/",
   "bugs": {
-    "url": "https://github.com/vuejs/vitepress/issues"
+    "url": "https://github.com/ALiuYiLin/vitepress-react/issues"
   },
-  "repository": "github:vuejs/vitepress",
+  "repository": "github:ALiuYiLin/vitepress-react",
   "license": "MIT",
-  "author": "Evan You",
+  "author": "ALiuYiLin",
   "type": "module",
   "exports": {
     ".": {
@@ -39,7 +39,7 @@
   "types": "types/index.d.ts",
   "web-types": "./dist/web-types.json",
   "bin": {
-    "vitepress": "bin/vitepress.js"
+    "vitepress-react": "bin/vitepress-react.js"
   },
   "files": [
     "THIRD-PARTY-NOTICES.md",

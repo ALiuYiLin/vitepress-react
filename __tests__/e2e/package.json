@@ -5,12 +5,12 @@
   "scripts": {
     "test": "vitest run",
     "watch": "DEBUG=1 vitest",
-    "site:dev": "vitepress",
-    "site:build": "vitepress build",
-    "site:preview": "vitepress preview"
+    "site:dev": "vitepress-react",
+    "site:build": "vitepress-react build",
+    "site:preview": "vitepress-react preview"
   },
   "devDependencies": {
     "@iconify-json/lucide": "^1.2.126",
-    "vitepress": "workspace:*"
+    "@10coding/vitepress-react": "workspace:*"
   }
 }
