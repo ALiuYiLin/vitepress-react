@@ -73,7 +73,7 @@ if (!import.meta.env.SSR) {
 
 `Theme.enhanceApp` 可以是异步的（见[构建自定义主题](./custom-theme#theme-interface)），因此也可以在主题入口里做客户端的按需导入：
 
-```ts [.vitepress/theme/index.ts]
+```ts [.vitepress-react/theme/index.ts]
 import type { Theme } from '@10coding/vitepress-react'
 
 export default {

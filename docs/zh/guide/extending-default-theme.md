@@ -23,7 +23,7 @@ VitePress 默认的主题已经针对文档进行了优化，并且可以进行�
 
 默认主题的样式以 [CSS 变量](https://github.com/ALiuYiLin/vitepress-react/blob/main/src/client/theme-default/styles/vars.css) 为主。在主题入口导入自定义 css 并覆盖变量即可：
 
-```ts [.vitepress/theme/index.ts]
+```ts [.vitepress-react/theme/index.ts]
 import Theme from '@10coding/vitepress-react/theme'
 import './custom.css'
 
@@ -31,7 +31,7 @@ export default Theme
 ```
 
 ```css
-/* .vitepress/theme/custom.css */
+/* .vitepress-react/theme/custom.css */
 :root {
   --vp-c-brand-1: #646cff;
   --vp-c-brand-2: #747bff;
@@ -42,7 +42,7 @@ export default Theme
 
 默认主题使用 [Inter](https://rsms.me/inter/) 作为默认字体并打包进产物。如果不想打包 Inter，请从 `@10coding/vitepress-react/theme-without-fonts` 导入主题：
 
-```ts [.vitepress/theme/index.ts]
+```ts [.vitepress-react/theme/index.ts]
 import Theme from '@10coding/vitepress-react/theme-without-fonts'
 import './my-fonts.css'
 
@@ -50,7 +50,7 @@ export default Theme
 ```
 
 ```css
-/* .vitepress/theme/my-fonts.css */
+/* .vitepress-react/theme/my-fonts.css */
 :root {
   --vp-font-family-base: /* 普通文本字体 */
   --vp-font-family-mono: /* 代码字体 */
@@ -61,9 +61,9 @@ export default Theme
 如果使用诸如[团队页](../reference/default-theme-team-page)这类组件，也请从 `@10coding/vitepress-react/theme-without-fonts` 导入它们。
 :::
 
-若字体是本地 `@font-face` 文件，它会被当作资源放进 `.vitepress/dist/assets`（带哈希文件名）。需要预加载时，使用 [transformHead](../reference/site-config#transformhead) 构建钩子：
+若字体是本地 `@font-face` 文件，它会被当作资源放进 `.vitepress-react/dist/assets`（带哈希文件名）。需要预加载时，使用 [transformHead](../reference/site-config#transformhead) 构建钩子：
 
-```js [.vitepress/config.js]
+```js [.vitepress-react/config.js]
 export default {
   transformHead({ assets }) {
     // 相应地调整正则表达式以匹配字体
@@ -97,7 +97,7 @@ export default {
 
 Vue 默认主题的 `<Layout/>` 提供了具名插槽；React fork 的 `Layout` 不接受插槽 props。等价的做法是**用自己的 Layout 包装默认 `Layout`**，在它前后渲染自定义内容，或按 `useData()` 条件渲染：
 
-```ts [.vitepress/theme/index.ts]
+```ts [.vitepress-react/theme/index.ts]
 import Theme from '@10coding/vitepress-react/theme'
 import { MyLayout } from './MyLayout.tsx'
 
@@ -107,7 +107,7 @@ export default {
 }
 ```
 
-```tsx [.vitepress/theme/MyLayout.tsx]
+```tsx [.vitepress-react/theme/MyLayout.tsx]
 import { useData } from '@10coding/vitepress-react'
 import { Layout } from '@10coding/vitepress-react/theme'
 

@@ -36,7 +36,7 @@ pnpm add -D @10coding/vite-plugin-jsx-scoped
 2. 在站点配置里打开开关并注册插件:
 
 ```ts
-// .vitepress/config.ts
+// .vitepress-react/config.ts
 import jsxScopedVitePlugin from '@10coding/vite-plugin-jsx-scoped'
 import { defineConfig } from '@10coding/vitepress-react'
 

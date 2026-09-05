@@ -6,12 +6,12 @@ description: 在 VitePress（React fork）中创建和使用自定义主题，�
 
 ## 解析主题 {#theme-resolving}
 
-可以通过创建一个 `.vitepress/theme/index.ts` 文件（即“主题入口文件”）来启用自定义主题：
+可以通过创建一个 `.vitepress-react/theme/index.ts` 文件（即“主题入口文件”）来启用自定义主题：
 
 ```
 .
 ├─ docs                # 项目根目录
-│  ├─ .vitepress
+│  ├─ .vitepress-react
 │  │  ├─ theme
 │  │  │  └─ index.ts   # 主题入口
 │  │  └─ config.ts     # 配置文件
@@ -54,7 +54,7 @@ interface EnhanceAppContext {
 
 主题入口文件需要将主题对象作为默认导出来导出：
 
-```ts [.vitepress/theme/index.ts]
+```ts [.vitepress-react/theme/index.ts]
 import Layout from './Layout.tsx'
 
 export default {
@@ -71,7 +71,7 @@ export default {
 
 最基本的布局组件需要渲染 [`<Content />`](../reference/runtime-api#content)，它负责输出当前页面的 markdown 内容：
 
-```tsx [.vitepress/theme/Layout.tsx]
+```tsx [.vitepress-react/theme/Layout.tsx]
 import { Content } from '@10coding/vitepress-react'
 
 export default function Layout() {
@@ -86,7 +86,7 @@ export default function Layout() {
 
 上面的布局只是把每个页面的 markdown 渲染为 HTML。我们添加的第一个改进是处理 404 错误：
 
-```tsx [.vitepress/theme/Layout.tsx]
+```tsx [.vitepress-react/theme/Layout.tsx]
 import { Content, useData } from '@10coding/vitepress-react'
 
 export default function Layout() {
@@ -119,7 +119,7 @@ layout: home
 
 主题据此分支渲染：
 
-```tsx [.vitepress/theme/Layout.tsx]
+```tsx [.vitepress-react/theme/Layout.tsx]
 import { Content, useData } from '@10coding/vitepress-react'
 
 export default function Layout() {
@@ -152,7 +152,7 @@ export default function Layout() {
 
 当然你可以把布局拆成多个组件：
 
-```tsx [.vitepress/theme/Layout.tsx]
+```tsx [.vitepress-react/theme/Layout.tsx]
 import { useData } from '@10coding/vitepress-react'
 import NotFound from './NotFound.tsx'
 import Home from './Home.tsx'
@@ -175,7 +175,7 @@ export default function Layout() {
 }
 ```
 
-```tsx [.vitepress/theme/Page.tsx]
+```tsx [.vitepress-react/theme/Page.tsx]
 import { Content } from '@10coding/vitepress-react'
 
 export default function Page() {
@@ -205,7 +205,7 @@ export default function Page() {
 
 要使用外部主题，请导入它并重新导出：
 
-```ts [.vitepress/theme/index.ts]
+```ts [.vitepress-react/theme/index.ts]
 import Theme from 'awesome-vitepress-theme'
 
 export default Theme
@@ -213,7 +213,7 @@ export default Theme
 
 如果主题需要扩展：
 
-```ts [.vitepress/theme/index.ts]
+```ts [.vitepress-react/theme/index.ts]
 import Theme from 'awesome-vitepress-theme'
 
 export default {
@@ -228,7 +228,7 @@ export default {
 
 如果主题需要特殊的 VitePress 配置，在站点配置中扩展它：
 
-```ts [.vitepress/config.ts]
+```ts [.vitepress-react/config.ts]
 import baseConfig from 'awesome-vitepress-theme/config'
 
 export default {
@@ -238,7 +238,7 @@ export default {
 
 如果主题提供了 `ThemeConfig` 类型：
 
-```ts [.vitepress/config.ts]
+```ts [.vitepress-react/config.ts]
 import baseConfig from 'awesome-vitepress-theme/config'
 import { defineConfig } from '@10coding/vitepress-react'
 import type { ThemeConfig } from 'awesome-vitepress-theme'

@@ -36,7 +36,7 @@ description: 了解如何在 VitePress 中引用和处理静态资源，如图�
 
 ## 根 URL {#base-url}
 
-如果站点没有部署在根 URL 上，则需要在 `.vitepress/config.js` 中设置 `base` 选项。例如，如果计划将站点部署到 `https://foo.github.io/bar/`，则 `base` 应设置为 `'/bar/'`(它应始终以斜杠开头和结尾)。
+如果站点没有部署在根 URL 上，则需要在 `.vitepress-react/config.js` 中设置 `base` 选项。例如，如果计划将站点部署到 `https://foo.github.io/bar/`，则 `base` 应设置为 `'/bar/'`(它应始终以斜杠开头和结尾)。
 
 所有静态资源路径都会被自动处理，来适应不同的 `base` 配置值。例如，如果 markdown 中有一个对 `public` 中的资源的绝对引用：
 
@@ -48,7 +48,7 @@ description: 了解如何在 VitePress 中引用和处理静态资源，如图�
 
 但是如果你正在编写一个主题组件，它动态地链接到资源，例如一个图片，它的 `src` 基于主题配置：
 
-```tsx [.vitepress/theme/SomeLogo.tsx]
+```tsx [.vitepress-react/theme/SomeLogo.tsx]
 export function SomeLogo() {
   const { theme } = useData()
   return <img src={theme.logoPath} />
@@ -57,7 +57,7 @@ export function SomeLogo() {
 
 在这种情况下，建议使用 VitePress 提供的 [`withBase` helper](../reference/runtime-api#withbase) 来包含路径：
 
-```tsx [.vitepress/theme/SomeLogo.tsx]
+```tsx [.vitepress-react/theme/SomeLogo.tsx]
 import { withBase, useData } from '@10coding/vitepress-react'
 
 export function SomeLogo() {

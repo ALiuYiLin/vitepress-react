@@ -11,7 +11,7 @@ description: VitePress 站点配置选项的完整参考，包括应用级设置
 
 ### 配置解析 {#config-resolution}
 
-配置文件总是从 `<root>/.vitepress/config.[ext]` 解析，其中 `<root>` 是 VitePress [项目根目录](../guide/routing#root-and-source-directory)，`[ext]` 是支持的文件扩展名之一。开箱即用地支持 TypeScript。支持的扩展名包括 `.js`、`.ts`、`.mjs` 和 `.mts`。
+配置文件总是从 `<root>/.vitepress-react/config.[ext]` 解析，其中 `<root>` 是 VitePress [项目根目录](../guide/routing#root-and-source-directory)，`[ext]` 是支持的文件扩展名之一。开箱即用地支持 TypeScript。支持的扩展名包括 `.js`、`.ts`、`.mjs` 和 `.mts`。
 
 建议在配置文件中使用 ES 模块语法。配置文件应该默认导出一个对象：
 
@@ -398,7 +398,7 @@ export default {
 ### outDir
 
 - 类型：`string`
-- 默认值： `./.vitepress/dist`
+- 默认值： `./.vitepress-react/dist`
 
 项目的构建输出位置，相对于[项目根目录](../guide/routing#root-and-source-directory)。
 
@@ -424,13 +424,13 @@ export default {
 ### cacheDir
 
 - 类型：`string`
-- 默认值： `./.vitepress/cache`
+- 默认值： `./.vitepress-react/cache`
 
 缓存文件的目录，相对于[项目根目录](../guide/routing#root-and-source-directory)。另请参阅：[cacheDir](https://vite.dev/config/shared-options.html#cachedir)。
 
 ```ts
 export default {
-  cacheDir: './.vitepress/.vite'
+  cacheDir: './.vitepress-react/.vite'
 }
 ```
 

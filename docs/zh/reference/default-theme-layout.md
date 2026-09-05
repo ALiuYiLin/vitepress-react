@@ -51,7 +51,7 @@ layout: foo
 ---
 ```
 
-```tsx [.vitepress/theme/Layout.tsx]
+```tsx [.vitepress-react/theme/Layout.tsx]
 import { Content, useData } from '@10coding/vitepress-react'
 import FooPage from './FooPage.tsx'
 

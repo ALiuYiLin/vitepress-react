@@ -8,7 +8,7 @@ description: 将 VitePress 站点部署到 Netlify、Vercel、GitHub Pages 等�
 以下指南基于一些前提：
 
 - VitePress 站点位于项目的 `docs` 目录中。
-- 你使用的是默认的生成输出目录 （`.vitepress/dist`）。
+- 你使用的是默认的生成输出目录 （`.vitepress-react/dist`）。
 - VitePress 作为本地依赖项安装在项目中，并且你已在 `package.json` 中设置以下脚本：
 
   ```json [package.json]
@@ -34,7 +34,7 @@ description: 将 VitePress 站点部署到 Netlify、Vercel、GitHub Pages 等�
    $ npm run docs:preview
    ```
 
-   `preview` 命令将启动一个本地静态 Web 服务 `http://localhost:4173`，该服务以 `.vitepress/dist` 作为源文件。这是检查生产版本在本地环境中是否正常的一种简单方法。
+   `preview` 命令将启动一个本地静态 Web 服务 `http://localhost:4173`，该服务以 `.vitepress-react/dist` 作为源文件。这是检查生产版本在本地环境中是否正常的一种简单方法。
 
 3. 可以通过传递 `--port` 作为参数来配置服务器的端口。
 
@@ -111,7 +111,7 @@ Cache-Control: max-age=31536000,immutable
 使用仪表板创建新项目并更改这些设置：
 
 - **构建命令：** `npm run docs:build`
-- **输出目录：** `docs/.vitepress/dist`
+- **输出目录：** `docs/.vitepress-react/dist`
 - **node 版本：** `20` (或更高版本)
 
 ::: warning
@@ -175,7 +175,7 @@ Cache-Control: max-age=31536000,immutable
          - name: Upload artifact
            uses: actions/upload-pages-artifact@v3
            with:
-             path: docs/.vitepress/dist
+             path: docs/.vitepress-react/dist
 
      # 部署工作
      deploy:
@@ -229,7 +229,7 @@ Cache-Control: max-age=31536000,immutable
 2. 在配置文件中设置这些值 (并删除不需要的值，如 `api_location`)：
 
    - **`app_location`**: `/`
-   - **`output_location`**: `docs/.vitepress/dist`
+   - **`output_location`**: `docs/.vitepress-react/dist`
    - **`app_build_command`**: `npm run docs:build`
 
 ### CloudRay
@@ -245,7 +245,7 @@ Cache-Control: max-age=31536000,immutable
    ```json [firebase.json]
    {
      "hosting": {
-       "public": "docs/.vitepress/dist",
+       "public": "docs/.vitepress-react/dist",
        "ignore": []
      }
    }
@@ -275,7 +275,7 @@ Cache-Control: max-age=31536000,immutable
 
    ```json [static.json]
    {
-     "root": "docs/.vitepress/dist"
+     "root": "docs/.vitepress-react/dist"
    }
    ```
 
@@ -296,7 +296,7 @@ Cache-Control: max-age=31536000,immutable
 1. 运行 `npm run docs:build` 后，运行此命令进行部署：
 
    ```sh
-   npx surge docs/.vitepress/dist
+   npx surge docs/.vitepress-react/dist
    ```
 
 ### Nginx

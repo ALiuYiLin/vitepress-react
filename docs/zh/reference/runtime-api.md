@@ -16,7 +16,7 @@ VitePress 提供若干内置 API 以访问站点/页面数据，并内置少量�
 interface VitePressData<T = any> {
   /** 站点级元数据 */
   site: SiteData<T>
-  /** .vitepress/config.js 中的 themeConfig */
+  /** .vitepress-react/config.js 中的 themeConfig */
   theme: T
   /** 页面级元数据 */
   page: PageData
@@ -48,7 +48,7 @@ interface PageData {
 
 **在主题组件中使用：**
 
-```tsx [.vitepress/theme/SomeWidget.tsx]
+```tsx [.vitepress-react/theme/SomeWidget.tsx]
 import { useData } from '@10coding/vitepress-react'
 
 export function SomeWidget() {

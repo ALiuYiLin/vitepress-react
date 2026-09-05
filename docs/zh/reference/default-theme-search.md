@@ -7,7 +7,7 @@ description: 为 VitePress 站点设置本地搜索或 Algolia 搜索功能。
 
 ## 本地搜索 {#local-search}
 
-得益于 [minisearch](https://github.com/lucaong/minisearch/)，VitePress 支持使用浏览器内索引进行模糊全文搜索。要启用此功能，只需在 `.vitepress/config.ts` 文件中将 `themeConfig.search.provider` 选项设置为 `'local'` 即可：
+得益于 [minisearch](https://github.com/lucaong/minisearch/)，VitePress 支持使用浏览器内索引进行模糊全文搜索。要启用此功能，只需在 `.vitepress-react/config.ts` 文件中将 `themeConfig.search.provider` 选项设置为 `'local'` 即可：
 
 ```ts
 import { defineConfig } from '@10coding/vitepress-react'
@@ -186,7 +186,7 @@ export default defineConfig({
 
 ## Algolia Search {#algolia-search}
 
-VitePress 支持使用 [Algolia DocSearch](https://docsearch.algolia.com/docs/what-is-docsearch) 搜索文档站点。请参阅他们的入门指南。在你的 `.vitepress/config.ts` 中，你至少需要提供以下内容才能使其正常工作：
+VitePress 支持使用 [Algolia DocSearch](https://docsearch.algolia.com/docs/what-is-docsearch) 搜索文档站点。请参阅他们的入门指南。在你的 `.vitepress-react/config.ts` 中，你至少需要提供以下内容才能使其正常工作：
 
 ```ts
 import { defineConfig } from '@10coding/vitepress-react'

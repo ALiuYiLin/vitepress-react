@@ -35,14 +35,14 @@ VitePress 项目的文件结构中有两个重要的概念：项目根目录 (**
 
 ### 项目根目录 {#project-root}
 
-项目根目录是 VitePress 将尝试寻找 `.vitepress` 特殊目录的地方。`.vitepress` 目录是 VitePress 配置文件、开发服务器缓存、构建输出和可选主题自定义代码的预留位置。
+项目根目录是 VitePress 将尝试寻找 `.vitepress-react` 特殊目录的地方。`.vitepress-react` 目录是 VitePress 配置文件、开发服务器缓存、构建输出和可选主题自定义代码的预留位置。
 
 当从命令行运行 `vitepress-react dev` 或 `vitepress-react build` 时，VitePress 将使用当前工作目录作为项目根目录。要将子目录指定为根目录，需要将相对路径传递给命令。例如，如果 VitePress 项目位于 `./docs`，应该运行 `vitepress-react dev docs`：
 
 ```
 .
 ├─ docs                    # 项目根目录
-│  ├─ .vitepress           # 配置目录
+│  ├─ .vitepress-react     # 配置目录
 │  ├─ getting-started.md
 │  └─ index.md
 └─ ...
@@ -67,7 +67,7 @@ docs/getting-started.md  -->  /getting-started.html
 
 ```
 .                          # 项目根目录
-├─ .vitepress              # 配置目录
+├─ .vitepress-react        # 配置目录
 └─ src                     # 源目录
    ├─ getting-started.md
    └─ index.md
@@ -177,7 +177,7 @@ packages/pkg-b/src/pkg-b-docs.md  -->  /pkg-b/index.html
 
 可以通过像这样配置 [`rewrites`](../reference/site-config#rewrites) 选项来实现此目的：
 
-```ts [.vitepress/config.js]
+```ts [.vitepress-react/config.js]
 export default {
   rewrites: {
     'packages/pkg-a/src/pkg-a-docs.md': 'pkg-a/index.md',

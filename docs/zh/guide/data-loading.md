@@ -165,7 +165,7 @@ export default createContentLoader('posts/*.md', {
 
 `createContentLoader` API 也可以在[构建钩子](../reference/site-config#build-hooks)中使用：
 
-```js [.vitepress/config.js]
+```js [.vitepress-react/config.js]
 export default {
   async buildEnd() {
     const posts = await createContentLoader('posts/*.md').load()

@@ -855,7 +855,7 @@ Can be created using `.foorc.json`.
 npm add -D markdown-it-mathjax3@^4
 ```
 
-```ts [.vitepress/config.ts]
+```ts [.vitepress-react/config.ts]
 export default {
   markdown: {
     math: true
@@ -908,7 +908,7 @@ export default {
 
 ## 高级配置 {#advanced-configuration}
 
-VitePress 使用 [markdown-it](https://github.com/markdown-it/markdown-it) 作为 Markdown 渲染器。上面提到的很多扩展功能都是通过自定义插件实现的。可以使用 `.vitepress/config.js` 中的 `markdown` 选项来进一步自定义 `markdown-it` 实例。
+VitePress 使用 [markdown-it](https://github.com/markdown-it/markdown-it) 作为 Markdown 渲染器。上面提到的很多扩展功能都是通过自定义插件实现的。可以使用 `.vitepress-react/config.js` 中的 `markdown` 选项来进一步自定义 `markdown-it` 实例。
 
 ```js
 import { defineConfig } from '@10coding/vitepress-react'

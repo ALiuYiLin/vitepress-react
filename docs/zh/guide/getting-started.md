@@ -41,7 +41,7 @@ $ bun add -D @10coding/vitepress-react@next
 
 ::: tip 注意
 
-VitePress 是仅 ESM 的软件包。不要使用 `require()` 导入它，并确保最新的 `package.json` 包含 `"type": "module"`，或者更改相关文件的文件扩展名，例如 `.vitepress/config.js` 到 `.mjs`/`.mts`。更多详情请参考 [Vite 故障排除指南](http://vite.dev/guide/troubleshooting.html#this-package-is-esm-only)。此外，在异步 CJS 上下文中，可以使用 `await import('@10coding/vitepress-react')` 代替。
+VitePress 是仅 ESM 的软件包。不要使用 `require()` 导入它，并确保最新的 `package.json` 包含 `"type": "module"`，或者更改相关文件的文件扩展名，例如 `.vitepress-react/config.js` 到 `.mjs`/`.mts`。更多详情请参考 [Vite 故障排除指南](http://vite.dev/guide/troubleshooting.html#this-package-is-esm-only)。此外，在异步 CJS 上下文中，可以使用 `await import('@10coding/vitepress-react')` 代替。
 
 :::
 
@@ -86,7 +86,7 @@ vitepress 自身已内置 react/react-dom 供默认主题与 md 页面运行时�
 ```
 .
 ├─ docs
-│  ├─ .vitepress
+│  ├─ .vitepress-react
 │  │  └─ config.js
 │  ├─ api-examples.md
 │  ├─ markdown-examples.md
@@ -94,17 +94,17 @@ vitepress 自身已内置 react/react-dom 供默认主题与 md 页面运行时�
 └─ package.json
 ```
 
- `docs` 目录作为 VitePress 站点的项目**根目录**。`.vitepress` 目录是 VitePress 配置文件、开发服务器缓存、构建输出和可选主题自定义代码的位置。
+ `docs` 目录作为 VitePress 站点的项目**根目录**。`.vitepress-react` 目录是 VitePress 配置文件、开发服务器缓存、构建输出和可选主题自定义代码的位置。
 
 ::: tip
-默认情况下，VitePress 将其开发服务器缓存存储在 `.vitepress/cache` 中，并将生产构建输出存储在 `.vitepress/dist` 中。如果使用 Git，应该将它们添加到 `.gitignore` 文件中。也可以手动[配置](../reference/site-config#outdir)这些位置。
+默认情况下，VitePress 将其开发服务器缓存存储在 `.vitepress-react/cache` 中，并将生产构建输出存储在 `.vitepress-react/dist` 中。如果使用 Git，应该将它们添加到 `.gitignore` 文件中。也可以手动[配置](../reference/site-config#outdir)这些位置。
 :::
 
 ### 配置文件 {#the-config-file}
 
-配置文件 (`.vitepress/config.js`) 让你能够自定义 VitePress 站点的各个方面，最基本的选项是站点的标题和描述：
+配置文件 (`.vitepress-react/config.js`) 让你能够自定义 VitePress 站点的各个方面，最基本的选项是站点的标题和描述：
 
-```js [.vitepress/config.js]
+```js [.vitepress-react/config.js]
 export default {
   // 站点级选项
   title: 'VitePress',
@@ -120,7 +120,7 @@ export default {
 
 ### 源文件 {#source-files}
 
-`.vitepress` 目录之外的 Markdown 文件被视为**源文件**。
+`.vitepress-react` 目录之外的 Markdown 文件被视为**源文件**。
 
 VitePress 使用 **基于文件的路由**：每个 `.md` 文件将在相同的路径被编译成为 `.html` 文件。例如，`index.md` 将会被编译成 `index.html`，可以在生成的 VitePress 站点的根路径 `/` 进行访问。
 

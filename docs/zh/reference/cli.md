@@ -46,7 +46,7 @@ vitepress-react build [root]
 | `--mpa` (experimental)         | [MPA 模式](../guide/mpa-mode) 下构建，无需客户端激活 (`boolean`)                        |
 | `--base <path>`                | public base URL (默认值: `/`)  (`string`)                                                            |
 | `--target <target>`            | 转译目标 (默认值：`"modules"`) (`string`)                                                        |
-| `--outDir <dir>`               | 输出目录 (默认值：`.vitepress/dist`) (`string`)                                                  |
+| `--outDir <dir>`               | 输出目录 (默认值：`.vitepress-react/dist`) (`string`)                                                  |
 | `--assetsInlineLimit <number>` | 静态资源 base64 内联阈值（以字节为单位）(默认值：`4096`) (`number`)                             |
 
 ## `vitepress-react preview`

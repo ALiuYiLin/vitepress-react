@@ -209,7 +209,7 @@ pageClass: custom-page-class
 ---
 ```
 
-然后可以在 `.vitepress/theme/custom.css` 文件中自定义该特定页面的样式：
+然后可以在 `.vitepress-react/theme/custom.css` 文件中自定义该特定页面的样式：
 
 ```css
 .custom-page-class {
