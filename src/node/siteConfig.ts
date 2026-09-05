@@ -78,7 +78,7 @@ export interface TransformPageContext<ThemeConfig = any> {
 }
 
 /**
- * VitePress config, usually defined in `.vitepress/config.[ext]`.
+ * vitepress-react config, usually defined in `.vitepress-react/config.[ext]`.
  */
 export interface UserConfig<
   ThemeConfig = any
@@ -109,7 +109,7 @@ export interface UserConfig<
   srcExclude?: string[]
   /**
    * Build output location, relative to the project root.
-   * @default './.vitepress/dist'
+   * @default './.vitepress-react/dist'
    */
   outDir?: string
   /**
@@ -157,7 +157,7 @@ export interface UserConfig<
   }
   /**
    * Directory for cache files, relative to the project root.
-   * @default './.vitepress/cache'
+   * @default './.vitepress-react/cache'
    */
   cacheDir?: string
   /**
@@ -345,7 +345,7 @@ export interface SiteConfig<ThemeConfig = any> extends Pick<
 > {
   /**
    * Absolute path of the project root (the directory containing
-   * `.vitepress`).
+   * `.vitepress-react`).
    */
   root: string
   /**

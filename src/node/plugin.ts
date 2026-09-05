@@ -36,7 +36,7 @@ import { localSearchPlugin } from './plugins/localSearchPlugin'
 import { rewritesPlugin } from './plugins/rewritesPlugin'
 import { staticDataPlugin } from './plugins/staticDataPlugin'
 import { webFontsPlugin } from './plugins/webFontsPlugin'
-import { slash, type PageDataPayload } from './shared'
+import { slash, CONFIG_DIR_NAME, type PageDataPayload } from './shared'
 import { deserializeFunctions, serializeFunctions } from './utils/fnSerialize'
 import { cacheAllGitTimestamps } from './utils/getGitTimestamp'
 
@@ -46,7 +46,9 @@ declare module 'vite' {
   }
 }
 
-const themeRE = /(?:^|\/)\.vitepress\/theme\/index\.(m|c)?(j|t)s$/
+const themeRE = new RegExp(
+  `(?:^|\\/)${CONFIG_DIR_NAME.replace(/\./g, '\\.')}/theme/index\\.(m|c)?(j|t)s$`
+)
 const startsWithThemeRE = /^@theme(?:\/|$)/
 const docsearchRE = /\bdocsearch\b/ // narrow it if any issue arises
 

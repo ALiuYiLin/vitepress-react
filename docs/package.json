@@ -7,7 +7,7 @@
     "build": "vitepress-react build",
     "preview": "vitepress-react preview",
     "lunaria:build": "lunaria build",
-    "lunaria:open": "open-cli .vitepress/dist/_translations/index.html"
+    "lunaria:open": "open-cli .vitepress-react/dist/_translations/index.html"
   },
   "devDependencies": {
     "@10coding/vite-plugin-jsx-scoped": "^0.4.0",

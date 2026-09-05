@@ -18,6 +18,7 @@ import type { MarkdownOptions } from './markdown/markdown'
 import { resolvePages } from './plugins/dynamicRoutesPlugin'
 import {
   APPEARANCE_KEY,
+  CONFIG_DIR_NAME,
   EXTERNAL_URL_RE,
   VP_SOURCE_KEY,
   isObject,
@@ -42,7 +43,7 @@ const additionalConfigRE = /(?:^|\/|\\)config\.m?[jt]s$/
 const additionalConfigGlob = `**/config.{js,mjs,ts,mts}`
 
 const resolve = (root: string, file: string) =>
-  normalizePath(path.resolve(root, `.vitepress`, file))
+  normalizePath(path.resolve(root, CONFIG_DIR_NAME, file))
 
 export function normalizeSiteBase(base?: string): string {
   let normalized = base ? base.replace(/([^/])$/, '$1/') : '/'

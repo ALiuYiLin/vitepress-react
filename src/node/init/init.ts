@@ -15,7 +15,7 @@ import {
 import { Eta } from 'eta'
 import c from 'picocolors'
 
-import { slash } from '../shared'
+import { CONFIG_DIR_NAME, slash } from '../shared'
 import { readFile } from '../utils/fs'
 
 export const ScaffoldThemeType = {
@@ -200,7 +200,7 @@ export async function scaffold({
     const filePath = path.resolve(templateDir, file)
     let targetPath = path.resolve(resolvedRoot, file)
 
-    if (useMjs && file === '.vitepress/config.js') {
+    if (useMjs && file === `${CONFIG_DIR_NAME}/config.js`) {
       targetPath = targetPath.replace(/\.js$/, '.mjs')
     }
     if (useTs) {
@@ -221,19 +221,19 @@ export async function scaffold({
     'index.md',
     'api-examples.md',
     'markdown-examples.md',
-    '.vitepress/config.js'
+    `${CONFIG_DIR_NAME}/config.js`
   ]
 
   if (theme === ScaffoldThemeType.DefaultCustom) {
     filesToScaffold.push(
-      '.vitepress/theme/index.js',
-      '.vitepress/theme/style.css'
+      `${CONFIG_DIR_NAME}/theme/index.js`,
+      `${CONFIG_DIR_NAME}/theme/style.css`
     )
   } else if (theme === ScaffoldThemeType.Custom) {
     filesToScaffold.push(
-      '.vitepress/theme/index.js',
-      '.vitepress/theme/style.css',
-      '.vitepress/theme/Layout.jsx'
+      `${CONFIG_DIR_NAME}/theme/index.js`,
+      `${CONFIG_DIR_NAME}/theme/style.css`,
+      `${CONFIG_DIR_NAME}/theme/Layout.jsx`
     )
   }
 
@@ -243,7 +243,9 @@ export async function scaffold({
 
   const tips = []
 
-  const gitignorePrefix = root ? `${slash(root)}/.vitepress` : '.vitepress'
+  const gitignorePrefix = root
+    ? `${slash(root)}/${CONFIG_DIR_NAME}`
+    : CONFIG_DIR_NAME
   if (fs.existsSync('.git')) {
     tips.push(
       `Make sure to add ${c.cyan(`${gitignorePrefix}/dist`)} and ${c.cyan(`${gitignorePrefix}/cache`)} to your ${c.cyan(`.gitignore`)} file.`
