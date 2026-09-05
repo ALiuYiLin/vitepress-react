@@ -128,6 +128,7 @@ function sidebarGuide(): DefaultTheme.SidebarItem[] {
         { text: '资源处理', link: 'asset-handling' },
         { text: 'frontmatter', link: 'frontmatter' },
         { text: '在 Markdown 中使用 React', link: 'using-react' },
+        { text: 'Markdown 中的 React 规则', link: 'md-react-rules' },
         { text: 'md 页面 scoped 样式', link: 'md-scoped-demo' },
         { text: '国际化', link: 'i18n' }
       ]

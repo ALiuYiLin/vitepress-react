@@ -194,8 +194,14 @@ Vue 指令(`v-if`、`v-pre`、`@click`、`:class` 等)不属于 React:序列化�
 
 ## 样式与客户端专属内容 {#styles-and-client-only}
 
-::: warning 根级 `<style>` 是全局的
-本 React 版没有 Vue SFC 的 `<style module>` / `<style scoped>` 语义。Markdown 里的 `<style>` 按普通 HTML 输出为全局样式;需要局部作用域样式时,请在组件文件里使用 CSS Modules 或内联样式。
+::: warning 根级 `<style>` 是全局的;页面级作用域有专门的 scoped 方案
+不带 `scoped` 的 `<style>` 仍是全局样式(运行时注入全站)。想要 **Vue-like
+的页面级 scoped 样式**时,用 `<style scoped>` 内联块或导入 `*.scoped.css`:
+在站点配置开 `themeConfig.markdownScopedCss: true` 并注册
+`jsxScopedVitePlugin()`(本示例站点已开启)——编译后选择器带
+`[data-v-{hash}]`,只作用于对应页面,用法与实时示例见
+[md 页面 scoped 样式](./md-scoped-demo)。组件文件内部的局部样式仍用
+CSS Modules 或内联样式(Vue SFC 的 `<style module>` 语义不提供)。
 :::
 
 VitePress [内置支持](https://cn.vite.dev/guide/features.html#css-pre-processors) CSS 预处理器(`.scss`、`.sass`、`.less`、`.styl`、`.stylus`),在组件文件(如 `Counter.tsx` 旁的 `Counter.module.scss`)中按 Vite 常规方式使用即可。

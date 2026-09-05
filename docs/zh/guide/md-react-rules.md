@@ -21,6 +21,7 @@ description: '在 Markdown 中使用 React 的完整规则:表达式、JSX 区�
 | 正文 `{expr}` | 引用 script 绑定或纯字面(`{1+1}`)→ 求值;含中文/顶层逗号 → 字面 |
 | 独立成行的 `<标签 …>` 块 | React 接管:整行(可跨行配平)占位 → 原样恢复成 JSX |
 | 正文行内的 `<b>`/`<Badge/>` | React 接管:同句片段占位 → 恢复成 JSX |
+| ATX 标题行内的标签(`## 标题 <Badge/>`) | **不接管**:markdown-it + anchor 生成干净 id 与大纲纯文本;已知组件名由序列化器还原 |
 | `::: react … :::` 容器 | 任意多行 JSX(含 `items.map(...)` 表达式),原样交给 React |
 | Vue 指令(`:members`/`@click`/`#slot`/`v-*`) | **不接管**,退回旧 HTML→JSX 路径(丢弃并提示) |
 | 代码 fence / 行内代码 | 字面量,永不求值/接管 |
@@ -142,6 +143,8 @@ export default function Page() {
 
 说明:普通 HTML 标签(`<b>`)与主题组件(`<Badge>`/`<VPTeamMembers>`…)都按 JSX 编译;组件会从 `vitepress/theme` 自动导入。
 
+**标题行例外**:`## 标题 <Badge type="tip" text="new" />` 这类 **ATX 标题行不整行接管**——整行占位会让占位串漏进 anchor 插件生成的 heading id(如 `#标题-vp-html-4`)与 aria-label。标题由 markdown-it + anchor 处理(id 干净、大纲只取纯文本),已知组件名再由序列化器还原成 JSX 组件(自定义组件需 `<script>` 顶层 import,主题标签如 `Badge` 会自动导入)。代码与实时示例见 [在标题中使用组件](./using-react#using-components-in-headers)。
+
 ## 4. `::: react` 容器(多行 JSX)
 
 需要**跨多行、含 JS 表达式**的 JSX 时,用容器把区域隔离,内容对 markdown-it 完全不透明:
@@ -198,6 +201,7 @@ export default function Page() {
 | 代码块/行内代码 | 字面展示,示例请这样写 |
 | Vue 指令语法(`:members`、`@click`、`<template #slot>`、`v-if`) | 不接管,退回旧 HTML→JSX 路径并给出提示(避免把 Vue 语法当 JSX 编译) |
 | `<script>`/`<style>` | 走 plugin-sfc 提取(组件/page-scope/样式注入),不当作 JSX 区域 |
+| `<style scoped>` / `*.scoped.css` 导入 | 也不是 JSX 区域:属于**页面级 scoped 样式**方案(需 `themeConfig.markdownScopedCss`,见 [md 页面 scoped 样式](./md-scoped-demo)) |
 
 因此本文的“代码示例”均放在代码 fence 里;真正的 live 演示放在正文/容器里。
 
