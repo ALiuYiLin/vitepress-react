@@ -16,11 +16,7 @@ editLink: true
 ---
 ```
 
-可以通过 Vue 表达式中的 `$frontmatter` 全局变量访问 frontmatter 数据：
-
-```md
-{{ $frontmatter.title }}
-```
+在页面里访问 frontmatter：在 `<script>` 的 page-scope 中 `useData()` 读取、正文 `{expr}` 引用（示例见[指南 frontmatter](../guide/frontmatter#accessing-frontmatter-data)）。本 fork 没有 Vue 的 `$frontmatter` 全局与 `{{ }}` 插值。
 
 ## title
 
@@ -43,7 +39,7 @@ title: VitePress
 ```yaml
 ---
 title: VitePress
-titleTemplate: Vite & Vue powered static site generator
+titleTemplate: Vite & React powered static site generator
 ---
 ```
 
