@@ -10,7 +10,7 @@ import { VPLocalNav } from './components/VPLocalNav'
 import { VPNav } from './components/VPNav'
 import { VPSidebar } from './components/VPSidebar'
 import { VPSkipLink } from './components/VPSkipLink'
-import './layout.module.css'
+import './styles/components/Layout.scoped.css'
 
 const cx = (...c: (string | false | undefined | null)[]) => c.filter(Boolean).join(' ')
 

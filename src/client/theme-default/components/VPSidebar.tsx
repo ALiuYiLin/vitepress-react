@@ -4,7 +4,7 @@ import { useBodyScrollLock } from '../composables/use-body-scroll-lock'
 import { useLayout } from '../composables/use-layout'
 import { type VpSidebarItem } from '../theme-utils'
 import { VPSidebarGroup } from './VPSidebarGroup'
-import s from './VPSidebar.module.css'
+import '../styles/components/VPSidebar.scoped.css'
 
 const cx = (...c: (string | false | undefined | null)[]) => c.filter(Boolean).join(' ')
 
@@ -47,14 +47,14 @@ export function VPSidebar({
   return (
     <aside
       ref={navEl}
-      className={cx(s.sidebar, 'VPSidebar', open && 'open')}
+      className={cx('sidebar', 'VPSidebar', open && 'open')}
       onClick={(e) => e.stopPropagation()}
       {...({ inert: inert || undefined } as Record<string, unknown>)}
     >
-      <div className={cx(s.curtain, 'curtain')} />
+      <div className={cx('curtain', 'curtain')} />
 
       <nav
-        className={cx(s.nav, 'nav')}
+        className={cx('nav', 'nav')}
         id="VPSidebarNav"
         aria-labelledby="sidebar-aria-label"
         tabIndex={-1}
@@ -73,3 +73,4 @@ export function VPSidebar({
     </aside>
   )
 }
+

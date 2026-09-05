@@ -5,7 +5,7 @@ import { resolveTitle } from '../composables/use-active-anchor'
 import { useBodyScrollLock } from '../composables/use-body-scroll-lock'
 import { type VpHeader } from '../theme-utils'
 import { VPDocOutlineItem } from './VPDocOutlineItem'
-import s from './VPLocalNavOutlineDropdown.module.css'
+import '../styles/components/VPLocalNavOutlineDropdown.scoped.css'
 
 const cx = (...c: (string | false | undefined | null)[]) => c.filter(Boolean).join(' ')
 
@@ -77,7 +77,7 @@ export function VPLocalNavOutlineDropdown({
   return (
     <div
       ref={mainRef}
-      className={cx(s.root, 'VPLocalNavOutlineDropdown')}
+      className={cx('root', 'VPLocalNavOutlineDropdown')}
       style={{ '--vp-vh': `${vh}px` } as CSSProperties}
       data-allow-mismatch="style"
     >
@@ -86,11 +86,11 @@ export function VPLocalNavOutlineDropdown({
           type="button"
           aria-expanded={open}
           aria-controls={itemsId}
-          className={cx(open && s.open)}
+          className={cx(open && 'open')}
           onClick={toggle}
         >
           <span className="menu-text">{resolveTitle(themeCfg)}</span>
-          <span className={cx(s.icon, 'icon', 'vpi-chevron-right')} aria-hidden="true" />
+          <span className={cx('icon', 'icon', 'vpi-chevron-right')} aria-hidden="true" />
         </button>
       ) : (
         <button type="button" onClick={scrollToTop}>
@@ -102,12 +102,12 @@ export function VPLocalNavOutlineDropdown({
         <div
           ref={itemsRef}
           id={itemsId}
-          className={cx(s.items, 'items', s.flyoutEnter)}
+          className={cx('items', 'items', 'flyoutEnter')}
           onClick={onItemClick}
         >
-          <div className={cx(s.header, 'header')}>
+          <div className={cx('header', 'header')}>
             <a
-              className={cx(s.topLink, 'top-link')}
+              className={cx('topLink', 'top-link')}
               href="#"
               onClick={(e) => {
                 e.preventDefault()
@@ -117,7 +117,7 @@ export function VPLocalNavOutlineDropdown({
               {label}
             </a>
           </div>
-          <div className={cx(s.outline, 'outline')}>
+          <div className={cx('outline', 'outline')}>
             <VPDocOutlineItem headers={headers} />
           </div>
         </div>
@@ -125,3 +125,4 @@ export function VPLocalNavOutlineDropdown({
     </div>
   )
 }
+

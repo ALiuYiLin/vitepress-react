@@ -1,6 +1,0 @@
-/* 对应 Vue Layout.vue <style scoped> —— 仅保留 .Layout 基架(骨架版样式已废弃) */
-:global(.Layout) {
-  display: flex;
-  flex-direction: column;
-  min-height: 100vh;
-}

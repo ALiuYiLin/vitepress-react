@@ -18,7 +18,7 @@ import { createPortal } from 'react-dom'
 import MiniSearch from 'minisearch'
 import { useData, useRouter, withBase } from 'vitepress'
 
-import s from './vp-local-search.module.css'
+import '../styles/components/vp-local-search.scoped.css'
 
 const cx = (...c: (string | false | undefined | null)[]) => c.filter(Boolean).join(' ')
 
@@ -387,22 +387,22 @@ export function LocalSearchDialog({
   const noResultsText = translations.modal.noResultsText ?? 'No results for'
 
   const modal = (
-    <div className={s.overlayRoot}>
-      <div className={s.backdrop} onClick={onClose} />
+    <div className={'overlayRoot'}>
+      <div className={'backdrop'} onClick={onClose} />
 
-      <div className={s.shell} onKeyDown={onKeyDown}>
+      <div className={'shell'} onKeyDown={onKeyDown}>
         <form
-          className={s.searchBar}
+          className={'searchBar'}
           role="search"
           onSubmit={(e) => e.preventDefault()}
         >
           <span
             aria-hidden="true"
-            className={cx('vpi-search', s.searchIcon, 'local-search-icon')}
+            className={cx('vpi-search', 'searchIcon', 'local-search-icon')}
           />
           <input
             ref={inputRef}
-            className={s.input}
+            className={'input'}
             type="search"
             role="combobox"
             aria-expanded={hits.length > 0}
@@ -422,14 +422,14 @@ export function LocalSearchDialog({
             maxLength={64}
             spellCheck={false}
           />
-          <div className={s.actions}>
+          <div className={'actions'}>
             <span
-              className={cx(s.spinner, (!loaded && !loadError) && s.active)}
+              className={cx('spinner', (!loaded && !loadError) && 'active')}
               role={!loaded && !loadError ? 'status' : undefined}
               aria-live="polite"
             />
             <button
-              className={s.clearButton}
+              className={'clearButton'}
               type="reset"
               disabled={query.length === 0}
               title={translations.modal.resetButtonTitle ?? 'Reset search'}
@@ -445,16 +445,16 @@ export function LocalSearchDialog({
         </form>
 
         {loaded && !loadError && (
-          <ul ref={resultsRef} className={s.results} role="listbox">
+          <ul ref={resultsRef} className={'results'} role="listbox">
             {hits.map((hit, i) => {
               const selected = i === active
               const ancestors = (hit.titles ?? []).filter(Boolean)
               const mainTitle = (hit.title ?? '').trim()
               const ariaLabel = [...ancestors, mainTitle].join(' > ')
               return (
-                <li key={hit.id} className={s.resultItem} role="option">
+                <li key={hit.id} className={'resultItem'} role="option">
                   <a
-                    className={cx(s.result, selected && s.selected)}
+                    className={cx('result', selected && 'selected')}
                     data-selected={selected || undefined}
                     href={resultHref(hit.id)}
                     aria-label={ariaLabel}
@@ -472,28 +472,28 @@ export function LocalSearchDialog({
                       choose(i)
                     }}
                   >
-                    <div className={s.resultBody}>
-                      <div className={s.titles}>
-                        <span className={s.titleIcon} aria-hidden="true">
+                    <div className={'resultBody'}>
+                      <div className={'titles'}>
+                        <span className={'titleIcon'} aria-hidden="true">
                           #
                         </span>
                         {ancestors.map((t, ai) => (
-                          <span key={ai} className={s.title}>
-                            <span className={s.titleText}>
+                          <span key={ai} className={'title'}>
+                            <span className={'titleText'}>
                               {highlightParts(decodeHtmlEntities(t), query)}
                             </span>
                             <span
                               aria-hidden="true"
                               className={cx(
                                 'vpi-chevron-right',
-                                s.separatorIcon
+                                'separatorIcon'
                               )}
                             />
                           </span>
                         ))}
                         {mainTitle && (
-                          <span className={cx(s.title, s.titleMain)}>
-                            <span className={s.titleText}>
+                          <span className={cx('title', 'titleMain')}>
+                            <span className={'titleText'}>
                               {highlightParts(decodeHtmlEntities(mainTitle), query)}
                             </span>
                           </span>
@@ -505,35 +505,35 @@ export function LocalSearchDialog({
               )
             })}
             {searched && hits.length === 0 && (
-              <li className={s.noResults}>
+              <li className={'noResults'}>
                 {noResultsText} <strong>“{query.trim()}”</strong>
               </li>
             )}
           </ul>
         )}
         {loadError && (
-          <ul className={s.results}>
-            <li className={s.noResults}>{noResultsText}</li>
+          <ul className={'results'}>
+            <li className={'noResults'}>{noResultsText}</li>
           </ul>
         )}
 
-        <div className={s.shortcuts}>
+        <div className={'shortcuts'}>
           <span>
             <kbd
               aria-label={translations.modal.footer?.navigateUpKeyAriaLabel}
             >
-              <span className={cx('vpi-arrow-up', s.navigateIcon)} />
+              <span className={cx('vpi-arrow-up', 'navigateIcon')} />
             </kbd>
             <kbd
               aria-label={translations.modal.footer?.navigateDownKeyAriaLabel}
             >
-              <span className={cx('vpi-arrow-down', s.navigateIcon)} />
+              <span className={cx('vpi-arrow-down', 'navigateIcon')} />
             </kbd>
             {translations.modal.footer?.navigateText ?? 'to navigate'}
           </span>
           <span>
             <kbd aria-label={translations.modal.footer?.selectKeyAriaLabel}>
-              <span className={cx('vpi-corner-down-left', s.navigateIcon)} />
+              <span className={cx('vpi-corner-down-left', 'navigateIcon')} />
             </kbd>
             {translations.modal.footer?.selectText ?? 'to select'}
           </span>
@@ -550,3 +550,4 @@ export function LocalSearchDialog({
 
   return createPortal(modal, document.body)
 }
+

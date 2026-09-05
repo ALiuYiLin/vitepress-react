@@ -3,7 +3,7 @@ import { useData } from 'vitepress'
 
 import { useLayout } from '../composables/use-layout'
 import { VPLocalNavOutlineDropdown } from './VPLocalNavOutlineDropdown'
-import s from './VPLocalNav.module.css'
+import '../styles/components/VPLocalNav.scoped.css'
 
 const cx = (...c: (string | false | undefined | null)[]) => c.filter(Boolean).join(' ')
 
@@ -49,7 +49,7 @@ export function VPLocalNav({
   return (
     <div
       className={cx(
-        s.localNav,
+        'localNav',
         'VPLocalNav',
         hasSidebar && 'has-sidebar',
         !hasLocalNav && 'empty',
@@ -57,16 +57,16 @@ export function VPLocalNav({
       )}
       {...({ inert: inert || undefined } as Record<string, unknown>)}
     >
-      <div className={cx(s.container, 'container')}>
+      <div className={cx('container', 'container')}>
         {hasSidebar ? (
           <button
             type="button"
-            className={cx(s.menu, 'menu')}
+            className={cx('menu', 'menu')}
             aria-expanded={open}
             aria-controls="VPSidebarNav"
             onClick={onOpenMenu}
           >
-            <span className={cx(s.menuIcon, 'vpi-align-left', 'menu-icon')} aria-hidden="true" />
+            <span className={cx('menuIcon', 'vpi-align-left', 'menu-icon')} aria-hidden="true" />
             <span className="menu-text">{themeCfg.sidebarMenuLabel || 'Menu'}</span>
           </button>
         ) : null}
@@ -76,3 +76,4 @@ export function VPLocalNav({
     </div>
   )
 }
+

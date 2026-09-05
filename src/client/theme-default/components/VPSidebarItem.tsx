@@ -3,7 +3,7 @@ import { createElement, type MouseEvent } from 'react'
 import { useSidebarItemControl } from '../composables/use-sidebar'
 import { type VpSidebarItem as VpItem } from '../theme-utils'
 import { VPLink } from './VPLink'
-import s from './VPSidebarItem.module.css'
+import '../styles/components/VPSidebarItem.scoped.css'
 
 const cx = (...c: (string | false | undefined | null)[]) => c.filter(Boolean).join(' ')
 
@@ -40,7 +40,7 @@ export function VPSidebarItem({
 
   const textEl = text
     ? createElement(textTag, {
-        className: cx(s.text, 'text'),
+        className: cx('text', 'text'),
         dangerouslySetInnerHTML: { __html: text }
       })
     : null
@@ -70,12 +70,12 @@ export function VPSidebarItem({
       )
     },
     text ? (
-      <div className={cx(s.item, 'item')} onClick={onItemClick}>
-        <div className={cx(s.indicator, 'indicator')} />
+      <div className={cx('item', 'item')} onClick={onItemClick}>
+        <div className={cx('indicator', 'indicator')} />
         {item.link ? (
           <VPLink
             tag="a"
-            className={cx(s.link, 'link')}
+            className={cx('link', 'link')}
             aria-current={isCurrentLink ? 'page' : undefined}
             href={item.link}
             rel={item.rel}
@@ -89,18 +89,18 @@ export function VPSidebarItem({
         {hasCaret ? (
           <button
             type="button"
-            className={cx(s.caret, 'caret')}
+            className={cx('caret', 'caret')}
             aria-label="toggle section"
             aria-expanded={!collapsed}
             onClick={onCaretClick}
           >
-            <span className={cx(s.caretIcon, 'caret-icon', 'vpi-chevron-right')} />
+            <span className={cx('caretIcon', 'caret-icon', 'vpi-chevron-right')} />
           </button>
         ) : null}
       </div>
     ) : null,
     hasChildren ? (
-      <ul className={cx(s.items, 'items')}>
+      <ul className={cx('items', 'items')}>
         {depth < 5 ? (
           <li>
             {item.items!.map((i, idx) => (
@@ -112,3 +112,4 @@ export function VPSidebarItem({
     ) : null
   )
 }
+

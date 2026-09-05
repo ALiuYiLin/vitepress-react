@@ -1,4 +1,7 @@
-/* 对应 Vue VPLocalNav.vue <style scoped> */
+/* 对应 Vue VPLocalNav.vue <style scoped>;状态类(fixed/has-sidebar/empty)
+   落在本组件根节点,按 scoped 处理;VPLocalNavOutlineDropdown 的按钮是子
+   组件渲染,其 padding 以 :global 规则留在产物全局段 */
+
 .localNav {
   position: sticky;
   top: 0;
@@ -22,7 +25,7 @@
   transition: background-color 0.25s;
 }
 
-.localNav:global(.fixed) {
+.localNav.fixed {
   position: fixed;
 }
 
@@ -35,11 +38,11 @@
     top: calc(-1 * var(--vp-nav-height));
   }
 
-  .localNav:global(.has-sidebar) {
+  .localNav.has-sidebar {
     padding-left: var(--vp-sidebar-width);
   }
 
-  .localNav:global(.empty) {
+  .localNav.empty {
     display: none;
   }
 }
@@ -82,13 +85,22 @@
   font-size: 0.875rem;
 }
 
-.menu,
+.menu {
+  padding: 0.75rem 1.5rem 0.6875rem;
+}
+
+@media (min-width: 48rem) {
+  .menu {
+    padding: 0.75rem 2rem 0.6875rem;
+  }
+}
+
+/* 子组件(大纲下拉)的触发按钮与菜单按钮同排,共享水平 padding */
 :global(.VPLocalNavOutlineDropdown > button) {
   padding: 0.75rem 1.5rem 0.6875rem;
 }
 
 @media (min-width: 48rem) {
-  .menu,
   :global(.VPLocalNavOutlineDropdown > button) {
     padding: 0.75rem 2rem 0.6875rem;
   }
