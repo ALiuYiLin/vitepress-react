@@ -2,11 +2,11 @@ import type { ReactNode } from 'react'
 import { useData } from 'vitepress'
 
 import { useLayout } from '../composables/use-layout'
+import '../styles/components/VPContent.scoped.css'
 import { NotFound } from '../NotFound'
 import { VPPage } from './VPPage'
 import { VPHome } from './VPHome'
 import { VPDoc } from './VPDoc'
-import s from './VPContent.module.css'
 
 const cx = (...c: (string | false | undefined | null)[]) => c.filter(Boolean).join(' ')
 
@@ -27,11 +27,11 @@ export function VPContent({ inert }: { inert?: boolean }) {
     <div
       id="VPContent"
       className={cx(
-        s.content,
+        'content',
         'VPContent',
-        hasSidebar && s.hasSidebar,
+        hasSidebar && 'hasSidebar',
         hasSidebar && 'has-sidebar',
-        isHome && s.isHome,
+        isHome && 'isHome',
         isHome && 'is-home'
       )}
       {...({ inert: inert || undefined } as Record<string, unknown>)}

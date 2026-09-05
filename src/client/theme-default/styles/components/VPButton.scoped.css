@@ -1,4 +1,4 @@
-.button {
+.VPButton {
   display: inline-block;
   border: 1px solid transparent;
   text-align: center;
@@ -7,67 +7,68 @@
   text-decoration: none;
   transition: color 0.25s, border-color 0.25s, background-color 0.25s;
 }
-.button:active {
+.VPButton:active {
   transition: color 0.1s, border-color 0.1s, background-color 0.1s;
 }
 
-.button.medium {
+.VPButton.medium {
   border-radius: 1.25rem;
   padding: 0 1.25rem;
   line-height: 2.7142857;
   font-size: 0.875rem;
 }
-.button.big {
+.VPButton.big {
   border-radius: 1.5rem;
   padding: 0 1.5rem;
   line-height: 2.875;
   font-size: 1rem;
 }
 
-.button.brand {
+.VPButton.brand {
   border-color: var(--vp-button-brand-border);
   color: var(--vp-button-brand-text);
   background-color: var(--vp-button-brand-bg);
 }
-.button.brand:hover {
+.VPButton.brand:hover {
   border-color: var(--vp-button-brand-hover-border);
   color: var(--vp-button-brand-hover-text);
   background-color: var(--vp-button-brand-hover-bg);
 }
-.button.brand:active {
+.VPButton.brand:active {
   border-color: var(--vp-button-brand-active-border);
   color: var(--vp-button-brand-active-text);
   background-color: var(--vp-button-brand-active-bg);
 }
 
-.button.alt {
+.VPButton.alt {
   border-color: var(--vp-button-alt-border);
   color: var(--vp-button-alt-text);
   background-color: var(--vp-button-alt-bg);
 }
-.button.alt:hover {
+.VPButton.alt:hover {
   border-color: var(--vp-button-alt-hover-border);
   color: var(--vp-button-alt-hover-text);
   background-color: var(--vp-button-alt-hover-bg);
 }
-.button.alt:active {
+.VPButton.alt:active {
   border-color: var(--vp-button-alt-active-border);
   color: var(--vp-button-alt-active-text);
   background-color: var(--vp-button-alt-active-bg);
 }
 
-.button.sponsor {
+.VPButton.sponsor {
   border-color: var(--vp-button-sponsor-border);
   color: var(--vp-button-sponsor-text);
   background-color: var(--vp-button-sponsor-bg);
 }
-.button.sponsor:hover {
+.VPButton.sponsor:hover {
   border-color: var(--vp-button-sponsor-hover-border);
   color: var(--vp-button-sponsor-hover-text);
   background-color: var(--vp-button-sponsor-hover-bg);
 }
-.button.sponsor:active {
+.VPButton.sponsor:active {
   border-color: var(--vp-button-sponsor-active-border);
   color: var(--vp-button-sponsor-active-text);
   background-color: var(--vp-button-sponsor-active-bg);
 }
+

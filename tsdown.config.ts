@@ -189,11 +189,16 @@ function scopedRelPath(fileAbs: string): string {
   return normalizePath(path.relative(ROOT, fileAbs))
 }
 
+// 无法携带构建期 data-v 属性的组件(元素经变量渲染,如 const Comp = tag || 'a'),
+// 其 css 保持普通全局(需用组件唯一类名保证隔离,如 VPButton 的 .VPButton.*)。
+const NO_SCOPE_OWNERS = new Set(['vpbutton'])
+
 function loadScopedOwners(): Map<string, string> {
   const owners = new Map<string, string>()
   for (const entry of readdirSync(COMPONENTS_DIR, { encoding: 'utf8' })) {
     if (!entry.endsWith('.tsx')) continue
     const stem = entry.slice(0, -4)
+    if (NO_SCOPE_OWNERS.has(stem.toLowerCase())) continue
     owners.set(
       stem.toLowerCase(),
       computeScopeAttr(scopedRelPath(path.join(COMPONENTS_DIR, entry)), 8)

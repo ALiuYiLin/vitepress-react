@@ -1,6 +1,6 @@
 import * as React from 'react'
 
-import s from './VPButton.module.css'
+import '../styles/components/VPButton.scoped.css'
 
 const cx = (...c: (string | false | undefined | null)[]) => c.filter(Boolean).join(' ')
 
@@ -39,7 +39,7 @@ export function VPButton({
   const useHtml = Boolean(text) && children === undefined
   return (
     <Comp
-      className={cx(s.button, s[size], s[theme], 'VPButton no-icon')}
+      className={cx('VPButton', size, theme, 'no-icon')}
       href={href ? normalizeLink(href) : undefined}
       target={resolvedTarget}
       rel={resolvedRel}

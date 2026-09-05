@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react'
 import { useData } from 'vitepress'
 
-import s from './vp-doc-footer-last-updated.module.css'
+import '../styles/components/vp-doc-footer-last-updated.scoped.css'
 
 /** 页脚"最后更新"时间(theme.lastUpdated 且 page.lastUpdated 存在时) */
 export function VPDocFooterLastUpdated() {
@@ -42,8 +42,8 @@ export function VPDocFooterLastUpdated() {
   const label = lastUpdatedCfg?.text || 'Last updated'
   return (
     <p className="VPLastUpdated">
-      <span className={s.prefix}>{label}:</span>
-      <time className={s.datetime} dateTime={new Date(ts).toISOString()}>
+      <span className="prefix">{label}:</span>
+      <time className="datetime" dateTime={new Date(ts).toISOString()}>
         {datetime}
       </time>
     </p>

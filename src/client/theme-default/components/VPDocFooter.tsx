@@ -2,8 +2,8 @@ import { useData } from 'vitepress'
 
 import { useEditLink } from '../composables/use-edit-link'
 import { usePrevNext } from '../composables/use-prev-next'
+import '../styles/components/VPDocFooter.scoped.css'
 import { VPDocFooterLastUpdated } from './vp-doc-footer-last-updated'
-import s from './VPDocFooter.module.css'
 
 const cx = (...c: (string | false | undefined | null)[]) => c.filter(Boolean).join(' ')
 
@@ -23,11 +23,11 @@ export function VPDocFooter() {
   if (!show) return null
 
   return (
-    <footer className={cx(s.footer, 'VPDocFooter')}>
+    <footer className={cx('footer', 'VPDocFooter')}>
       {(hasEdit || hasUpdated) ? (
-        <div className={s.editInfo}>
+        <div className="editInfo">
           {hasEdit && editLink.url ? (
-            <a className={cx(s.editLinkButton, 'edit-link-button')} href={editLink.url}>
+            <a className={cx('editLinkButton', 'edit-link-button')} href={editLink.url}>
               <span className="vpi-square-pen edit-link-icon" />
               {editLink.text}
             </a>
@@ -41,45 +41,45 @@ export function VPDocFooter() {
       ) : null}
 
       {(prev?.link || next?.link) ? (
-        <nav className={s.prevNext} aria-labelledby="doc-footer-aria-label">
+        <nav className="prevNext" aria-labelledby="doc-footer-aria-label">
           <span className="visually-hidden" id="doc-footer-aria-label">
             Pager
           </span>
-          <div className={s.pager}>
+          <div className="pager">
             {prev?.link ? (
               <a
-                className={cx(s.pagerLink, 'pager-link', 'prev')}
+                className={cx('pagerLink', 'pager-link', 'prev')}
                 href={prev.link}
                 target={(prev as any)?.target}
                 rel={(prev as any)?.rel}
               >
                 <span
-                  className={s.desc}
+                  className="desc"
                   dangerouslySetInnerHTML={{
                     __html: t.docFooter?.prev || 'Previous page'
                   }}
                 />
                 <span
-                  className={s.title}
+                  className="title"
                   dangerouslySetInnerHTML={{ __html: prev.text ?? '' }}
                 />
               </a>
             ) : null}
             {next?.link ? (
               <a
-                className={cx(s.pagerLink, 'pager-link', 'next')}
+                className={cx('pagerLink', 'pager-link', 'next')}
                 href={next.link}
                 target={(next as any)?.target}
                 rel={(next as any)?.rel}
               >
                 <span
-                  className={s.desc}
+                  className="desc"
                   dangerouslySetInnerHTML={{
                     __html: t.docFooter?.next || 'Next page'
                   }}
                 />
                 <span
-                  className={s.title}
+                  className="title"
                   dangerouslySetInnerHTML={{ __html: next.text ?? '' }}
                 />
               </a>
