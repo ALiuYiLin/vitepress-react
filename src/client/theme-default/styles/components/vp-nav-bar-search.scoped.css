@@ -1,4 +1,24 @@
-/* 对应 Vue VPNavBarSearchButton.vue <style scoped> —— 桌面粉底胶囊 + 键帽 */
+/* 对应 Vue VPNavBarSearch.vue / VPNavBarSearchButton.vue —— 包装盒左侧留白
+   + 桌面胶囊 + 键帽(作用元素均为本组件渲染,scoped 命中) */
+
+/* 与左侧标题/内容保持距离(对齐 Vue:48rem 起 1.5rem,60rem 起 2rem) */
+.VPNavBarSearch {
+  display: flex;
+  align-items: center;
+}
+
+@media (min-width: 48rem) {
+  .VPNavBarSearch {
+    gap: 0.5rem;
+    padding-left: 1.5rem;
+  }
+}
+
+@media (min-width: 60rem) {
+  .VPNavBarSearch {
+    padding-left: 2rem;
+  }
+}
 
 .button {
   display: flex;
