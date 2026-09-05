@@ -787,9 +787,25 @@ function maskJsxHtmlLines(
   }
 
   let i = 0
+  // YAML frontmatter(--- … ---)区域整体跳过:其中允许原始 HTML 字符串
+  // (如首页 features[].icon: <span class="…"></span>),这些不是正文,
+  // 不能被当作"JSX 整行接管"占位,否则会污染 YAML(解析阶段即报错)。
+  let inFrontmatter = false
+  if (lines.length > 0 && /^---\s*$/.test(lines[0])) {
+    inFrontmatter = true
+    out.push(lines[0])
+    i = 1
+  }
   while (i < lines.length) {
     const line = lines[i]
     const trimmed = line.trim()
+
+    if (inFrontmatter) {
+      out.push(line)
+      i++
+      if (/^---\s*$/.test(trimmed)) inFrontmatter = false
+      continue
+    }
 
     if (fence) {
       out.push(line)
