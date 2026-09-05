@@ -1,26 +1,58 @@
-.btn {
-  display: inline-flex;
+/* 对应 Vue VPNavBarSearchButton.vue <style scoped> —— 桌面粉底胶囊 + 键帽 */
+
+.button {
+  display: flex;
   align-items: center;
-  gap: 8px;
-  height: 32px;
-  padding: 0 12px;
-  border: 1px solid var(--vp-c-divider);
-  border-radius: 8px;
-  background: var(--vp-c-bg);
-  color: var(--vp-c-text-1);
-  font-size: 14px;
+  gap: 0.5rem;
+  height: var(--vp-nav-height);
+  padding: 0.5rem 0.875rem;
+  font-size: 1.25rem;
+  color: inherit;
   cursor: pointer;
-}
-.btn:hover {
-  border-color: var(--vp-c-brand-1);
-}
-
-.text {
-  color: var(--vp-c-text-2);
+  border: 0;
+  background: transparent;
 }
 
-.kbd {
-  font-size: 12px;
-  color: var(--vp-c-text-3);
+.text,
+.keys {
+  display: none;
+}
+
+.keys kbd {
   font-family: inherit;
+  font-weight: 500;
+  line-height: 1;
+}
+
+@media (min-width: 48rem) {
+  .button {
+    height: auto;
+    padding: 0.5rem 0.75rem;
+    background-color: var(--vp-c-bg-alt);
+    border-radius: 0.5rem;
+    font-size: 0.875rem;
+    line-height: 1;
+    color: var(--vp-c-text-2);
+  }
+
+  .button:hover {
+    color: var(--vp-c-text-1);
+  }
+
+  .text {
+    display: inline;
+    font-size: 0.8125rem;
+    color: var(--vp-c-text-2);
+  }
+
+  .keys {
+    display: flex;
+    align-items: center;
+    gap: 0.25rem;
+    padding: 0.25rem 0.375rem;
+    border: 1px solid var(--vp-c-divider);
+    border-radius: 0.25rem;
+    font-size: 0.75rem;
+    color: var(--vp-c-text-3);
+  }
 }

@@ -7,18 +7,31 @@ import s from './vp-nav-bar-search.module.css'
 
 const cx = (...c: (string | false | undefined | null)[]) => c.filter(Boolean).join(' ')
 
+function isEditingContent(e: KeyboardEvent): boolean {
+  const el = e.target as HTMLElement | null
+  if (!el) return false
+  const tag = el.tagName
+  return (
+    el.isContentEditable ||
+    tag === 'INPUT' ||
+    tag === 'SELECT' ||
+    tag === 'TEXTAREA'
+  )
+}
+
 /**
  * 顶栏搜索(Vue VPNavBarSearch.vue 的 React 版)。
  *
  * - `themeConfig.search === false` → 不渲染;
- * - `provider: 'algolia'`(或旧版 `theme.algolia`)→ 渲染触发器,点击后按需
- *   懒加载 @docsearch/js(运行时不联网构建);
- * - 其余(含未配置,与上游一致默认本地搜索)→ 打开本地搜索弹层
- *   (@localSearchIndex + minisearch,纯本地离线)。
+ * - `provider: 'algolia'`(或旧版 `theme.algolia`)→ 触发器点击后按需懒加载
+ *   @docsearch/js(不联网构建);
+ * - 其余(未配置 / 'local',与上游一致默认本地搜索)→ 打开本地搜索弹层
+ *   (@localSearchIndex + minisearch,纯本地离线);Ctrl/Cmd+K 与 `/` 触发。
  */
 export function VPNavBarSearch({ className }: { className?: string }) {
   const { theme, lang, localeIndex } = useData()
   const [open, setOpen] = useState(false)
+  const [isMac, setIsMac] = useState(false)
   const triggerRef = useRef<HTMLButtonElement>(null)
   const provider = (theme as { search?: unknown; algolia?: unknown }).search
   const isAlgolia =
@@ -27,13 +40,29 @@ export function VPNavBarSearch({ className }: { className?: string }) {
     !!(theme as { algolia?: unknown }).algolia
   const text = resolveLocalSearchText(theme, lang, localeIndex ?? '')
 
-  // Ctrl/Cmd+K(本地搜索):打开/关闭
+  // 全局快捷键(本地搜索):Ctrl/Cmd+K、`/`;mac 检测供键帽文案
   useEffect(() => {
     if (isAlgolia) return
+    try {
+      if (
+        typeof navigator !== 'undefined' &&
+        /mac/i.test(navigator.platform ?? '')
+      ) {
+        setIsMac(true)
+      }
+    } catch {
+      /* ignore */
+    }
     const onKey = (e: KeyboardEvent) => {
-      if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'k') {
+      const key = e.key.toLowerCase()
+      if (e.ctrlKey || e.metaKey) {
+        if (key === 'k') {
+          e.preventDefault()
+          setOpen((v) => !v)
+        }
+      } else if (key === '/' && !isEditingContent(e)) {
         e.preventDefault()
-        setOpen((v) => !v)
+        setOpen(true)
       }
     }
     window.addEventListener('keydown', onKey)
@@ -60,14 +89,18 @@ export function VPNavBarSearch({ className }: { className?: string }) {
     <div className={cx('VPNavBarSearch', className)}>
       <button
         ref={triggerRef}
-        className={s.btn}
+        className={s.button}
         type="button"
         aria-label={text.buttonAriaLabel}
+        aria-keyshortcuts="'/' control+k meta+k"
         onClick={onTriggerClick}
       >
-        <span className="vpi-search icon" />
+        <span className="vpi-search" aria-hidden="true" />
         <span className={s.text}>{text.buttonText}</span>
-        <kbd className={s.kbd}>Ctrl K</kbd>
+        <span className={s.keys} aria-hidden="true">
+          <kbd className={s.keyMod}>{isMac ? '⌘' : 'Ctrl'}</kbd>
+          <kbd className={s.keyK}>K</kbd>
+        </span>
       </button>
       {!isAlgolia && <LocalSearchDialog open={open} onClose={close} />}
     </div>

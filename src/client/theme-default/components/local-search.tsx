@@ -1,9 +1,11 @@
 /**
- * 本地搜索弹层(Vue LocalSearch.vue 的 React 版)。
+ * 本地搜索弹层(Vue VPLocalSearchBox.vue 的 React 版)。
  *
  * 数据源:服务端 localSearchPlugin 生成的虚拟模块 `@localSearchIndex`
  * (按 locale 懒加载,payload 为 MiniSearch 序列化 JSON)。全部本地离线:
- * minisearch 查询、关键词高亮、键盘导航、URL query 持久化(可关闭)。
+ * minisearch 查询、关键词 <mark> 高亮、键盘/鼠标导航、sessionStorage
+ * 持久化(disableQueryPersistence 可关)。样式结构对齐 Vue 版
+ * (vp-local-search.module.css,使用 --vp-local-search-* 变量)。
  */
 import {
   useEffect,
@@ -17,6 +19,8 @@ import MiniSearch from 'minisearch'
 import { useData, useRouter, withBase } from 'vitepress'
 
 import s from './vp-local-search.module.css'
+
+const cx = (...c: (string | false | undefined | null)[]) => c.filter(Boolean).join(' ')
 
 // ---------------------------------------------------------------------------
 // 翻译(与 types/local-search.d.ts 对齐;缺省按 lang 提供 zh/en 兜底)
@@ -42,6 +46,10 @@ interface ModalText {
   displayDetails?: string
   footer?: FooterText
 }
+interface RawTranslations {
+  button?: ButtonText
+  modal?: ModalText
+}
 
 function defaultTranslations(lang: string): {
   button: ButtonText
@@ -53,10 +61,10 @@ function defaultTranslations(lang: string): {
       ? { buttonText: '搜索', buttonAriaLabel: '搜索' }
       : { buttonText: 'Search', buttonAriaLabel: 'Search' },
     modal: {
-      noResultsText: zh ? '未找到相关结果。' : 'No results for your search query.',
-      resetButtonTitle: zh ? '清除查询' : 'Clear query',
-      backButtonTitle: zh ? '返回上一级' : 'Go back',
-      displayDetails: zh ? '展开详细结果' : 'Display detailed list',
+      noResultsText: zh ? '未找到相关结果' : 'No results for',
+      resetButtonTitle: zh ? '清除查询' : 'Reset search',
+      backButtonTitle: zh ? '关闭搜索' : 'Close search',
+      displayDetails: zh ? '展开详细列表' : 'Display detailed list',
       footer: zh
         ? {
             selectText: '选择',
@@ -71,18 +79,13 @@ function defaultTranslations(lang: string): {
             selectText: 'to select',
             navigateText: 'to navigate',
             closeText: 'to close',
-            selectKeyAriaLabel: 'Enter',
-            navigateUpKeyAriaLabel: 'Arrow up',
-            navigateDownKeyAriaLabel: 'Arrow down',
-            closeKeyAriaLabel: 'Escape'
+            selectKeyAriaLabel: 'enter',
+            navigateUpKeyAriaLabel: 'up arrow',
+            navigateDownKeyAriaLabel: 'down arrow',
+            closeKeyAriaLabel: 'escape'
           }
     }
   }
-}
-
-interface RawTranslations {
-  button?: ButtonText
-  modal?: ModalText
 }
 
 /** 深度合并按钮/弹层/底部翻译(配置 > 当前 locale 覆盖 > lang 兜底) */
@@ -103,49 +106,6 @@ function mergeTranslations(
     button: { ...base.button },
     modal: { ...base.modal, footer: { ...base.modal.footer } }
   })
-}
-
-// ---------------------------------------------------------------------------
-// 查询高亮
-// ---------------------------------------------------------------------------
-
-function highlightParts(text: string, query: string): ReactNode[] {
-  const tokens = query
-    .trim()
-    .split(/\s+/)
-    .filter(Boolean)
-  if (tokens.length === 0 || !text) return [text]
-  const re = new RegExp(
-    `(${tokens.map((t) => escapeRe(t)).join('|')})`,
-    'gi'
-  )
-  const parts = text.split(re)
-  return parts.map((part, i) => {
-    re.lastIndex = 0
-    return re.test(part) ? (
-      // eslint-disable-next-line react/no-array-index-key
-      <mark key={i}>{part}</mark>
-    ) : (
-      // eslint-disable-next-line react/no-array-index-key
-      <span key={i}>{part}</span>
-    )
-  })
-}
-
-function escapeRe(str: string): string {
-  return str.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
-}
-
-/** 服务端索引里的标题来自 HTML,含 &lt; 等实体;展示前解码 */
-function decodeHtmlEntities(str: string): string {
-  return str
-    .replace(/&lt;/g, '<')
-    .replace(/&gt;/g, '>')
-    .replace(/&quot;/g, '"')
-    .replace(/&#39;/g, "'")
-    .replace(/&amp;/g, '&')
-    .replace(/&#(\d+);/g, (_, n) => String.fromCodePoint(Number(n)))
-    .replace(/&#x([0-9a-f]+);/gi, (_, n) => String.fromCodePoint(parseInt(n, 16)))
 }
 
 /**
@@ -180,6 +140,46 @@ export function resolveLocalSearchText(
 }
 
 // ---------------------------------------------------------------------------
+// 工具:实体解码 + 高亮
+// ---------------------------------------------------------------------------
+
+/** 服务端索引里的标题来自 HTML,含 &lt; 等实体;展示前解码 */
+function decodeHtmlEntities(str: string): string {
+  return str
+    .replace(/&lt;/g, '<')
+    .replace(/&gt;/g, '>')
+    .replace(/&quot;/g, '"')
+    .replace(/&#39;/g, "'")
+    .replace(/&amp;/g, '&')
+    .replace(/&#(\d+);/g, (_, n) => String.fromCodePoint(Number(n)))
+    .replace(/&#x([0-9a-f]+);/gi, (_, n) => String.fromCodePoint(parseInt(n, 16)))
+}
+
+function escapeRe(str: string): string {
+  return str.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
+}
+
+function highlightParts(text: string, query: string): ReactNode[] {
+  const tokens = query
+    .trim()
+    .split(/\s+/)
+    .filter(Boolean)
+  if (tokens.length === 0 || !text) return [text]
+  const re = new RegExp(`(${tokens.map((t) => escapeRe(t)).join('|')})`, 'gi')
+  const parts = text.split(re)
+  return parts.map((part, i) => {
+    re.lastIndex = 0
+    return re.test(part) ? (
+      // eslint-disable-next-line react/no-array-index-key
+      <mark key={i}>{part}</mark>
+    ) : (
+      // eslint-disable-next-line react/no-array-index-key
+      <span key={i}>{part}</span>
+    )
+  })
+}
+
+// ---------------------------------------------------------------------------
 // 索引 / 查询
 // ---------------------------------------------------------------------------
 
@@ -187,7 +187,6 @@ interface Hit {
   id: string
   title: string
   titles: string[]
-  score: number
 }
 
 const BASE_FIELDS = ['title', 'titles', 'text']
@@ -197,8 +196,11 @@ type SearchQueryOptions = NonNullable<Parameters<MiniSearch['search']>[1]>
 const BASE_SEARCH_OPTIONS: SearchQueryOptions = {
   prefix: true,
   fuzzy: 0.2,
-  combineWith: 'AND'
+  combineWith: 'AND',
+  boost: { title: 4, text: 2, titles: 1 }
 }
+
+const FILTER_STORAGE_KEY = 'vitepress:local-search-filter'
 
 export function LocalSearchDialog({
   open,
@@ -229,10 +231,11 @@ export function LocalSearchDialog({
   const [index, setIndex] = useState<MiniSearch | null>(null)
   const [loadError, setLoadError] = useState(false)
   const [loaded, setLoaded] = useState(false)
-  const [active, setActive] = useState(0)
+  const [active, setActive] = useState(-1)
+  const [searched, setSearched] = useState(false)
   const inputRef = useRef<HTMLInputElement>(null)
-  const resultsRef = useRef<HTMLDivElement>(null)
-  const initializedQueryRef = useRef(false)
+  const resultsRef = useRef<HTMLUListElement>(null)
+  const initializedStorageRef = useRef(false)
 
   const searchOptions: SearchQueryOptions = {
     ...BASE_SEARCH_OPTIONS,
@@ -247,10 +250,13 @@ export function LocalSearchDialog({
   }
   const hits: Hit[] =
     index && query.trim()
-      ? (index.search(query.trim(), searchOptions) as unknown as Hit[])
+      ? ((index.search(query.trim(), searchOptions) as unknown as Hit[]).slice(
+          0,
+          16
+        ) as Hit[])
       : []
 
-  // 打开时加载当前 locale 索引(懒加载,进程内仅一次)
+  // 打开时加载当前 locale 索引(懒加载,进程内仅一次);恢复 sessionStorage
   useEffect(() => {
     if (!open) return
     let alive = true
@@ -272,17 +278,19 @@ export function LocalSearchDialog({
       }
     })()
 
-    // URL query 恢复上次查询(默认开启;disableQueryPersistence 关闭)
-    if (!initializedQueryRef.current && !disableQueryPersistence) {
-      initializedQueryRef.current = true
+    if (!initializedStorageRef.current && !disableQueryPersistence) {
+      initializedStorageRef.current = true
       try {
-        const q = new URLSearchParams(window.location.search).get('q')
-        if (q) setQuery(q)
+        const stored = sessionStorage.getItem(FILTER_STORAGE_KEY)
+        if (stored) setQuery(stored)
       } catch {
         /* ignore */
       }
     }
-    const raf = requestAnimationFrame(() => inputRef.current?.focus())
+    const raf = requestAnimationFrame(() => {
+      inputRef.current?.focus()
+      inputRef.current?.select()
+    })
     return () => {
       alive = false
       cancelAnimationFrame(raf)
@@ -290,17 +298,15 @@ export function LocalSearchDialog({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [open, localeKey])
 
-  // query → URL 持久化
+  // query → sessionStorage 持久化(上游 disableQueryPersistence 开关)
   useEffect(() => {
-    if (!open || disableQueryPersistence || !query) return
+    if (disableQueryPersistence) return
     try {
-      const url = new URL(window.location.href)
-      url.searchParams.set('q', query)
-      history.replaceState(null, '', url.pathname + url.search + url.hash)
+      sessionStorage.setItem(FILTER_STORAGE_KEY, query)
     } catch {
       /* ignore */
     }
-  }, [query, open, disableQueryPersistence])
+  }, [query, disableQueryPersistence])
 
   // 打开时锁 body 滚动
   useEffect(() => {
@@ -313,14 +319,17 @@ export function LocalSearchDialog({
   }, [open])
 
   useEffect(() => {
-    setActive(0)
-    if (resultsRef.current) resultsRef.current.scrollTop = 0
+    setSearched(Boolean(query.trim()))
   }, [query])
+
+  useEffect(() => {
+    setActive(hits.length ? 0 : -1)
+  }, [query, hits.length])
 
   // 高亮项滚动到可视区
   useEffect(() => {
     const el = resultsRef.current?.querySelector<HTMLElement>(
-      '[data-active="true"]'
+      '[data-selected="true"]'
     )
     el?.scrollIntoView({ block: 'nearest' })
   }, [active])
@@ -352,151 +361,186 @@ export function LocalSearchDialog({
     }
     if (e.key === 'ArrowDown') {
       e.preventDefault()
-      setActive((v) => Math.min(v + 1, Math.max(hits.length - 1, 0)))
+      if (!hits.length) return
+      setActive((v) => (v + 1 >= hits.length ? 0 : v + 1))
       return
     }
     if (e.key === 'ArrowUp') {
       e.preventDefault()
-      setActive((v) => Math.max(v - 1, 0))
+      if (!hits.length) return
+      setActive((v) => (v <= 0 ? hits.length - 1 : v - 1))
       return
     }
+    if (e.key === 'Enter' && e.nativeEvent.isComposing) return
     if (e.key === 'Enter') {
-      choose(active)
+      const target = e.target as HTMLElement
+      if (target instanceof HTMLButtonElement) return
+      if (hits.length === 0) {
+        e.preventDefault()
+        return
+      }
+      e.preventDefault()
+      choose(active >= 0 ? active : 0)
     }
   }
 
-  const hasQuery = query.trim().length > 0
-  const empty = loaded && hasQuery && hits.length === 0
-
-  // 分组:同一文档(去掉锚点)的结果相邻时合并为一个 group
-  const groups: { docId: string; items: Hit[] }[] = []
-  for (const hit of hits) {
-    const docId = (hit.id ?? '').split('#')[0] ?? ''
-    const last = groups[groups.length - 1]
-    if (last && last.docId === docId) last.items.push(hit)
-    else groups.push({ docId, items: [hit] })
-  }
+  const noResultsText = translations.modal.noResultsText ?? 'No results for'
 
   const modal = (
-    <div className={s.overlay} role="presentation" onClick={onClose}>
-      <div
-        className={s.modal}
-        role="dialog"
-        aria-modal="true"
-        aria-label={
-          translations.button.buttonAriaLabel ??
-          translations.button.buttonText ??
-          'Search'
-        }
-        onClick={(e) => e.stopPropagation()}
-        onKeyDown={onKeyDown}
-      >
-        <div className={s.header}>
-          <span className={cx('vpi-search', s.icon)} aria-hidden="true" />
+    <div className={s.overlayRoot}>
+      <div className={s.backdrop} onClick={onClose} />
+
+      <div className={s.shell} onKeyDown={onKeyDown}>
+        <form
+          className={s.searchBar}
+          role="search"
+          onSubmit={(e) => e.preventDefault()}
+        >
+          <span
+            aria-hidden="true"
+            className={cx('vpi-search', s.searchIcon, 'local-search-icon')}
+          />
           <input
             ref={inputRef}
             className={s.input}
-            type="text"
+            type="search"
             role="combobox"
-            aria-expanded={hasQuery}
-            aria-controls="vp-local-search-results"
-            aria-autocomplete="list"
-            aria-label={translations.button.buttonAriaLabel ?? 'Search'}
+            aria-expanded={hits.length > 0}
+            aria-autocomplete="both"
+            aria-label={
+              translations.button.buttonAriaLabel ??
+              translations.button.buttonText ??
+              'Search'
+            }
             placeholder={translations.button.buttonText ?? 'Search'}
             value={query}
             onChange={(e) => setQuery(e.target.value)}
+            autoCapitalize="off"
             autoComplete="off"
+            autoCorrect="off"
+            enterKeyHint="go"
+            maxLength={64}
             spellCheck={false}
           />
-          {query && (
+          <div className={s.actions}>
+            <span
+              className={cx(s.spinner, (!loaded && !loadError) && s.active)}
+              role={!loaded && !loadError ? 'status' : undefined}
+              aria-live="polite"
+            />
             <button
-              className={s.reset}
-              type="button"
-              title={translations.modal.resetButtonTitle ?? 'Clear query'}
-              aria-label={translations.modal.resetButtonTitle ?? 'Clear query'}
+              className={s.clearButton}
+              type="reset"
+              disabled={query.length === 0}
+              title={translations.modal.resetButtonTitle ?? 'Reset search'}
+              aria-label={translations.modal.resetButtonTitle ?? 'Reset search'}
               onClick={() => {
                 setQuery('')
-                inputRef.current?.focus()
+                requestAnimationFrame(() => inputRef.current?.focus())
               }}
             >
-              ×
+              <span className="vpi-delete local-search-icon" />
             </button>
-          )}
-        </div>
+          </div>
+        </form>
 
-        <div
-          ref={resultsRef}
-          id="vp-local-search-results"
-          className={s.results}
-          role="listbox"
-          aria-label="Results"
-        >
-          {loadError && (
-            <div className={s.empty}>{translations.modal.noResultsText}</div>
-          )}
-          {!loaded && !loadError && <div className={s.loading} />}
-          {empty && (
-            <div className={s.empty}>{translations.modal.noResultsText}</div>
-          )}
-          {loaded &&
-            groups.map((group, gi) => (
-              <div key={group.docId} className={s.group}>
-                {hits.length > 1 && (
-                  <div className={s.docTitle}>
-                    {group.docId.replace(/^\//, '')}
-                  </div>
-                )}
-                {group.items.map((hit, ii) => {
-                  const globalIndex =
-                    groups.slice(0, gi).reduce((n, g) => n + g.items.length, 0) +
-                    ii
-                  const activeIdx = globalIndex === active
-                  const parts = [...(hit.titles ?? []), hit.title]
-                    .filter(Boolean)
-                    .map(decodeHtmlEntities)
-                  return (
-                    <a
-                      key={hit.id}
-                      data-active={activeIdx || undefined}
-                      className={s.item}
-                      role="option"
-                      aria-selected={activeIdx}
-                      href={resultHref(hit.id)}
-                      onClick={(e) => {
-                        if (
-                          e.metaKey ||
-                          e.ctrlKey ||
-                          e.shiftKey ||
-                          e.button !== 0
-                        )
-                          return
-                        e.preventDefault()
-                        choose(globalIndex)
-                      }}
-                      onMouseEnter={() => setActive(globalIndex)}
-                    >
-                      <span className={s.itemText}>
-                        {highlightParts(parts.join(' / '), query)}
-                      </span>
-                    </a>
-                  )
-                })}
-              </div>
-            ))}
-        </div>
+        {loaded && !loadError && (
+          <ul ref={resultsRef} className={s.results} role="listbox">
+            {hits.map((hit, i) => {
+              const selected = i === active
+              const ancestors = (hit.titles ?? []).filter(Boolean)
+              const mainTitle = (hit.title ?? '').trim()
+              const ariaLabel = [...ancestors, mainTitle].join(' > ')
+              return (
+                <li key={hit.id} className={s.resultItem} role="option">
+                  <a
+                    className={cx(s.result, selected && s.selected)}
+                    data-selected={selected || undefined}
+                    href={resultHref(hit.id)}
+                    aria-label={ariaLabel}
+                    aria-selected={selected}
+                    onMouseEnter={() => setActive(i)}
+                    onClick={(e) => {
+                      if (
+                        e.metaKey ||
+                        e.ctrlKey ||
+                        e.shiftKey ||
+                        e.button !== 0
+                      )
+                        return
+                      e.preventDefault()
+                      choose(i)
+                    }}
+                  >
+                    <div className={s.resultBody}>
+                      <div className={s.titles}>
+                        <span className={s.titleIcon} aria-hidden="true">
+                          #
+                        </span>
+                        {ancestors.map((t, ai) => (
+                          <span key={ai} className={s.title}>
+                            <span className={s.titleText}>
+                              {highlightParts(decodeHtmlEntities(t), query)}
+                            </span>
+                            <span
+                              aria-hidden="true"
+                              className={cx(
+                                'vpi-chevron-right',
+                                s.separatorIcon
+                              )}
+                            />
+                          </span>
+                        ))}
+                        {mainTitle && (
+                          <span className={cx(s.title, s.titleMain)}>
+                            <span className={s.titleText}>
+                              {highlightParts(decodeHtmlEntities(mainTitle), query)}
+                            </span>
+                          </span>
+                        )}
+                      </div>
+                    </div>
+                  </a>
+                </li>
+              )
+            })}
+            {searched && hits.length === 0 && (
+              <li className={s.noResults}>
+                {noResultsText} <strong>“{query.trim()}”</strong>
+              </li>
+            )}
+          </ul>
+        )}
+        {loadError && (
+          <ul className={s.results}>
+            <li className={s.noResults}>{noResultsText}</li>
+          </ul>
+        )}
 
-        <div className={s.footer}>
-          <span className={s.footerHint}>
-            <kbd>↑</kbd>
-            <kbd>↓</kbd>
+        <div className={s.shortcuts}>
+          <span>
+            <kbd
+              aria-label={translations.modal.footer?.navigateUpKeyAriaLabel}
+            >
+              <span className={cx('vpi-arrow-up', s.navigateIcon)} />
+            </kbd>
+            <kbd
+              aria-label={translations.modal.footer?.navigateDownKeyAriaLabel}
+            >
+              <span className={cx('vpi-arrow-down', s.navigateIcon)} />
+            </kbd>
             {translations.modal.footer?.navigateText ?? 'to navigate'}
           </span>
-          <span className={s.footerHint}>
-            <kbd>Enter</kbd>
+          <span>
+            <kbd aria-label={translations.modal.footer?.selectKeyAriaLabel}>
+              <span className={cx('vpi-corner-down-left', s.navigateIcon)} />
+            </kbd>
             {translations.modal.footer?.selectText ?? 'to select'}
           </span>
-          <span className={s.footerHint}>
-            <kbd>Esc</kbd>
+          <span>
+            <kbd aria-label={translations.modal.footer?.closeKeyAriaLabel}>
+              esc
+            </kbd>
             {translations.modal.footer?.closeText ?? 'to close'}
           </span>
         </div>
@@ -506,5 +550,3 @@ export function LocalSearchDialog({
 
   return createPortal(modal, document.body)
 }
-
-const cx = (...c: (string | false | undefined | null)[]) => c.filter(Boolean).join(' ')

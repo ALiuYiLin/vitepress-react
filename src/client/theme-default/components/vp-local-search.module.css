@@ -1,175 +1,303 @@
-/* Vue LocalSearch 弹层的 React 版样式(全部使用主题 CSS 变量) */
+/* 对应 Vue VPLocalSearchBox.vue 的视觉结构。
+   变量 --vp-local-search-* 与 --vp-backdrop-bg-color 已在主题 vars.css 提供 */
 
-.overlay {
+.overlayRoot {
   position: fixed;
+  z-index: 100;
   inset: 0;
-  z-index: 60;
-  background-color: rgba(0, 0, 0, 0.32);
   display: flex;
-  align-items: flex-start;
-  justify-content: center;
-  padding: 6rem 1rem 1rem;
 }
 
-.modal {
+.backdrop {
+  position: absolute;
+  inset: 0;
+  background: var(--vp-backdrop-bg-color);
+}
+
+.shell {
+  position: relative;
+  padding: 0.75rem;
+  margin: 4rem auto;
   display: flex;
   flex-direction: column;
-  width: 100%;
-  max-width: 40rem;
-  max-height: min(60vh, 34rem);
-  overflow: hidden;
-  background-color: var(--vp-c-bg);
-  border: 1px solid var(--vp-c-divider);
-  border-radius: 12px;
-  box-shadow: var(--vp-shadow-3);
+  gap: 1rem;
+  background: var(--vp-local-search-bg);
+  width: min(100vw - 3.75rem, 56.25rem);
+  height: min-content;
+  max-height: min(100vh - 8rem, 56.25rem);
+  border-radius: 0.375rem;
 }
 
-.header {
+@media not all and (min-width: 48rem) {
+  .shell {
+    margin: 0;
+    width: 100vw;
+    height: 100vh;
+    max-height: none;
+    border-radius: 0;
+  }
+}
+
+.searchBar {
+  border: 1px solid var(--vp-c-divider);
+  border-radius: 0.25rem;
   display: flex;
   align-items: center;
-  gap: 0.5rem;
-  padding: 0.75rem 1rem;
-  border-bottom: 1px solid var(--vp-c-divider);
+  padding: 0 0.75rem;
+  cursor: text;
 }
 
-.icon {
-  flex: none;
-  font-size: 18px;
+@media not all and (min-width: 48rem) {
+  .searchBar {
+    padding: 0 0.5rem;
+  }
+}
+
+.searchBar:focus-within {
+  border-color: var(--vp-c-brand-1);
+}
+
+.searchIcon {
+  display: block;
+  font-size: 1.125rem;
+  margin: 0.5rem;
   color: var(--vp-c-text-2);
 }
 
+@media not all and (min-width: 48rem) {
+  .searchIcon {
+    display: none;
+  }
+}
+
 .input {
-  flex: 1 1 auto;
-  min-width: 0;
-  padding: 0.25rem 0;
+  padding: 0.375rem 0.75rem;
+  font-size: inherit;
+  width: 100%;
   border: 0;
   outline: none;
   background: transparent;
   color: var(--vp-c-text-1);
-  font-size: 1rem;
-  font-family: inherit;
+}
+
+.input::-webkit-search-cancel-button {
+  display: none;
+}
+
+@media not all and (min-width: 48rem) {
+  .input {
+    padding: 0.375rem 0.25rem;
+  }
 }
 
 .input::placeholder {
   color: var(--vp-c-text-3);
 }
 
-.reset {
-  flex: none;
+.actions {
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+}
+
+.actions button {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  width: 24px;
-  height: 24px;
-  padding: 0;
+  padding: 0.5rem;
   border: 0;
-  border-radius: 50%;
-  background: var(--vp-c-bg-soft);
+  background: transparent;
   color: var(--vp-c-text-2);
-  font-size: 14px;
-  line-height: 1;
   cursor: pointer;
 }
 
-.reset:hover {
-  color: var(--vp-c-text-1);
+.actions button:not(:disabled):hover {
+  color: var(--vp-c-brand-1);
+}
+
+.actions button.clearButton:disabled {
+  opacity: 0.37;
+  cursor: default;
+}
+
+.spinner {
+  visibility: hidden;
+  margin: 0.5rem;
+  width: 1.125rem;
+  height: 1.125rem;
+  flex: none;
+  border: 2px solid var(--vp-c-divider);
+  border-top-color: var(--vp-c-brand-1);
+  border-radius: 50%;
+}
+
+.spinner.active {
+  visibility: visible;
+  animation: vp-local-search-loading 0.8s linear infinite;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .spinner.active {
+    animation: none;
+  }
+}
+
+@keyframes vp-local-search-loading {
+  to {
+    transform: rotate(360deg);
+  }
 }
 
 .results {
-  flex: 1 1 auto;
+  display: flex;
+  flex-direction: column;
+  gap: 0.375rem;
+  overflow-x: hidden;
   overflow-y: auto;
   overscroll-behavior: contain;
-  padding: 0.25rem 0;
+  margin: 0;
+  padding: 0;
+  list-style: none;
 }
 
-.group {
-  padding: 0.125rem 0;
+.resultItem {
+  flex: none;
 }
 
-.docTitle {
-  padding: 0.5rem 1.25rem 0.125rem;
-  color: var(--vp-c-text-3);
-  font-size: 12px;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  direction: rtl;
-  text-align: left;
-}
-
-.item {
-  display: block;
-  padding: 0.4rem 1.25rem;
-  color: var(--vp-c-text-1);
-  text-decoration: none;
-}
-
-.item:hover {
-  background-color: var(--vp-c-bg-soft);
-}
-
-.item[data-active='true'] {
-  background-color: var(--vp-c-bg-soft);
-}
-
-.item[data-active='true'] .itemText {
-  color: var(--vp-c-brand-1);
-}
-
-.itemText {
-  display: -webkit-box;
-  -webkit-line-clamp: 2;
-  -webkit-box-orient: vertical;
-  overflow: hidden;
-  font-size: 14px;
-  line-height: 1.5;
-}
-
-.itemText mark {
-  background-color: transparent;
-  color: var(--vp-c-brand-1);
-  font-weight: 600;
-}
-
-.empty {
-  padding: 2rem 1.25rem;
-  color: var(--vp-c-text-2);
-  font-size: 14px;
-  text-align: center;
-}
-
-.loading {
-  padding: 2rem 1.25rem;
-  color: var(--vp-c-text-3);
-  font-size: 13px;
-  text-align: center;
-}
-
-.loading::after {
-  content: '…';
-}
-
-.footer {
+.result {
   display: flex;
-  gap: 1rem;
-  padding: 0.5rem 1rem;
-  border-top: 1px solid var(--vp-c-divider);
+  align-items: center;
+  gap: 0.5rem;
+  border-radius: 0.25rem;
+  line-height: 1;
+  border: 2px solid var(--vp-local-search-result-border);
+  text-decoration: none;
+  color: inherit;
+  background: var(--vp-local-search-result-bg);
+  outline: none;
 }
 
-.footerHint {
-  display: inline-flex;
+.result > .resultBody {
+  margin: 0.75rem;
+  width: 100%;
+  overflow: hidden;
+}
+
+@media not all and (min-width: 48rem) {
+  .result > .resultBody {
+    margin: 0.5rem;
+  }
+}
+
+.result.selected {
+  background: var(--vp-local-search-result-selected-bg);
+  border-color: var(--vp-local-search-result-selected-border);
+}
+
+.result.selected .titles,
+.result.selected .titleIcon {
+  color: var(--vp-c-brand-1) !important;
+}
+
+.titles {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.25rem;
+  padding: 0.125rem 0;
+  color: var(--vp-c-text-2);
+}
+
+.title {
+  display: flex;
   align-items: center;
   gap: 0.25rem;
-  color: var(--vp-c-text-3);
-  font-size: 12px;
 }
 
-.footerHint kbd {
-  padding: 1px 4px;
-  border: 1px solid var(--vp-c-divider);
-  border-radius: 4px;
-  background-color: var(--vp-c-bg-soft);
+.titleText {
+  font-size: 0.875rem;
+  color: inherit;
+}
+
+.titleMain .titleText {
+  font-weight: 500;
+  color: var(--vp-c-text-1);
+}
+
+.result.selected .titleMain .titleText {
+  color: var(--vp-c-brand-1);
+}
+
+.titleIcon {
+  opacity: 0.5;
+  font-weight: 500;
+  color: var(--vp-c-brand-1);
+  font-size: 0.875rem;
+}
+
+.separatorIcon {
+  display: block;
+  opacity: 0.5;
+  font-size: 0.875rem;
+}
+
+.titles mark {
+  background-color: var(--vp-local-search-highlight-bg);
+  color: var(--vp-local-search-highlight-text);
+  border-radius: 0.125rem;
+  padding: 0 0.125rem;
+}
+
+.noResults {
+  font-size: 0.9rem;
+  text-align: center;
+  padding: 0.75rem;
   color: var(--vp-c-text-2);
+  list-style: none;
+}
+
+.noResults strong {
+  color: var(--vp-c-text-1);
+}
+
+.shortcuts {
+  font-size: 0.8rem;
+  opacity: 75%;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1rem;
+  line-height: 1.09375;
+  color: var(--vp-c-text-2);
+}
+
+.shortcuts span {
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+}
+
+@media not all and (min-width: 48rem) {
+  .shortcuts {
+    display: none;
+  }
+}
+
+.shortcuts kbd {
+  background: rgba(128, 128, 128, 0.1);
+  border-radius: 0.25rem;
+  padding: 0.1875rem 0.375rem;
+  min-width: 1.5rem;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  vertical-align: middle;
+  border: 1px solid rgba(128, 128, 128, 0.15);
+  box-shadow: 0 2px 2px 0 rgba(0, 0, 0, 0.1);
   font-family: inherit;
-  font-size: 11px;
+  font-size: 0.75rem;
+}
+
+.navigateIcon {
+  display: block;
+  font-size: 0.875rem;
 }

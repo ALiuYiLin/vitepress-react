@@ -38,7 +38,7 @@ export default defineAdditionalConfig({
             buttonAriaLabel: '搜索文档'
           },
           modal: {
-            noResultsText: '未找到相关结果,换个关键词试试。',
+            noResultsText: '未找到相关结果',
             resetButtonTitle: '清除查询',
             displayDetails: '展开详细列表',
             footer: {
