@@ -22,11 +22,11 @@ export const SITE_DATA_REQUEST_PATH = '/' + SITE_DATA_ID
 export function resolveAliases(_root: string): AliasOptions {
   const aliases: Alias[] = [
     {
-      find: /^vitepress$/,
+      find: /^@10coding\/vitepress-react$/,
       replacement: join(DIST_CLIENT_PATH, '/index.js')
     },
     {
-      find: /^vitepress\/theme$/,
+      find: /^@10coding\/vitepress-react\/theme$/,
       replacement: join(DIST_CLIENT_PATH, '/theme-default/index.js')
     }
   ]

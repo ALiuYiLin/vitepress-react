@@ -1,6 +1,6 @@
 <script setup lang="ts">
-import { useRoute } from 'vitepress'
-import VPNavMenuGroup from 'vitepress/dist/client/theme-default/components/VPNavMenuGroup.vue'
+import { useRoute } from '@10coding/vitepress-react'
+import VPNavMenuGroup from '@10coding/vitepress-react/dist/client/theme-default/components/VPNavMenuGroup.vue'
 import { computed } from 'vue'
 
 const props = defineProps<{

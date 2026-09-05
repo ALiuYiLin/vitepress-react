@@ -95,7 +95,7 @@ export async function bundle(
       clientJSMap,
       pageMetaMap
     ),
-    ssr: { noExternal: ['vitepress', '@docsearch/css'] },
+    ssr: { noExternal: ['@10coding/vitepress-react', '@docsearch/css'] },
     build: {
       ...restOptions,
       emptyOutDir: true,

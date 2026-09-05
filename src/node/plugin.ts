@@ -165,7 +165,7 @@ export async function createVitePressPlugin(
             'react/jsx-runtime',
             'react/jsx-dev-runtime'
           ],
-          exclude: ['@docsearch/js', '@docsearch/sidepanel-js', 'vitepress']
+          exclude: ['@docsearch/js', '@docsearch/sidepanel-js', '@10coding/vitepress-react']
         },
         server: {
           fs: {

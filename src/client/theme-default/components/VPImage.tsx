@@ -1,4 +1,4 @@
-import { withBase } from 'vitepress'
+import { withBase } from '@10coding/vitepress-react'
 
 import '../styles/components/VPImage.scoped.css'
 import { cx } from '../lib/cx'

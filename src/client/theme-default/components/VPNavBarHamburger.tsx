@@ -1,5 +1,5 @@
 import { useEffect, useRef } from 'react'
-import { useData } from 'vitepress'
+import { useData } from '@10coding/vitepress-react'
 
 import { setScreenTriggerEl } from '../composables/use-nav'
 const cx = (...c: (string | false | undefined | null)[]) => c.filter(Boolean).join(' ')

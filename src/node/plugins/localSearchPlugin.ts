@@ -209,8 +209,8 @@ export async function localSearchPlugin(
         optimizeDeps: {
           include: [
             // (React 迁移:无 @vueuse 依赖;focus trap 由搜索组件原生实现)
-            'vitepress > mark.js/src/vanilla.js',
-            'vitepress > minisearch'
+            '@10coding/vitepress-react > mark.js/src/vanilla.js',
+            '@10coding/vitepress-react > minisearch'
           ]
         }
       }

@@ -1,4 +1,4 @@
-import { defineConfig } from 'vitepress'
+import { defineConfig } from '@10coding/vitepress-react'
 
 const mode = process.env.VP_TEST_MODE || 'relative'
 

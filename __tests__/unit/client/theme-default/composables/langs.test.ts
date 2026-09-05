@@ -1,6 +1,6 @@
 import { resolveLocaleLink } from 'client/theme-default/composables/langs'
-import type { Route, VitePressData } from 'vitepress'
-import type { DefaultTheme } from 'vitepress/theme'
+import type { Route, VitePressData } from '@10coding/vitepress-react'
+import type { DefaultTheme } from '@10coding/vitepress-react/theme'
 import { ref } from 'vue'
 
 // `currentPage` is the current page's relative path (like

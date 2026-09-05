@@ -1,5 +1,5 @@
 import { useEffect, useSyncExternalStore } from 'react'
-import { inBrowser, useData, useRoute } from 'vitepress'
+import { inBrowser, useData, useRoute } from '@10coding/vitepress-react'
 
 import { normalizePath, type VpNavItem } from '../theme-utils'
 

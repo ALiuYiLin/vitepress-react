@@ -1,9 +1,9 @@
-// https://vitepress-react.dev/guide/custom-theme
+// https://aliuyilin.github.io/vitepress-react/guide/custom-theme
 <% if (!defaultTheme) { %>import Layout from './Layout'<% if (useTs) { %>
-import type { Theme } from 'vitepress'<% } %>
+import type { Theme } from '@10coding/vitepress-react'<% } %>
 import './style.css'
 
-<% if (!useTs) { %>/** @type {import('vitepress').Theme} */
+<% if (!useTs) { %>/** @type {import('@10coding/vitepress-react').Theme} */
 <% } %>export default {
   Layout,
   enhanceApp({ router, siteData }) {
@@ -11,11 +11,11 @@ import './style.css'
   }
 }<% if (useTs) { %> satisfies Theme<% } %>
 <% } else { %><% if (useTs) { %>
-import type { Theme } from 'vitepress'<% } %>
-import DefaultTheme from 'vitepress/theme'
+import type { Theme } from '@10coding/vitepress-react'<% } %>
+import DefaultTheme from '@10coding/vitepress-react/theme'
 import './style.css'
 
-<% if (!useTs) { %>/** @type {import('vitepress').Theme} */
+<% if (!useTs) { %>/** @type {import('@10coding/vitepress-react').Theme} */
 <% } %>export default {
   extends: DefaultTheme,
   enhanceApp({ router, siteData }) {

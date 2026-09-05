@@ -1,5 +1,5 @@
 import { useEffect, useRef } from 'react'
-import { useData, useRoute } from 'vitepress'
+import { useData, useRoute } from '@10coding/vitepress-react'
 
 import '../styles/components/VPSkipLink.scoped.css'
 

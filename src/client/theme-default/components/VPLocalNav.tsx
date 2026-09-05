@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import { useData } from 'vitepress'
+import { useData } from '@10coding/vitepress-react'
 
 import { useLayout } from '../composables/use-layout'
 import { VPLocalNavOutlineDropdown } from './VPLocalNavOutlineDropdown'

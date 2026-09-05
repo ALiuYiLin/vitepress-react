@@ -268,15 +268,15 @@ export async function scaffold({
     const scripts: Record<string, string> = {}
     const prefix = addNpmScriptsPrefix ? `${npmScriptsPrefix}:` : ''
 
-    scripts[`${prefix}dev`] = `vitepress dev${dir}`
-    scripts[`${prefix}build`] = `vitepress build${dir}`
-    scripts[`${prefix}preview`] = `vitepress preview${dir}`
+    scripts[`${prefix}dev`] = `vitepress-react dev${dir}`
+    scripts[`${prefix}build`] = `vitepress-react build${dir}`
+    scripts[`${prefix}preview`] = `vitepress-react preview${dir}`
 
     Object.assign(userPkg.scripts || (userPkg.scripts = {}), scripts)
     await writeFile(pkgPath, JSON.stringify(userPkg, null, 2))
 
     return `Done! Now run ${c.cyan(`${pm} run ${prefix}dev`)} and start writing.${tip}`
   } else {
-    return `You're all set! Now run ${c.cyan(`${pm === 'npm' ? 'npx' : pm} vitepress dev${dir}`)} and start writing.${tip}`
+    return `You're all set! Now run ${c.cyan(`${pm === 'npm' ? 'npx' : pm} vitepress-react dev${dir}`)} and start writing.${tip}`
   }
 }

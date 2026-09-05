@@ -1,4 +1,4 @@
-import { defineRoutes } from 'vitepress'
+import { defineRoutes } from '@10coding/vitepress-react'
 
 import paths from './paths'
 

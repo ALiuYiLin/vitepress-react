@@ -1322,8 +1322,8 @@ function createReactPageSrc(
         const exportName = THEME_MD_TAGS[local] ?? local
         moduleImports.push(
           exportName === local
-            ? `import { ${exportName} } from 'vitepress/theme'`
-            : `import { ${exportName} as ${local} } from 'vitepress/theme'`
+            ? `import { ${exportName} } from '@10coding/vitepress-react/theme'`
+            : `import { ${exportName} as ${local} } from '@10coding/vitepress-react/theme'`
         )
         componentNames.add(local)
       }

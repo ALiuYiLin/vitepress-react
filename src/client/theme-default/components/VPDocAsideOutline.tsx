@@ -1,5 +1,5 @@
 import { useRef } from 'react'
-import { useData } from 'vitepress'
+import { useData } from '@10coding/vitepress-react'
 
 import { useLayout } from '../composables/use-layout'
 import { resolveTitle, useActiveAnchor } from '../composables/use-active-anchor'

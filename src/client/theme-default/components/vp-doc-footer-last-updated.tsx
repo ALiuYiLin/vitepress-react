@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import { useData } from 'vitepress'
+import { useData } from '@10coding/vitepress-react'
 
 import '../styles/components/vp-doc-footer-last-updated.scoped.css'
 

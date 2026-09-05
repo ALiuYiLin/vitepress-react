@@ -1,5 +1,5 @@
 import { useId, useState } from 'react'
-import { useRoute } from 'vitepress'
+import { useRoute } from '@10coding/vitepress-react'
 
 import { normalizePath, type VpNavItem } from '../theme-utils'
 import { VPFlyout } from './VPFlyout'

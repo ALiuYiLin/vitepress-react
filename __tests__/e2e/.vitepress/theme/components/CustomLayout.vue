@@ -1,9 +1,9 @@
 <script setup lang="ts">
-import DefaultTheme from 'vitepress/theme'
+import DefaultTheme from '@10coding/vitepress-react/theme'
 
 import HomeHeroCopy from './HomeHeroCopy.vue'
 
-const INSTALL_COMMAND = 'npx vitepress init'
+const INSTALL_COMMAND = 'npx vitepress-react init'
 </script>
 
 <template>

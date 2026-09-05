@@ -6,8 +6,8 @@
     // CLI typecheck 各自走 tsconfig.{client,node,shared}.json(见 package.json)。
     "jsx": "react-jsx",
     "paths": {
-      "vitepress": ["./src/client/index.ts"],
-      "vitepress/theme": ["./types/default-theme.d.ts"],
+      "@10coding/vitepress-react": ["./src/client/index.ts"],
+      "@10coding/vitepress-react/theme": ["./types/default-theme.d.ts"],
       "@siteData": ["./src/client/shims.d.ts"],
       "@theme/index": ["./src/client/shims.d.ts"],
       "@localSearchIndex": ["./src/client/shims.d.ts"]

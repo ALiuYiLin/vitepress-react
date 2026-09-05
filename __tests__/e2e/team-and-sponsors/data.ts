@@ -1,4 +1,4 @@
-import type { DefaultTheme } from 'vitepress/theme'
+import type { DefaultTheme } from '@10coding/vitepress-react/theme'
 
 export const members: DefaultTheme.TeamMember[] = [
   {

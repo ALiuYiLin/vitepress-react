@@ -1,5 +1,5 @@
 import { useId, useState } from 'react'
-import { useData } from 'vitepress'
+import { useData } from '@10coding/vitepress-react'
 
 import { useLangs } from '../composables/use-langs'
 import { useNavOverflow } from '../composables/use-nav-overflow'

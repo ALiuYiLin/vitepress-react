@@ -1,6 +1,6 @@
 import fs from 'node:fs'
 
-import { defineLoader } from 'vitepress'
+import { defineLoader } from '@10coding/vitepress-react'
 
 type Data = Record<string, boolean>[]
 export declare const data: Data

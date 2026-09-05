@@ -1,7 +1,7 @@
 # Icons
 
 <script setup>
-import { VPIcon } from 'vitepress/theme'
+import { VPIcon } from '@10coding/vitepress-react/theme'
 </script>
 
 <VPIcon icon="lucide:rocket" data-test-icon="lucide" />

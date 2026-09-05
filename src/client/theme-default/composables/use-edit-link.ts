@@ -1,4 +1,4 @@
-import { useData } from 'vitepress'
+import { useData } from '@10coding/vitepress-react'
 
 /** 编辑页链接:由 theme.editLink.pattern 替换 :path,或函数 pattern(page) */
 export function useEditLink(): { url?: string; text?: string } {

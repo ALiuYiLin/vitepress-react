@@ -12,13 +12,13 @@ declare const __ASSETS_DIR__: string
 declare const __ASSETS_BASE__: string
 
 declare module '@siteData' {
-  import type { SiteData } from 'vitepress'
+  import type { SiteData } from '@10coding/vitepress-react'
   const data: SiteData
   export default data
 }
 
 declare module '@theme/index' {
-  import type { Theme } from 'vitepress'
+  import type { Theme } from '@10coding/vitepress-react'
   const theme: Theme
   export default theme
 }

@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from 'react'
 
-import { useData } from 'vitepress'
+import { useData } from '@10coding/vitepress-react'
 
 import { LocalSearchDialog, resolveLocalSearchText } from './local-search'
 import '../styles/components/vp-nav-bar-search.scoped.css'

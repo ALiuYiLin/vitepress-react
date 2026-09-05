@@ -5,7 +5,7 @@ import {
   VPTeamPageSection,
   VPTeamMembers,
   VPHomeSponsors
-} from 'vitepress/theme'
+} from '@10coding/vitepress-react/theme'
 import { members, partners, sponsors } from './data'
 </script>
 

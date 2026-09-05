@@ -5,7 +5,7 @@ const { version } = JSON.parse(readFileSync('package.json', 'utf-8'))
 const webTypes = {
   $schema: 'http://json.schemastore.org/web-types',
   framework: 'vue',
-  name: 'vitepress',
+  name: 'vitepress-react',
   version,
   'js-types-syntax': 'typescript',
   'description-markup': 'markdown',
@@ -43,7 +43,7 @@ const webTypes = {
         },
         {
           name: 'Badge',
-          source: { module: 'vitepress/theme', symbol: 'VPBadge' },
+          source: { module: '@10coding/vitepress-react/theme', symbol: 'VPBadge' },
           description:
             "Adds a status label to headers, such as a section's type or supported version. Available when using the default theme.",
           'doc-url': 'https://vitepress.dev/reference/default-theme-badge',

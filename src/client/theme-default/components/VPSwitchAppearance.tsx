@@ -1,4 +1,4 @@
-import { useAppearance, useData } from 'vitepress'
+import { useAppearance, useData } from '@10coding/vitepress-react'
 
 import '../styles/components/VPSwitchAppearance.scoped.css'
 import { VPSwitch } from './VPSwitch'

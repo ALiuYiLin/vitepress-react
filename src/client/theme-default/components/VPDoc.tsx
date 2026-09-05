@@ -1,4 +1,4 @@
-import { Content } from 'vitepress'
+import { Content } from '@10coding/vitepress-react'
 
 import { useLayout } from '../composables/use-layout'
 import '../styles/components/VPDoc.scoped.css'

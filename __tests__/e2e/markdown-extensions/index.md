@@ -13,7 +13,7 @@
 
 ### External Links
 
-[VitePress on GitHub](https://github.com/vuejs/vitepress)
+[VitePress on GitHub](https://github.com/ALiuYiLin/vitepress-react)
 
 ## GitHub-Style Tables
 
@@ -154,7 +154,7 @@ const line2 = 'This is line 2'
 
 ```js [config.js]
 /**
- * @type {import('vitepress').UserConfig}
+ * @type {import('@10coding/vitepress-react').UserConfig}
  */
 const config = {
   // ...
@@ -164,7 +164,7 @@ export default config
 ```
 
 ```ts [config.ts]
-import type { UserConfig } from 'vitepress'
+import type { UserConfig } from '@10coding/vitepress-react'
 
 const config: UserConfig = {
   // ...

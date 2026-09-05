@@ -1,5 +1,5 @@
-import type { Theme } from 'vitepress'
-import DefaultTheme from 'vitepress/theme'
+import type { Theme } from '@10coding/vitepress-react'
+import DefaultTheme from '@10coding/vitepress-react/theme'
 
 import ApiPreference from './components/ApiPreference.vue'
 import CustomLayout from './components/CustomLayout.vue'

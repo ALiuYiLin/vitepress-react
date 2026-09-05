@@ -1,5 +1,5 @@
 <script setup>
-import { VPTeamMembers, VPSponsors } from 'vitepress/theme'
+import { VPTeamMembers, VPSponsors } from '@10coding/vitepress-react/theme'
 import { members, friends, sponsors } from './data'
 </script>
 

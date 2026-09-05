@@ -1,4 +1,4 @@
-import { defineConfig, type DefaultTheme } from 'vitepress'
+import { defineConfig, type DefaultTheme } from '@10coding/vitepress-react'
 
 const nav: DefaultTheme.Config['nav'] = [
   {
