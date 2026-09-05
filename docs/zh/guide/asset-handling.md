@@ -6,13 +6,13 @@ description: 了解如何在 VitePress 中引用和处理静态资源，如图�
 
 ## 引用静态资源 {#referencing-static-assets}
 
-所有的 Markdown 文件都会被编译成 Vue 组件，并由 [Vite](https://cn.vite.dev/guide/assets.html) 处理。可以**并且应该**使用相对路径来引用资源：
+所有的 Markdown 文件在构建时都会经过 VitePress 的渲染管线（md → TSX 页面模块 → 静态 HTML），其中引用的静态资源由 [Vite](https://cn.vite.dev/guide/assets.html) 处理。可以**并且应该**使用相对路径来引用资源：
 
 ```md
 ![An image](./image.png)
 ```
 
-可以在 Markdown 文件、主题中的 `*.vue` 组件、样式和普通的 `.css` 文件中引用静态资源，可以使用绝对路径 (基于项目根目录) 或者相对路径 (基于文件系统)。后者类似于 Vite、Vue CLI 或者 webpack 的 `file-loader` 的行为。
+可以在 Markdown 文件、主题中的 `*.tsx` 组件、样式和普通的 `.css` 文件中引用静态资源，可以使用绝对路径 (基于项目根目录) 或者相对路径 (基于文件系统)。后者类似于 Vite 或 webpack 的资源打包行为。
 
 常见的图像，媒体和字体文件会被自动检测并视作资源。
 
@@ -48,20 +48,22 @@ description: 了解如何在 VitePress 中引用和处理静态资源，如图�
 
 但是如果你正在编写一个主题组件，它动态地链接到资源，例如一个图片，它的 `src` 基于主题配置：
 
-```vue
-<img :src="theme.logoPath" />
+```tsx [.vitepress/theme/SomeLogo.tsx]
+export function SomeLogo() {
+  const { theme } = useData()
+  return <img src={theme.logoPath} />
+}
 ```
 
-在这种情况下，建议使用 VitePress 提供的 [`withBase` helper](../reference/runtime-api#withbase) 来包括路径：
+在这种情况下，建议使用 VitePress 提供的 [`withBase` helper](../reference/runtime-api#withbase) 来包含路径：
 
-```vue
-<script setup>
+```tsx [.vitepress/theme/SomeLogo.tsx]
 import { withBase, useData } from 'vitepress'
 
-const { theme } = useData()
-</script>
-
-<template>
-  <img :src="withBase(theme.logoPath)" />
-</template>
+export function SomeLogo() {
+  const { theme } = useData()
+  return <img src={withBase(theme.logoPath)} />
+}
 ```
+
+> 主题自定义组件为 `.tsx`（React 组件）；在 `.md` 页面正文里使用组件标签的规则见[在 Markdown 中使用 React](./using-react)。

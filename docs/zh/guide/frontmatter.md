@@ -17,13 +17,11 @@ editLink: true
 
 许多站点或默认主题配置选项在 frontmatter 中都有相应的选项。可以使用 frontmatter 来覆盖当前页面的特定行为。详细信息请参见 [frontmatter 配置参考](../reference/frontmatter-config)。
 
-还可以定义自己的 frontmatter 数据，以在页面上的动态 Vue 表达式中使用。
+还可以定义自己的 frontmatter 数据，以在页面正文的动态表达式/组件中使用。
 
 ## 访问 frontmatter 数据 {#accessing-frontmatter-data}
 
-frontmatter 数据可以通过特殊的 `$frontmatter` 全局变量来访问：
-
-下面的例子展示了应该如何在 Markdown 文件中使用它：
+本 fork 的 Markdown 是 React 语义（见[在 Markdown 中使用 React](./using-react)），没有 Vue 的 `$frontmatter` 全局与 `{{ }}` 插值。改为在 `<script>` 的 **page-scope** 中通过 [`useData()`](../reference/runtime-api#usedata) 读取（它是 hook，必须放在页面的 `<script>` 里，不能放模块顶层具名导出之外的位置），再用正文 `{expr}` 引用：
 
 ```md
 ---
@@ -31,12 +29,19 @@ title: Docs with VitePress
 editLink: true
 ---
 
-# {{ $frontmatter.title }}
+<script>
+import { useData } from 'vitepress'
+
+const { frontmatter } = useData()
+</script>
+
+本页 frontmatter 标题是：{frontmatter.title}
 
 Guide content
 ```
 
-还可以使用 [`useData()`](../reference/runtime-api#usedata) 辅助函数在 `<script setup>` 中访问当前页面的 frontmatter。
+正文只会求值“引用了 page-scope 绑定”的 `{expr}`；想展示字面 `{{ }}`/`$frontmatter` 等 Vue 写法时，请放入代码块或行内代码。
+
 
 ## 其他 frontmatter 格式 {#alternative-frontmatter-formats}
 

@@ -115,7 +115,7 @@ Cache-Control: max-age=31536000,immutable
 - **node 版本：** `20` (或更高版本)
 
 ::: warning
-不要为 HTML 代码启用 _Auto Minify_ 等选项。它将从输出中删除对 Vue 有意义的注释。如果被删除，你可能会看到激活不匹配错误。
+不要为 HTML 代码启用 _Auto Minify_ 等选项。它将从输出中删除对 React SSR 水合有意义的注释。如果被删除，你可能会看到水合不匹配错误。
 :::
 
 ### GitHub Pages
@@ -338,7 +338,7 @@ server {
 本配置默认已构建的 VitePress 站点位于服务器上的 `/app` 目录中。如果站点文件位于其他位置，请相应调整 `root` 指令。
 
 ::: warning 不要默认为 index.html
-try_files 解析不能像其他 Vue 应用那样默认为 index.html。这会导致页面状态处于无效。
+try_files 解析不能像其他 SPA 应用那样默认回退到 index.html，否则刷新深层链接会返回错误页面。
 :::
 
 更多信息请参见 [nginx 官方文档](https://nginx.org/en/docs/)、这些 GitHub Issue [#2837](https://github.com/vuejs/vitepress/discussions/2837)、[#3235](https://github.com/vuejs/vitepress/issues/3235)以及 Mehdi Merah 发表的[博客](https://blog.mehdi.cc/articles/vitepress-cleanurls-on-nginx-environment#readings)。
