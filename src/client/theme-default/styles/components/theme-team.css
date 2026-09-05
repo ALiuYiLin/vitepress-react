@@ -1,0 +1,167 @@
+/* 团队页组件(VPTeamPage/VPTeamPageTitle/VPTeamPageSection)样式:
+   来源 Vue 各组件 scoped CSS + :slotted 间距,按直接子元素选择器全局化 */
+
+.VPTeamPage {
+  margin: 6rem 0;
+}
+
+@media (min-width: 48rem) {
+  .VPTeamPage {
+    margin: 8rem 0;
+  }
+}
+
+.VPHome > .VPTeamPageTitle {
+  border-top: 1px solid var(--vp-c-gutter);
+  padding-top: 5.5rem !important;
+}
+
+.VPTeamPage > .VPTeamPageSection + .VPTeamPageSection,
+.VPTeamPage > .VPTeamMembers + .VPTeamPageSection {
+  margin-top: 4rem;
+}
+
+.VPTeamPage > .VPTeamMembers + .VPTeamMembers {
+  margin-top: 1.5rem;
+}
+
+@media (min-width: 48rem) {
+  .VPTeamPage > .VPTeamPageTitle + .VPTeamPageSection {
+    margin-top: 1rem;
+  }
+
+  .VPTeamPage > .VPTeamPageSection + .VPTeamPageSection,
+  .VPTeamPage > .VPTeamMembers + .VPTeamPageSection {
+    margin-top: 6rem;
+  }
+}
+
+.VPTeamPage > .VPTeamMembers {
+  padding: 0 1.5rem;
+}
+
+@media (min-width: 48rem) {
+  .VPTeamPage > .VPTeamMembers {
+    padding: 0 3rem;
+  }
+}
+
+@media (min-width: 60rem) {
+  .VPTeamPage > .VPTeamMembers {
+    padding: 0 4rem;
+  }
+}
+
+/* VPTeamPageTitle */
+.VPTeamPageTitle {
+  padding: 3rem 2rem;
+  text-align: center;
+}
+
+@media (min-width: 48rem) {
+  .VPTeamPageTitle {
+    padding: 4rem 3rem 3rem;
+  }
+}
+
+@media (min-width: 60rem) {
+  .VPTeamPageTitle {
+    padding: 5rem 4rem 3rem;
+  }
+}
+
+.VPTeamPageTitle .title {
+  letter-spacing: 0;
+  line-height: 1.2222222;
+  font-size: 2.25rem;
+  font-weight: 500;
+}
+
+@media (min-width: 48rem) {
+  .VPTeamPageTitle .title {
+    letter-spacing: -0.0104167em;
+    line-height: 1.1666667;
+    font-size: 3rem;
+  }
+}
+
+.VPTeamPageTitle .lead {
+  margin: 0 auto;
+  max-width: 32rem;
+  padding-top: 0.75rem;
+  line-height: 1.5;
+  font-size: 1rem;
+  font-weight: 500;
+  color: var(--vp-c-text-2);
+}
+
+@media (min-width: 48rem) {
+  .VPTeamPageTitle .lead {
+    max-width: 37rem;
+    letter-spacing: 0.0075em;
+    line-height: 1.4;
+    font-size: 1.25rem;
+  }
+}
+
+/* VPTeamPageSection */
+.VPTeamPageSection {
+  padding: 0 2rem;
+}
+
+@media (min-width: 48rem) {
+  .VPTeamPageSection {
+    padding: 0 3rem;
+  }
+}
+
+@media (min-width: 60rem) {
+  .VPTeamPageSection {
+    padding: 0 4rem;
+  }
+}
+
+.VPTeamPageSection .title {
+  position: relative;
+  margin: 0 auto;
+  max-width: 72rem;
+  text-align: center;
+  color: var(--vp-c-text-2);
+}
+
+.VPTeamPageSection .title-line {
+  position: absolute;
+  top: 1rem;
+  left: 0;
+  width: 100%;
+  height: 1px;
+  background-color: var(--vp-c-divider);
+}
+
+.VPTeamPageSection .title-text {
+  position: relative;
+  display: inline-block;
+  margin: 0;
+  border-top: none;
+  padding: 0 1.5rem;
+  letter-spacing: 0;
+  line-height: 1.6;
+  font-size: 1.25rem;
+  font-weight: 500;
+  background-color: var(--vp-c-bg);
+}
+
+.VPTeamPageSection .lead {
+  margin: 0 auto;
+  max-width: 30rem;
+  padding-top: 0.75rem;
+  text-align: center;
+  line-height: 1.5;
+  font-size: 1rem;
+  font-weight: 500;
+  color: var(--vp-c-text-2);
+}
+
+.VPTeamPageSection .members {
+  padding-top: 2.5rem;
+}

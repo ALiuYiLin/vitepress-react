@@ -3,6 +3,7 @@ import {
   resolveSiteDataByRoute,
   type HeadConfig
 } from 'vitepress'
+import jsxScopedVitePlugin from '@10coding/vite-plugin-jsx-scoped'
 import {
   groupIconMdPlugin,
   groupIconVitePlugin,
@@ -10,12 +11,6 @@ import {
 } from 'vitepress-plugin-group-icons'
 import llmstxt from 'vitepress-plugin-llms'
 
-import { markdown as esMarkdown } from '../es/config.ts'
-import { markdown as faMarkdown } from '../fa/config.ts'
-import { markdown as jaMarkdown } from '../ja/config.ts'
-import { markdown as koMarkdown } from '../ko/config.ts'
-import { markdown as ptMarkdown } from '../pt/config.ts'
-import { markdown as ruMarkdown } from '../ru/config.ts'
 import { markdown as zhMarkdown } from '../zh/config.ts'
 
 const prod = !!process.env.NETLIFY
@@ -25,13 +20,7 @@ const ogImage = new URL('/vitepress-og.jpg', siteUrl).href
 
 const localeToOgLocaleMap: Record<string, string> = {
   root: 'en_US',
-  zh: 'zh_CN',
-  pt: 'pt_BR',
-  ru: 'ru_RU',
-  es: 'es_ES',
-  ko: 'ko_KR',
-  fa: 'fa_IR',
-  ja: 'ja_JP'
+  zh: 'zh_CN'
 }
 
 export default defineConfig({
@@ -84,36 +73,27 @@ export default defineConfig({
       { icon: 'github', link: 'https://github.com/vuejs/vitepress' }
     ],
 
+    // 本地搜索(离线,minisearch 索引由 vitepress 构建期生成);
+    // 各 locale 的界面文案经 themeConfig.search.options.translations 覆盖
     search: {
-      provider: 'algolia',
-      options: {
-        appId: '8J64VVRP8K',
-        apiKey: '52f578a92b88ad6abde815aae2b0ad7c',
-        indexName: 'vitepress',
-        askAi: {
-          assistantId: 'YaVSonfX5bS8',
-          sidePanel: true
-        }
-      }
+      provider: 'local'
     },
 
-    carbonAds: { code: 'CEBDT27Y', placement: 'vuejsorg' }
+    carbonAds: { code: 'CEBDT27Y', placement: 'vuejsorg' },
+
+    // md 页 <style scoped> / *.scoped.* 导入 → Vue-like 页面级 scoped 样式
+    // (需下方 vite.plugins 里的 jsxScopedVitePlugin 提供虚拟 css resolve/load)
+    markdownScopedCss: true
   },
 
-  // prettier-ignore
   locales: {
     root: { label: 'English', lang: 'en-US', dir: 'ltr' },
-    zh: { label: '简体中文', lang: 'zh-Hans', dir: 'ltr', markdown: zhMarkdown },
-    pt: { label: 'Português', lang: 'pt-BR', dir: 'ltr', markdown: ptMarkdown },
-    ru: { label: 'Русский', lang: 'ru-RU', dir: 'ltr', markdown: ruMarkdown },
-    es: { label: 'Español', lang: 'es', dir: 'ltr', markdown: esMarkdown },
-    ko: { label: '한국어', lang: 'ko-KR', dir: 'ltr', markdown: koMarkdown },
-    fa: { label: 'فارسی', lang: 'fa-IR', dir: 'rtl', markdown: faMarkdown },
-    ja: { label: '日本語', lang: 'ja', dir: 'ltr', markdown: jaMarkdown }
+    zh: { label: '简体中文', lang: 'zh-Hans', dir: 'ltr', markdown: zhMarkdown }
   },
 
   vite: {
     plugins: [
+      jsxScopedVitePlugin(),
       groupIconVitePlugin({
         customIcon: {
           vitepress: localIconLoader(

@@ -1,0 +1,33 @@
+.VPBackdrop {
+  position: fixed;
+  top: 0;
+  /*rtl:ignore*/
+  right: 0;
+  bottom: 0;
+  /*rtl:ignore*/
+  left: 0;
+  z-index: var(--vp-z-index-backdrop);
+  background: var(--vp-backdrop-bg-color);
+  transition: opacity 0.5s;
+}
+
+/* Vue <transition name="fade">:进场 0.5s 淡入 / 离场 0.25s 淡出。
+   React 侧近似为挂载动画(离场动画需延迟卸载,骨架版省略)。 */
+@keyframes vp-backdrop-fade-in {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+.VPBackdrop {
+  animation: vp-backdrop-fade-in 0.5s;
+}
+
+@media (min-width: 80rem) {
+  .VPBackdrop {
+    display: none;
+  }
+}

@@ -1,0 +1,32 @@
+.content {
+  flex-grow: 1;
+  flex-shrink: 0;
+  margin: var(--vp-layout-top-height, 0px) auto 0;
+  width: 100%;
+}
+
+.content.isHome {
+  width: 100%;
+  max-width: 100%;
+}
+
+.content.hasSidebar {
+  margin: 0;
+}
+
+@media (min-width: 60rem) {
+  .content {
+    padding-top: var(--vp-nav-height);
+  }
+  .content.hasSidebar {
+    margin: var(--vp-layout-top-height, 0px) 0 0;
+    padding-left: var(--vp-sidebar-width);
+  }
+}
+
+@media (min-width: 90rem) {
+  .content.hasSidebar {
+    padding-right: calc((100% - var(--vp-layout-max-width)) / 2);
+    padding-left: calc((100% - var(--vp-layout-max-width)) / 2 + var(--vp-sidebar-width));
+  }
+}

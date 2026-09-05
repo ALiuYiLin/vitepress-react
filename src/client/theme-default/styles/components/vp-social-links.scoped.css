@@ -1,0 +1,13 @@
+/* 对应 Vue VPSocialLinks.vue <style scoped> —— 字面量类名走 :global */
+:global(.VPSocialLinks) {
+  display: flex;
+  justify-content: center;
+}
+
+/* 在 markdown 中使用时重置 vp-doc 的样式 */
+:global(.vp-doc .VPSocialLinks),
+:global(.vp-doc .VPSocialLinks > li) {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}

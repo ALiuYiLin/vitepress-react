@@ -15,7 +15,7 @@ description: 快速上手 VitePress。了解如何安装、创建项目结构并
 - [Node.js](https://nodejs.org/) 22 及以上版本。
 - 通过命令行界面 (CLI) 访问 VitePress 的终端。
 - 支持 [Markdown](https://en.wikipedia.org/wiki/Markdown) 语法的编辑器。
-  - 推荐 [VSCode](https://code.visualstudio.com/) 及其[官方 Vue 扩展](https://marketplace.visualstudio.com/items?itemName=Vue.volar)。
+  - 推荐 [VSCode](https://code.visualstudio.com/) 及 TypeScript / TSX（React）工具链；如需对照上游 Vue 版历史文档，也可安装 [Volar](https://marketplace.visualstudio.com/items?itemName=Vue.volar)。
 
 VitePress 可以单独使用，也可以安装到现有项目中。在这两种情况下，都可以使用以下方式安装它：
 
@@ -30,7 +30,7 @@ $ pnpm add -D vitepress@next
 ```
 
 ```sh [yarn]
-$ yarn add -D vitepress@next vue
+$ yarn add -D vitepress@next
 ```
 
 ```sh [bun]
@@ -73,8 +73,8 @@ $ bun vitepress init
 
 <<< @/snippets/init.ansi
 
-::: tip Vue 作为 peer dependency
-如果打算使用 Vue 组件或 API 进行自定义，还应该明确地将 `vue` 安装为 dependency。
+::: tip React 作为依赖
+vitepress 自身已内置 react/react-dom 供默认主题与 md 页面运行时使用；如果你要在自定义主题或页面 `<script>` 里直接 `import 'react'`，建议在项目中显式安装 `react` 与 `react-dom`（版本以 vitepress 依赖的 React 19 为准）。
 :::
 
 ## 文件结构 {#file-structure}
@@ -194,7 +194,7 @@ $ bun vitepress dev docs
 
 - 想要进一步了解 Markdown 文件是怎么映射到对应的 HTML，请继续阅读[路由指南](./routing)。
 
-- 要了解有关可以在页面上执行的操作的更多信息，例如编写 Markdown 内容或使用 Vue 组件，请参见指南的“编写”部分。一个很好的起点是了解 [Markdown 扩展](./markdown)。
+- 要了解有关可以在页面上执行的操作的更多信息，例如编写 Markdown 内容或使用 React 组件/表达式，请参见指南的“写作”部分。一个好的起点是[在 Markdown 中使用 React](./using-react) 与 [Markdown 扩展](./markdown)。
 
 - 要探索默认文档主题提供的功能，请查看[默认主题配置参考](../reference/default-theme-config)。
 

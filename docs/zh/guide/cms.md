@@ -45,9 +45,15 @@ description: 使用动态路由和数据加载器将 VitePress 连接到无头 C
 3. 在页面中渲染内容：
 
     ```md
-    # {{ $params.title }}
+    <script>
+    import { useData } from 'vitepress'
 
-    - by {{ $params.author }} on {{ $params.date }}
+    const { params } = useData()
+    </script>
+
+    # {params.title}
+
+    - by {params.author} on {params.date}
 
     <!-- @content -->
     ```

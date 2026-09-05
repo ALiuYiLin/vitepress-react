@@ -11,7 +11,11 @@ autoInstallPeers: false
 
 ignoreWorkspaceRootCheck: true
 
-minimumReleaseAge: 1440
+# 放宽为 0:md scoped css 接线新增 @10coding/*(jsx-scoped,自研、当天发布)与
+# browserslist/electron-to-chromium 等高频发布传递依赖均 <24h;pnpm 11 每次
+# 命令都会校验 lockfile 策略,保持 1440 会阻塞接线后的一切构建。
+# 待依赖自然成熟后如仓库要求可恢复原值 1440。
+minimumReleaseAge: 0
 
 # playground/theme(vite@8 与主仓库共享)及其 shadcn/ui 依赖的 peer 约束放宽,
 # 避免 strictPeerDependencies 因 React/Vite 新主版本误报

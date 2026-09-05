@@ -1,0 +1,10 @@
+/* 对应 Vue VPImage.vue 的亮/暗图切换:img 由本组件渲染(带 data-v-{hash}),
+   故按 scoped 处理即可 —— html:not(.dark) 下隐藏 .dark,html.dark 下隐藏 .light */
+
+html:not(.dark) .dark {
+  display: none;
+}
+
+html.dark .light {
+  display: none;
+}

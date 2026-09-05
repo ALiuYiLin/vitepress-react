@@ -1,19 +1,19 @@
 ---
 outline: deep
-description: 通过自定义 CSS、组件、布局和插槽来定制和扩展 VitePress 默认主题。
+description: 通过自定义 CSS、组件与布局包装来定制和扩展 VitePress（React fork）默认主题。
 ---
 
 # 扩展默认主题 {#extending-the-default-theme}
 
 VitePress 默认的主题已经针对文档进行了优化，并且可以进行自定义。请参考[默认主题配置概览](../reference/default-theme-config)获取完整的选项列表。
 
-但是有一些情况仅靠配置是不够的。例如：
+但是有些情况仅靠配置是不够的。例如：
 
 1. 需要调整 CSS 样式；
-2. 需要修改 Vue 应用实例，例如注册全局组件；
-3. 需要通过 layout 插槽将自定义内容注入到主题中；
+2. 需要全站可用的自定义组件；
+3. 需要通过自定义 Layout 把内容注入到主题的特定位置。
 
-这些高级自定义配置将需要使用自定义主题来“拓展”默认主题。
+这些高级自定义需要使用自定义主题来“扩展”默认主题。
 
 ::: tip
 在继续之前，请确保首先阅读[自定义主题](./custom-theme)以了解其工作原理。
@@ -21,13 +21,13 @@ VitePress 默认的主题已经针对文档进行了优化，并且可以进行�
 
 ## 自定义 CSS {#customizing-css}
 
-可以通过覆盖根级别的 CSS 变量来自定义默认主题的 CSS：
+默认主题的样式以 [CSS 变量](https://github.com/vuejs/vitepress/blob/main/src/client/theme-default/styles/vars.css) 为主。在主题入口导入自定义 css 并覆盖变量即可：
 
-```js [.vitepress/theme/index.js]
-import DefaultTheme from 'vitepress/theme'
+```ts [.vitepress/theme/index.ts]
+import Theme from 'vitepress/theme'
 import './custom.css'
 
-export default DefaultTheme
+export default Theme
 ```
 
 ```css
@@ -38,19 +38,15 @@ export default DefaultTheme
 }
 ```
 
-查看[默认主题 CSS 变量](https://github.com/vuejs/vitepress/blob/main/src/client/theme-default/styles/vars.css)来获取可以被覆盖的变量。
-
 ## 使用自定义字体 {#using-different-fonts}
 
-VitePress 使用 [Inter](https://rsms.me/inter/) 作为默认字体，并且将其包含在生成的输出中。该字体在生产环境中也会自动预加载。但是如果要使用不同的字体，这可能不是很好。
+默认主题使用 [Inter](https://rsms.me/inter/) 作为默认字体并打包进产物。如果不想打包 Inter，请从 `vitepress/theme-without-fonts` 导入主题：
 
-为了避免在生成后的输出中包含 Inter 字体，请从 `vitepress/theme-without-fonts` 中导入主题：
-
-```js [.vitepress/theme/index.js]
-import DefaultTheme from 'vitepress/theme-without-fonts'
+```ts [.vitepress/theme/index.ts]
+import Theme from 'vitepress/theme-without-fonts'
 import './my-fonts.css'
 
-export default DefaultTheme
+export default Theme
 ```
 
 ```css
@@ -62,10 +58,10 @@ export default DefaultTheme
 ```
 
 ::: warning
-如果你在使用像是[团队页](../reference/default-theme-team-page)这样的组件，请确保也从 `vitepress/theme-without-fonts` 中导入它们！
+如果使用诸如[团队页](../reference/default-theme-team-page)这类组件，也请从 `vitepress/theme-without-fonts` 导入它们。
 :::
 
-如果字体是通过 `@font-face` 引用的本地文件，它将会被作为资源被包含在 `.vitepress/dist/asset` 目录下，并且使用哈希后的文件名。为了预加载这个文件，请使用 [transformHead](../reference/site-config#transformhead) 构建钩子：
+若字体是本地 `@font-face` 文件，它会被当作资源放进 `.vitepress/dist/assets`（带哈希文件名）。需要预加载时，使用 [transformHead](../reference/site-config#transformhead) 构建钩子：
 
 ```js [.vitepress/config.js]
 export default {
@@ -90,145 +86,62 @@ export default {
 }
 ```
 
-## 注册全局组件 {#registering-global-components}
+## 全站可用的组件 {#registering-global-components}
 
-```js [.vitepress/theme/index.js]
-import DefaultTheme from 'vitepress/theme'
+本 fork 是 React，**没有 Vue 的 `app.component` 全局注册机制**（`EnhanceAppContext` 里的 `registerComponent` 为未来预留，当前不会渲染到 md 页面）。可用方案：
 
-/** @type {import('vitepress').Theme} */
-export default {
-  extends: DefaultTheme,
-  enhanceApp({ app }) {
-    // 注册自定义全局组件
-    app.component('MyGlobalComponent' /* ... */)
-  }
-}
-```
+1. **页面级导入**（推荐）：在用到该组件的每个 md 页面的 `<script>` 顶层 `import`，正文用大写标签（见[在 Markdown 中使用 React](./using-react#using-components)）。默认主题导出的组件（`VPBadge`、`VPTeamMembers`、`VPTeamPage` 等）也按此导入，或在 markdown 里直接用 `vitepress/theme` 自动导入的标签名。
+2. **Layout 注入**：若组件需要出现在“每个页面”的固定位置（例如全站横幅），把它放进你的自定义 Layout 里（见下一节）。
 
-如果使用 TypeScript:
+## 用 Layout 包装注入内容 {#layout-slots}
+
+Vue 默认主题的 `<Layout/>` 提供了具名插槽；React fork 的 `Layout` 不接受插槽 props。等价的做法是**用自己的 Layout 包装默认 `Layout`**，在它前后渲染自定义内容，或按 `useData()` 条件渲染：
+
 ```ts [.vitepress/theme/index.ts]
-import type { Theme } from 'vitepress'
-import DefaultTheme from 'vitepress/theme'
+import Theme from 'vitepress/theme'
+import { MyLayout } from './MyLayout.tsx'
 
 export default {
-  extends: DefaultTheme,
-  enhanceApp({ app }) {
-    // 注册自定义全局组件
-    app.component('MyGlobalComponent' /* ... */)
-  }
-} satisfies Theme
-```
-
-因为我们使用 Vite，还可以利用 Vite 的 [glob 导入功能](https://cn.vite.dev/guide/features.html#glob-import)来自动注册一个组件目录。
-
-## 布局插槽 {#layout-slots}
-
-默认主题的 `<Layout/>` 组件有一些插槽，能够被用来在页面的特定位置注入内容。下面这个例子展示了将一个组件注入到 outline 之前：
-
-```js [.vitepress/theme/index.js]
-import DefaultTheme from 'vitepress/theme'
-import MyLayout from './MyLayout.vue'
-
-export default {
-  extends: DefaultTheme,
-  // 使用注入插槽的包装组件覆盖 Layout
+  ...Theme,
   Layout: MyLayout
 }
 ```
 
-```vue [.vitepress/theme/MyLayout.vue]
-<script setup>
-import DefaultTheme from 'vitepress/theme'
+```tsx [.vitepress/theme/MyLayout.tsx]
+import { useData } from 'vitepress'
+import { Layout } from 'vitepress/theme'
 
-const { Layout } = DefaultTheme
-</script>
+/** 站点全局横幅：所有页面顶部显示 */
+export function SiteBanner() {
+  return <div className="site-banner">New release!</div>
+}
 
-<template>
-  <Layout>
-    <template #aside-outline-before>
-      My custom sidebar top content
-    </template>
-  </Layout>
-</template>
-```
-
-也可以使用渲染函数。
-
-```js [.vitepress/theme/index.js]
-import { h } from 'vue'
-import DefaultTheme from 'vitepress/theme'
-import MyComponent from './MyComponent.vue'
-
-export default {
-  extends: DefaultTheme,
-  Layout() {
-    return h(DefaultTheme.Layout, null, {
-      'aside-outline-before': () => h(MyComponent)
-    })
-  }
+export function MyLayout() {
+  const { frontmatter } = useData()
+  return (
+    <>
+      <SiteBanner />
+      {frontmatter.layout === 'home' ? <HomeExtra /> : null}
+      <Layout />
+    </>
+  )
 }
 ```
 
-默认主题布局的全部可用插槽如下：
-
-- 当 `layout: 'doc'` (默认) 在 frontmatter 中被启用时：
-  - `doc-top`
-  - `doc-bottom`
-  - `doc-footer-before`
-  - `doc-before`
-  - `doc-after`
-  - `sidebar-nav-before`
-  - `sidebar-nav-after`
-  - `aside-top`
-  - `aside-bottom`
-  - `aside-outline-before`
-  - `aside-outline-after`
-  - `aside-ads-before`
-  - `aside-ads-after`
-- 当 `layout: 'home'` 在 frontmatter 中被启用时:
-  - `home-hero-before`
-  - `home-hero-info-before`
-  - `home-hero-info`
-  - `home-hero-info-after`
-  - `home-hero-actions-before-actions`
-  - `home-hero-actions-after`
-  - `home-hero-image`
-  - `home-hero-after`
-  - `home-features-before`
-  - `home-features-after`
-- 当 `layout: 'page'` 在 frontmatter 中被启用时:
-  - `page-top`
-  - `page-bottom`
-- 当未找到页面 (404) 时:
-  - `not-found`
-- 总是启用:
-  - `layout-top`
-  - `layout-bottom`
-  - `nav-bar-title-before`
-  - `nav-bar-title-after`
-  - `nav-bar-content-before`
-  - `nav-bar-content-after`
-  - `nav-screen-content-before`
-  - `nav-screen-content-after`
+- 需要在某一类页面“局部”注入时，用 `useData()` 的 `page`/`frontmatter`/`layout` 分支即可；
+- 基于页面的不同区域（如 sidebar 前、outline 前）做精确注入，请 fork 默认主题源码后把对应区域抽成你的 Layout 内容——上游的具名插槽清单不再适用。
 
 ## 使用视图过渡 API
 
 ### 关于外观切换 {#on-appearance-toggle}
 
-可以扩展默认主题以在切换颜色模式时提供自定义过渡动画。例如：
+可以扩展默认主题以在切换颜色模式时提供自定义过渡动画。
 
-<<< @/components/AppearanceToggleTransition.vue [.vitepress/theme/Layout.vue]
+::: warning 示例已随 React 迁移移除
+原示例是 **Vue 默认主题** 的演示（`docs/components/AppearanceToggleTransition.vue`，用 Vue 的 `provide/inject` 包装 `DefaultTheme.Layout` 配合 View Transitions API）已随 React 迁移移除。React fork 暂不提供等价示例；可参考[在 Markdown 中使用 React](./using-react)。
+:::
 
-结果（**注意！**：画面闪烁、快速闪现、强光刺激）:
-
-<details>
-<summary>Demo</summary>
-
-![Appearance Toggle Transition Demo](/appearance-toggle-transition.webp)
-
-</details>
-
-有关视图过渡动画的更多详细信息，请参阅 [Chrome 文档](https://developer.chrome.com/docs/web-platform/view-transitions/)。
+更多视图过渡细节见 [Chrome 文档](https://developer.chrome.com/docs/web-platform/view-transitions/)。
 
 ### 路由切换时 {#on-route-change}
 
@@ -236,26 +149,9 @@ export default {
 
 ## 重写内部组件 {#overriding-internal-components}
 
-可以使用 Vite 的 [aliases](https://vite.dev/config/shared-options.html#resolve-alias) 来用自定义组件替换默认主题的组件：
+Vue 版可以用 Vite alias 替换 `VPNavBar.vue` 等内部组件；**React fork 的默认主题以编译产物发布，暂不支持“按内部组件名覆盖”**。如需调整主题内部结构，推荐：
 
-```ts
-import { fileURLToPath, URL } from 'node:url'
-import { defineConfig } from 'vitepress'
+- 用自定义 Layout 包装并自行实现对应区域（见上节）；
+- 或直接 fork/复制主题源码并按需修改后，在站点里以本地主题目录方式使用。
 
-export default defineConfig({
-  vite: {
-    resolve: {
-      alias: [
-        {
-          find: /^.*\/VPNavBar\.vue$/,
-          replacement: fileURLToPath(
-            new URL('./components/CustomNavBar.vue', import.meta.url)
-          )
-        }
-      ]
-    }
-  }
-})
-```
-
-想要了解组件的确切名称请参考我们的[源代码](https://github.com/vuejs/vitepress/tree/main/src/client/theme-default/components)。因为组件是内部的，因此在小版本更迭中，它们名字改动的可能性很小。
+> 内部组件属于实现细节，即便上游也可能在小版本中改名；请优先使用公开的配置项与 Layout 包装。

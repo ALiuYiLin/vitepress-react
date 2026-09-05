@@ -258,18 +258,16 @@ Full list of slots available in the default theme layout:
 
 You can extend the default theme to provide a custom transition when the color mode is toggled. An example:
 
-<<< @/components/AppearanceToggleTransition.vue [.vitepress/theme/Layout.vue]
+::: warning Removed with the React migration
+The original example was a **Vue default theme** demo: its source
+(`docs/components/AppearanceToggleTransition.vue`) wrapped
+`DefaultTheme.Layout` via Vue's `provide/inject` and used the View Transitions
+API for a circular reveal on color-mode toggles. It has been removed in the
+React build, which does not ship an equivalent appearance-toggle transition
+yet — see [Using React in Markdown](./using-react).
+:::
 
-Result (**warning!**: flashing colors, sudden movements, bright lights):
-
-<details>
-<summary>Demo</summary>
-
-![Appearance Toggle Transition Demo](/appearance-toggle-transition.webp)
-
-</details>
-
-Refer [Chrome Docs](https://developer.chrome.com/docs/web-platform/view-transitions/) from more details on view transitions.
+Refer [Chrome Docs](https://developer.chrome.com/docs/web-platform/view-transitions/) for more details on view transitions.
 
 ### On Route Change
 

@@ -24,14 +24,14 @@ export default {
 
 数据加载模块只在 Node.js 中执行，因此可以按需导入 Node API 和 npm 依赖。
 
-然后，可以在 `.md` 页面和 `.vue` 组件中使用 `data` 具名导出从该文件中导入数据：
+然后，可以在 `.md` 页面（或 `.tsx` 组件）中通过 `data` 具名导出从该文件导入数据。在页面里把它作为 `<script>` 的顶层 import（可被正文 `{expr}` 引用）：
 
-```vue
-<script setup>
+```md
+<script>
 import { data } from './example.data.js'
 </script>
 
-<pre>{{ data }}</pre>
+<pre>{JSON.stringify(data)}</pre>
 ```
 
 输出：
@@ -115,22 +115,24 @@ interface ContentData {
 }
 ```
 
-默认情况下只提供 `url` 和 `frontmatter`。这是因为加载的数据将作为 JSON 内联在客户端 bundle 中，我们需要谨慎考虑其大小。下面的例子展示了如何使用数据构建最小的博客索引页面：
+默认情况下只提供 `url` 和 `frontmatter`。这是因为加载的数据将作为 JSON 内联在客户端 bundle 中，我们需要谨慎考虑其大小。下面的例子展示了如何使用数据构建最小的博客索引页面（多行 JSX + 表达式需用 `::: react` 容器，见[规则手册](./md-react-rules)）：
 
-```vue
-<script setup>
+```md
+<script>
 import { data as posts } from './posts.data.js'
 </script>
 
-<template>
-  <h1>All Blog Posts</h1>
-  <ul>
-    <li v-for="post of posts">
-      <a :href="post.url">{{ post.frontmatter.title }}</a>
-      <span>by {{ post.frontmatter.author }}</span>
+::: react
+<h1>All Blog Posts</h1>
+<ul>
+  {posts.map((post) => (
+    <li key={post.url}>
+      <a href={post.url}>{post.frontmatter.title}</a>
+      <span>by {post.frontmatter.author}</span>
     </li>
-  </ul>
-</template>
+  ))}
+</ul>
+:::
 ```
 
 ### 选项 {#options}
@@ -159,7 +161,7 @@ export default createContentLoader('posts/*.md', {
 })
 ```
 
-查看它在 [Vue.js 博客](https://github.com/vuejs/blog/blob/main/.vitepress/theme/posts.data.ts)中是如何使用的。
+上游仓库中也有真实示例（例如在 `example.data.ts` 文件里组合 `createContentLoader` 与主题列表渲染的用法），可直接参考其 data loader 部分。
 
 `createContentLoader` API 也可以在[构建钩子](../reference/site-config#build-hooks)中使用：
 

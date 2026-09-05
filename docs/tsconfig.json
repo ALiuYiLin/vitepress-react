@@ -1,6 +1,9 @@
 {
   "extends": "../tsconfig.base.json",
   "compilerOptions": {
+    // docs 下的 .tsx(docs/components/*.tsx 等)走 React 自动 JSX runtime;
+    // 不加会让所有 .tsx 退回 preserve,报出大量 JSX intrinsic 类型错误
+    "jsx": "react-jsx",
     "allowImportingTsExtensions": true,
     "noEmit": true,
     "types": ["node"]

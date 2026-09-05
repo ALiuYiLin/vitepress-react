@@ -1,5 +1,5 @@
 ---
-description: VitePress 是一个专为构建快速、以内容为中心的网站而设计的静态站点生成器，由 Vite 和 Vue 驱动。
+description: VitePress 是一个专为构建快速、以内容为中心的网站而设计的静态站点生成器，由 Vite 和 React 驱动。
 ---
 
 # VitePress 是什么？ {#what-is-vitepress}
@@ -14,15 +14,11 @@ VitePress 是一个[静态站点生成器](https://en.wikipedia.org/wiki/Static_
 
 - **文档**
 
-  VitePress 附带一个专为技术文档设计的默认主题。你现在正在阅读的这个页面以及 [Vite](https://vite.dev/)、[Rollup](https://rollupjs.org/)、[Pinia](https://pinia.vuejs.org/)、[VueUse](https://vueuse.org/)、[Vitest](https://vitest.dev/)、[D3](https://d3js.org/)、[UnoCSS](https://unocss.dev/)、[Iconify](https://iconify.design/) [等](https://github.com/search?q=/%22vitepress%22:+/+path:/(?:package%7Cdeno)%5C.jsonc?$/+NOT+is:fork+NOT+is:archived&type=code)文档都是基于这个主题的。
-
-  [Vue.js 官方文档](https://cn.vuejs.org/)也是基于 VitePress 的。但是为了可以在不同的翻译文档之间切换，它自定义了自己的主题。
+  VitePress 附带一个专为技术文档设计的默认主题。你现在正在阅读的这个页面，以及 [Vite](https://vite.dev/)、[Rollup](https://rollupjs.org/)、[Pinia](https://pinia.vuejs.org/)、[VueUse](https://vueuse.org/)、[Vitest](https://vitest.dev/)、[D3](https://d3js.org/)、[UnoCSS](https://unocss.dev/)、[Iconify](https://iconify.design/) 等文档都是基于该主题（或其派生主题）构建的。
 
 - **博客、档案和营销网站**
 
-  VitePress 支持[完全的自定义主题](./custom-theme)，具有标准 Vite + Vue 应用程序的开发体验。基于 Vite 构建还意味着可以直接利用其生态系统中丰富的 Vite 插件。此外，VitePress 提供了灵活的 API 来[加载数据](./data-loading) (本地或远程)，也可以[动态生成路由](./routing#dynamic-routes)。只要可以在构建时确定数据，就可以使用它来构建几乎任何东西。
-
-  [Vue.js 官方博客](https://blog.vuejs.org/)是一个简单的博客页面，它根据本地内容生成其索引页面。
+  VitePress 支持[完全的自定义主题](./custom-theme)，具有标准 Vite + React 应用程序的开发体验。基于 Vite 构建还意味着可以直接利用其生态系统中丰富的 Vite 插件。此外，VitePress 提供了灵活的 API 来[加载数据](./data-loading)（本地或远程），也可以[动态生成路由](./routing#dynamic-routes)。只要可以在构建时确定数据，就可以使用它来构建几乎任何东西。
 
 ## 开发体验 {#developer-experience}
 
@@ -32,15 +28,15 @@ VitePress 旨在使用 Markdown 生成内容时提供出色的开发体验。
 
 - **[内置 Markdown 扩展](./markdown)**：frontmatter、表格、语法高亮……应有尽有。具体来说，VitePress 提供了许多用于处理代码块的高级功能，使其真正成为技术文档的理想选择。
 
-- **[Vue 增强的 Markdown](./using-vue)**：每个 Markdown 页面都是 Vue [单文件组件](https://cn.vuejs.org/guide/scaling-up/sfc.html)，这要归功于 Vue 模板与 HTML 的 100% 语法兼容性。可以使用 Vue 模板语法或导入的 Vue 组件在静态内容中嵌入交互性。
+- **[React 增强的 Markdown](./using-react)**：Markdown 被编译为静态 HTML 并经 JSX 序列化。可以用 `<script>` 块编写 React 组件 / 页面作用域状态（hooks 合法），在正文中用组件标签或 `{expr}` 嵌入交互性；页面级 scoped 样式见 [md 页面 scoped 样式](./md-scoped-demo)。
 
 ## 性能 {#performance}
 
-与许多传统的 SSG 不同，每次导航都会导致页面完全重新加载，VitePress 生成的网站在初次访问时提供静态 HTML，但它变成了[单页应用程序](https://en.wikipedia.org/wiki/Single-page_application)（SPA）进行站点内的后续导航。我们认为，这种模式为性能提供了最佳平衡：
+与许多传统的 SSG 不同，每次导航都会导致页面完全重新加载，VitePress 生成的网站在初次访问时提供静态 HTML，但它会变成[单页应用程序](https://en.wikipedia.org/wiki/Single-page_application)（SPA）以进行站点内的后续导航。我们认为，这种模式为性能提供了最佳平衡：
 
 - **快速的初始加载**
 
-  对任何页面的初次访问都将会是静态的、预呈现的 HTML，以实现极快的加载速度和最佳的 SEO。然后页面加载一个 JavaScript bundle，将页面变成 Vue SPA (这被称为“激活”)。与 SPA 激活缓慢的常见假设不同，由于 Vue 3 良好的原始性能和编译优化，这个过程实际上非常快。在 [PageSpeed Insights](https://pagespeed.web.dev/report?url=https%3A%2F%2Fvitepress.dev%2F) 上，典型的 VitePress 站点即使在网络速度较慢的低端移动设备上也能获得近乎完美的性能分数。
+  对任何页面的初次访问都将会是静态的、预呈现的 HTML，以实现极快的加载速度和最佳的 SEO。然后页面加载一个 JavaScript bundle，将页面变成 React SPA（这被称为“水合”）。得益于 React 19 的流式水合与自动 JSX runtime 优化，这一过程非常快。在 [PageSpeed Insights](https://pagespeed.web.dev/report?url=https%3A%2F%2Fvitepress.dev%2F) 上，典型的 VitePress 站点即使在网络速度较慢的低端移动设备上也能获得近乎完美的性能分数。
 
 - **加载完成后可以快速切换**
 
@@ -48,12 +44,10 @@ VitePress 旨在使用 Markdown 生成内容时提供出色的开发体验。
 
 - **高效的交互**
 
-  为了能够嵌入静态 Markdown 中的动态 Vue 部分，每个 Markdown 页面都被处理为 Vue 组件并编译成 JavaScript。这听起来可能效率低下，但 Vue 编译器足够聪明，可以将静态和动态部分分开，从而最大限度地减少激活成本和有效负载大小。对于初始的页面加载，静态部分会自动从 JavaScript 有效负载中删除，并在激活期间跳过。
+  为了在静态 Markdown 中嵌入动态 React 内容，每个 Markdown 页面都会先被编译为 TSX 页面模块，再交给 oxc 转成 JavaScript。页面正文的静态部分在编译期即被序列化，动态部分（表达式、组件）只承担其自身的水合成本，从而最小化激活开销与有效负载。
 
-## VuePress 又是什么？ {#what-about-vuepress}
+## 与 VuePress / 上游 VitePress 的关系 {#what-about-vuepress}
 
-VitePress 灵感来源于 VuePress。最初的 VuePress 1 基于 Vue 2 和 webpack。VitePress 则基于 Vue 3 和 Vite 开发，提供了更好的开发体验、更好的生产性能、更精美的默认主题和更灵活的自定义 API。
+VitePress 灵感来源于 VuePress（一个基于 Vue 的静态站点生成器）。**本仓库是 VitePress 的 React 移植版**：构建/路由/默认主题/正文渲染均为 React 实现，配置项与文档沿用上游语义；需要 Vue 语法与组件的地方（如部分历史文档、`{{ }}` 插值、`.vue` 组件）不再适用，请参考[在 Markdown 中使用 React](./using-react) 的规则。
 
-VitePress 和 VuePress 1 的 API 区别主要在于主题和自定义。如果你使用的是 VuePress 1 的默认主题，应该可以很方便地迁移到 VitePress。
-
-并行维护两个 SSG 是难以持续的，因此 Vue 团队决定将 VitePress 作为长期维护并推荐的 SSG。现在 VuePress 1 已被弃用，VuePress 2 已移交给 VuePress 社区团队进行进一步开发和维护。
+如果你是从 VuePress 1 或旧版 Vue 体系迁移过来，可以参见[从 VuePress 迁移](./migration-from-vuepress)。

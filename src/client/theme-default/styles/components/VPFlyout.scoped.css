@@ -1,0 +1,80 @@
+/* 对应 Vue VPFlyout.vue <style scoped> */
+.root {
+  position: relative;
+}
+
+.root:hover {
+  color: var(--vp-c-brand-1);
+  transition: color 0.25s;
+}
+
+.root:hover .text {
+  color: var(--vp-c-text-2);
+}
+
+.root:hover .icon {
+  fill: var(--vp-c-text-2);
+}
+
+.root:global(.active) .text {
+  color: var(--vp-c-brand-1);
+}
+
+.root:global(.active):hover .text {
+  color: var(--vp-c-brand-2);
+}
+
+/* 收合比展开更快,避免扫过导航栏时面板停留在相邻下拉上 */
+:global(.button[aria-expanded='false']) + .menu {
+  opacity: 0;
+  visibility: hidden;
+  transition: opacity 0.1s, visibility 0.1s;
+}
+
+:global(.button[aria-expanded='true']) + .menu {
+  opacity: 1;
+  visibility: visible;
+}
+
+.button {
+  display: flex;
+  align-items: center;
+  padding: 0 0.75rem;
+  height: var(--vp-nav-height);
+  color: var(--vp-c-text-1);
+  transition: color 0.5s;
+}
+
+.text {
+  display: flex;
+  align-items: center;
+  line-height: var(--vp-nav-height);
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: var(--vp-c-text-1);
+  transition: color 0.25s;
+}
+
+.optionIcon {
+  font-size: 1rem;
+}
+
+.textIcon {
+  margin-left: 0.25rem;
+  font-size: 0.875rem;
+}
+
+.icon {
+  font-size: 1.25rem;
+  transition: fill 0.25s;
+}
+
+.menu {
+  position: absolute;
+  top: calc(var(--vp-nav-height) / 2 + 1.25rem);
+  right: 0;
+  opacity: 0;
+  visibility: hidden;
+  transition: opacity 0.25s, visibility 0.25s;
+}
+

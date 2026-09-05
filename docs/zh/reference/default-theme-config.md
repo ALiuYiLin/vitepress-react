@@ -10,7 +10,7 @@ description: VitePress 默认主题所有可用配置选项的参考。
 export default {
   lang: 'en-US',
   title: 'VitePress',
-  description: 'Vite & Vue powered static site generator.',
+  description: 'Vite & React powered static site generator.',
 
   // 主题相关配置
   themeConfig: {

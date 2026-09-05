@@ -20,7 +20,7 @@ export default {
   // 应用级配置选项
   lang: 'en-US',
   title: 'VitePress',
-  description: 'Vite & Vue powered static site generator.',
+  description: 'Vite & React powered static site generator.',
   ...
 }
 ```
@@ -39,7 +39,7 @@ export default async () => {
     // 应用级配置选项
     lang: 'en-US',
     title: 'VitePress',
-    description: 'Vite & Vue powered static site generator.',
+    description: 'Vite & React powered static site generator.',
 
     // 主题级配置选项
     themeConfig: {
@@ -65,7 +65,7 @@ export default defineConfig({
   // 应用级配置选项
   lang: 'en-US',
   title: 'VitePress',
-  description: 'Vite & Vue powered static site generator.',
+  description: 'Vite & React powered static site generator.',
 
   // 主题级别配置选项
   themeConfig: {
@@ -120,15 +120,11 @@ export default defineConfigWithTheme<ThemeConfig>({
 })
 ```
 
-### Vite、Vue 和 Markdown 配置
+### Vite 和 Markdown 配置
 
 - **Vite**
 
   可以使用 VitePress 配置中的 [vite](#vite) 选项配置底层 Vite 实例。无需创建单独的 Vite 配置文件。
-
-- **Vue**
-
-  VitePress 已经包含 Vite 的官方 Vue 插件 ([@vitejs/plugin-vue](https://github.com/vitejs/vite-plugin-vue))，所以我们可以配置 VitePress 中的 [vue](#vue) 选项。
 
 - **Markdown**
 
@@ -535,19 +531,9 @@ export default {
 }
 ```
 
-### vue
+### vue(上游 Vue 专用,本 fork 不适用)
 
-- 类型：`import('@vitejs/plugin-vue').Options`
-
-将原始的 [@vitejs/plugin-vue 选项](https://github.com/vitejs/vite-plugin-vue/tree/main/packages/plugin-vue#options)传递给内部插件实例。
-
-```js
-export default {
-  vue: {
-    // @vitejs/plugin-vue 选项
-  }
-}
-```
+上游 VitePress 的 `vue` 选项(@vitejs/plugin-vue)在本 React fork 中不存在：TSX/JSX 与 React 相关转换由构建内置处理(oxc + automatic JSX runtime)，无需额外配置插件。
 
 ## 构建钩子 {#build-hooks}
 

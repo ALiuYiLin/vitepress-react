@@ -1,23 +1,43 @@
-import { useData } from 'vitepress'
+import { withBase, useData } from 'vitepress'
 
-/** 404 视图(默认主题缺省;Layout 内容区由框架 <Content /> 渲染) */
+import { useLangs } from './composables/use-langs'
+
+/** 404 页(对应 Vue NotFound.vue;文案缺省英文,由各语言 notFound 配置覆盖) */
 export function NotFound() {
-  const { site } = useData()
+  const { theme } = useData()
+  const { currentLang } = useLangs()
+  const nf = (theme as {
+    notFound?: {
+      code?: string
+      title?: string
+      quote?: string
+      link?: string
+      linkLabel?: string
+      linkText?: string
+    }
+  })?.notFound ?? {}
+
+  const home = withBase(nf.link ?? currentLang.link)
+
   return (
-    <div className="flex min-h-[55vh] flex-col items-center justify-center gap-2 text-center">
-      <code className="text-4xl font-bold text-muted-foreground">404</code>
-      <h1 className="text-2xl font-bold tracking-tight">Page Not Found</h1>
-      <p className="text-muted-foreground">
-        The page you are looking for does not exist.
-      </p>
-      {site.title ? (
+    <div className="NotFound">
+      <p className="code">{nf.code ?? '404'}</p>
+      <h1 className="title">{nf.title ?? 'PAGE NOT FOUND'}</h1>
+      <div className="divider" />
+      <blockquote className="quote">
+        {nf.quote ??
+          "But if you don't change your direction, and if you keep looking, you may end up where you are heading."}
+      </blockquote>
+
+      <div className="action">
         <a
-          href="/"
-          className="mt-2 rounded-md border px-3 py-1.5 text-sm font-medium transition-colors hover:bg-accent hover:text-accent-foreground"
+          className="link"
+          href={home}
+          aria-label={nf.linkLabel ?? 'go to home'}
         >
-          Go to {site.title} home
+          {nf.linkText ?? 'Take me home'}
         </a>
-      ) : null}
+      </div>
     </div>
   )
 }

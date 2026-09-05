@@ -489,6 +489,10 @@ export function decodeEntities(str: string): string {
 export function serializeHtmlToJsx(
   html: string,
   componentNames: ReadonlySet<string> = new Set(),
+  expressions: Record<
+    string,
+    { expr?: string; literal?: string; html?: string }
+  > = {},
   indent = '  '
 ): { code: string; warnings: string[] } {
   const root: JsxNode = { tag: '', attrs: [], children: [] }
@@ -571,12 +575,49 @@ export function serializeHtmlToJsx(
   // 序列化
   const lines: string[] = []
 
-  // 文本一律输出为 {"字符串字面量"}:正文里的 {{ }} / {expr} 永远不会被
-  // 当作 JSX 表达式求值(D1 字面语义),需要动态内容请用 script 块组件。
+  /**
+   * 把一段已解码文本渲染成 JSX:
+   * - @@VP_EXPR_n@@ → 表达式 `{code}`(与 Page 作用域共享);
+   * - @@VP_TXT_n@@  → 字面花括号文本;
+   * - @@VP_HTML_n@@ → 原样恢复作者写的 JSX 标签代码(整行占位,见
+   *   markdownToReact 的 maskJsxHtmlLines),其余为字符串字面量段。
+   */
+  const VP_EXPR_RE = /@@VP_(EXPR|TXT|HTML)_(\d+)@@/g
+  const textWithExpr = (decoded: string): string => {
+    if (!decoded.includes('@@VP_')) return `{${JSON.stringify(decoded)}}`
+    VP_EXPR_RE.lastIndex = 0
+    const parts: string[] = []
+    let last = 0
+    let m: RegExpExecArray | null
+    let hasExpr = false
+    while ((m = VP_EXPR_RE.exec(decoded))) {
+      hasExpr = true
+      const pre = decoded.slice(last, m.index)
+      if (pre) parts.push(`{${JSON.stringify(pre)}}`)
+      const entry = expressions[`${Number(m[2])}`]
+      if (m[1] === 'EXPR' && entry?.expr != null) {
+        parts.push(`{${entry.expr}}`)
+      } else if (m[1] === 'TXT' && entry?.literal != null) {
+        parts.push(`{${JSON.stringify(entry.literal)}}`)
+      } else if (m[1] === 'HTML' && entry?.html != null) {
+        parts.push(entry.html)
+      } else {
+        parts.push(`{${JSON.stringify(m[0])}}`)
+      }
+      last = m.index + m[0].length
+    }
+    const tail = decoded.slice(last)
+    if (tail) parts.push(`{${JSON.stringify(tail)}}`)
+    if (!hasExpr) return `{${JSON.stringify(decoded)}}`
+    return parts.join('')
+  }
+
+  // 文本一律输出为 {"字符串字面量"} / 表达式段:正文里的 {{ }} / {expr} 默认
+  // 永远是字面文本;命中 @@VP_EXPR_n@@ 的段会被还原成 JSX 表达式。
   const renderText = (raw: string, pad: string): string => {
     const decoded = decodeEntities(raw)
     if (!decoded) return ''
-    return `${pad}{${JSON.stringify(decoded)}}`
+    return `${pad}${textWithExpr(decoded)}`
   }
   const renderChildren = (children: (JsxNode | string)[], depth: number) => {
     for (const child of children) {
@@ -591,6 +632,20 @@ export function serializeHtmlToJsx(
   const renderNode = (node: JsxNode, depth: number) => {
     const pad = indent.repeat(depth)
     const rawTag = node.tag
+
+    // 块级 JSX 占位(<div data-vp-jsx="n">):还原为原始 JSX(不进 <p>)
+    if (node.tag.toLowerCase() === 'div') {
+      const sentinel = node.attrs.find(
+        ([k]) => k.toLowerCase() === 'data-vp-jsx'
+      )
+      if (sentinel) {
+        const raw = expressions[`${String(sentinel[1])}`]?.html
+        if (raw != null) {
+          for (const rl of raw.split('\n')) lines.push(rl ? `${pad}${rl}` : pad)
+          return
+        }
+      }
+    }
     // 大写开头但不在具名导出集合:JSX 中大写标签必为组件变量(未定义会
     // ReferenceError),不能原样输出 → 渲染为转义文本(语法展示等场景)
     if (COMPONENT_TAG_RE.test(rawTag) && !componentNames.has(rawTag)) {
@@ -606,6 +661,7 @@ export function serializeHtmlToJsx(
       return
     }
     const tag = rawTag
+    const nodeTag = tag.toLowerCase()
     const attrParts: string[] = []
     for (const [k, v] of node.attrs) {
       if (typeof v === 'string' && /^on[a-z]/i.test(k)) {
@@ -620,8 +676,57 @@ export function serializeHtmlToJsx(
         )
         continue
       }
-      const prop = REACT_ATTR_ALIASES[k.toLowerCase()] ?? k
       const lower = k.toLowerCase()
+
+      // Vue 指令属性(v-pre/v-html/…):JSX 无对应语义,丢弃
+      if (lower.startsWith('v-')) {
+        warnings.push(
+          `dropped Vue directive attribute "${k}" (not applicable in React JSX)`
+        )
+        continue
+      }
+
+      let prop = REACT_ATTR_ALIASES[lower] ?? k
+
+      // SVG/HTML 的 kebab-case 属性 → React 驼峰(如 stroke-width → strokeWidth);
+      // data-*/aria-* 必须保持连字符原样
+      if (
+        lower.includes('-') &&
+        !lower.startsWith('data-') &&
+        !lower.startsWith('aria-')
+      ) {
+        prop = lower
+          .split('-')
+          .map((seg, i) =>
+            i === 0 ? seg : seg[0].toUpperCase() + seg.slice(1)
+          )
+          .join('')
+      }
+
+      // 静态 HTML 的受控感属性 → 非受控 default*(无 onChange 时可编辑且不告警)
+      if (
+        (nodeTag === 'input' || nodeTag === 'option') &&
+        lower === 'checked'
+      ) {
+        attrParts.push('defaultChecked')
+        continue
+      }
+      if (
+        (nodeTag === 'select' || nodeTag === 'option') &&
+        lower === 'selected'
+      ) {
+        attrParts.push('defaultSelected')
+        continue
+      }
+      if (
+        (nodeTag === 'input' ||
+          nodeTag === 'textarea' ||
+          nodeTag === 'select') &&
+        lower === 'value'
+      ) {
+        prop = 'defaultValue'
+      }
+
       if (BOOLEAN_PROPS.has(lower)) {
         // 布尔属性:HTML 语义下存在即 true
         attrParts.push(prop)
@@ -653,9 +758,7 @@ export function serializeHtmlToJsx(
       if (decoded.trim() === '') {
         lines.push(`${pad}<${tag}${attrStr} />`)
       } else {
-        lines.push(
-          `${pad}<${tag}${attrStr}>{${JSON.stringify(decoded)}}</${tag}>`
-        )
+        lines.push(`${pad}<${tag}${attrStr}>${textWithExpr(decoded)}</${tag}>`)
       }
       return
     }

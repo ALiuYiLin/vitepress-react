@@ -7,6 +7,10 @@ outline: deep
 
 VitePress 带有内置的 Markdown 扩展。
 
+::: tip 本 fork 的正文是 React 语义
+想在 Markdown 里写组件、`{expr}` 表达式或页面级 scoped 样式？请先读[在 Markdown 中使用 React](./using-react) 与[规则手册](./md-react-rules)、[md 页面 scoped 样式](./md-scoped-demo)。本页其余语法（标题锚点、容器、代码高亮等）与上游一致。
+:::
+
 ## 标题锚点 {#header-anchors}
 
 标题会自动应用锚点。可以使用 `markdown.anchor` 选项配置锚点的渲染。
@@ -77,7 +81,7 @@ lang: en-US
 ---
 ```
 
-此数据将可用于页面的其余部分，以及所有自定义和主题组件。
+此数据将可用于页面的其余部分，以及所有自定义与主题 React 组件。
 
 更多信息，参见 [frontmatter](../reference/frontmatter-config)。
 
@@ -320,11 +324,11 @@ export default {
 ````
 
 ````
-```html
+```jsx
 <ul>
-  <li v-for="todo in todos" :key="todo.id">
-    {{ todo.text }}
-  </li>
+  {todos.map((todo) => (
+    <li key={todo.id}>{todo.text}</li>
+  ))}
 </ul>
 ```
 ````
@@ -338,11 +342,11 @@ export default {
 }
 ```
 
-```html
+```jsx
 <ul>
-  <li v-for="todo in todos" :key="todo.id">
-    {{ todo.text }}
-  </li>
+  {todos.map((todo) => (
+    <li key={todo.id}>{todo.text}</li>
+  ))}
 </ul>
 ```
 

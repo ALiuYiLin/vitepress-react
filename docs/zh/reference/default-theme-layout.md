@@ -43,7 +43,7 @@ layout: doc
 
 ## 自定义布局 {#custom-layout}
 
-也可以使用自定义布局：
+默认主题的 Layout 只识别 `doc` / `page` / `home` / `false` 几种布局；其它字符串会被当作 `doc` 处理。若要支持自定义布局名，请提供自定义 Theme，并在自己的 Layout 里按 frontmatter 分支渲染（本 fork 没有“全局注册组件后 `layout: foo` 自动命中”的机制）：
 
 ```md
 ---
@@ -51,16 +51,21 @@ layout: foo
 ---
 ```
 
-这将在上下文中查找注册名为 `foo` 的组件。例如，可以在 `.vitepress/theme/index.ts` 中全局注册组件：
+```tsx [.vitepress/theme/Layout.tsx]
+import { Content, useData } from 'vitepress'
+import FooPage from './FooPage.tsx'
 
-```ts
-import DefaultTheme from 'vitepress/theme'
-import Foo from './Foo.vue'
-
-export default {
-  extends: DefaultTheme,
-  enhanceApp({ app }) {
-    app.component('foo', Foo)
-  }
+export default function Layout() {
+  const { page, frontmatter } = useData()
+  if (page.isNotFound) return <p>404</p>
+  if (frontmatter.layout === 'foo') return <FooPage />
+  return (
+    <div className="vp-doc">
+      <Content />
+    </div>
+  )
 }
 ```
+
+更多见[自定义主题 / 构建布局](../guide/custom-theme#building-a-layout)。
+

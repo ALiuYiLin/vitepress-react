@@ -1,130 +1,190 @@
-// 默认主题(React)数据 helpers:从框架 useData() 的 themeConfig / page.headers
-// 派生 nav / sidebar / 大纲树所需结构。原 playground/theme 的 mock vp-data 逻辑
-// 在此改写为消费真实框架数据。
+// 默认主题数据工具:路径归一化、导航/侧栏匹配、大纲树、prev/next 展平。
+// 供 React 组件使用;类型与 Vue 默认主题 themeConfig 结构对齐。
 
-import type { Header } from '../shared'
-
-export interface VpNavItem {
+export type VpNavItem = {
   text?: string
   link?: string
-  items?: (VpNavItem | { text?: string; items: VpNavItem[] })[]
   activeMatch?: string
+  rel?: string
+  target?: string
+  items?: VpNavItem[]
 }
 
-export interface VpSidebarItem {
+export type VpSidebarItem = VpNavItem & {
+  collapsed?: boolean
+}
+
+export type VpSidebarGroup = {
   text?: string
-  link?: string
-  items?: VpSidebarItem[]
-  docFooterText?: string
+  items: VpSidebarItem[]
 }
 
-export type VpSidebarConfig =
+/** 某个路径的侧栏值:分组/条目数组,或 { items, base } 对象 */
+export type VpSidebarConfigValue =
+  | VpSidebarGroup[]
   | VpSidebarItem[]
-  | Record<
-      string,
-      VpSidebarItem[] | { items: VpSidebarItem[]; base?: string }
-    >
+  | { items: VpSidebarItem[]; base?: string }
+  | false
 
-export type VpHeader = Header
+/** 与 Vue DefaultTheme.Sidebar 一致:多路径表 / 全局单数组 / false */
+export type VpSidebarConfig =
+  | {
+      [path: string]: VpSidebarConfigValue | undefined
+    }
+  | VpSidebarItem[]
+  | false
 
-/** '/guide.md' / '/guide/' / '/guide' → '/guide' */
-export function normalizePath(p: string): string {
-  let r = p.replace(/\.(md|html)$/i, '')
-  r = r.replace(/(^|\/)index$/, '$1')
-  return r.replace(/\/+$/, '') || '/'
+export type VpHeader = {
+  level: number
+  title: string
+  slug: string
+  link: string
+  children: VpHeader[]
 }
 
-/** 导航项活动态:activeMatch 正则优先,否则 link 归一比较 */
-export function isNavActive(item: VpNavItem, currentPath: string): boolean {
+/** 归一化路径:相对斜杠、去尾斜杠(保留根 "/") */
+export function normalizePath(path: string): string {
+  let p = path
+  if (p.startsWith('./')) p = p.slice(2)
+  if (p.startsWith('//') || p.startsWith('\\/\\/')) {
+    p = p.replace(/^\/\//, '')
+  }
+  if (p.length > 1 && p.endsWith('/')) p = p.slice(0, -1)
+  return p
+}
+
+const getLink = (item: VpNavItem): string => item.link ?? ''
+
+/** 导航项是否应高亮(支持 activeMatch 与精确匹配) */
+export function isNavActive(item: VpNavItem, path: string): boolean {
+  const link = normalizePath(getLink(item))
+  const current = normalizePath(path)
+  if (!link) return false
   if (item.activeMatch) {
-    try {
-      return new RegExp(item.activeMatch).test(currentPath)
-    } catch {
-      /* ignore */
-    }
+    const m = item.activeMatch.replace('$', '\\$')
+    return new RegExp(m).test(path)
   }
-  if (!item.link) return false
-  return normalizePath(item.link) === currentPath
+  if (current === link) return true
+  // 父路径匹配(如 /guide 高亮 /guide/getting-started)
+  return link !== '/' && current.startsWith(link + '/')
 }
 
-/** 当前路径命中的 sidebar 分组列表(每组 { text?, items }) */
+/**
+ * 为给定 path 取出侧栏条目(对齐 Vue support/sidebar.ts getSidebar):
+ * - 配置为数组 → 全局适用;
+ * - 多路径表:按“/”段数降序取首个前缀命中;值为 { items, base } 时取 items;
+ * - 其余情况返回空数组。
+ */
+export function getSidebarItems(
+  sidebar: VpSidebarConfig | undefined,
+  path: string
+): VpSidebarItem[] {
+  if (Array.isArray(sidebar)) return addBase(sidebar)
+  if (sidebar == null || sidebar === false) return []
+
+  const current = ensureStartSlash(path)
+  const dir = Object.keys(sidebar)
+    .sort((a, b) => b.split('/').length - a.split('/').length)
+    .find((key) => current.startsWith(ensureStartSlash(key)))
+
+  const value = dir ? sidebar[dir] : undefined
+  if (value == null || value === false) return []
+  if (Array.isArray(value)) return addBase(value)
+  // 对象形态 { base, items }(如各语言侧栏 '{/zh/guide/: { base, items }}'):
+  // base 需随条目一起传递,相对 link 才解析成 '/zh/guide/xxx'
+  return addBase(value.items, value.base)
+}
+
+function ensureStartSlash(p: string): string {
+  return p.startsWith('/') ? p : `/${p}`
+}
+
+function addBase(items: VpSidebarItem[], _base?: string): VpSidebarItem[] {
+  return items.map((_item) => {
+    const item = { ..._item } as VpSidebarItem & { base?: string }
+    const base = item.base || _base
+    if (base && item.link && !/^(?:https?:|mailto:|tel:|\/\/)/.test(item.link)) {
+      item.link = base + item.link.replace(/^\//, base.endsWith('/') ? '' : '/')
+    }
+    if (item.items) {
+      item.items = addBase(item.items as VpSidebarItem[], base) as never
+    }
+    return item
+  })
+}
+
+/**
+ * 为给定 path 挑选 sidebar 分组(对齐 Vue support/sidebar.ts getSidebar +
+ * getSidebarGroups):带 items 的条目自成一组;裸链接并入最近一组(没有则建匿名组)。
+ */
 export function sidebarGroupsFor(
-  path: string,
-  sidebar?: VpSidebarConfig
-): { text?: string; items: VpSidebarItem[] }[] {
-  if (!sidebar) return []
-  const arr = Array.isArray(sidebar)
-    ? sidebar
-    : (() => {
-        const keys = Object.keys(sidebar).sort((a, b) => b.length - a.length)
-        const norm = normalizePath(path)
-        const key =
-          keys.find((k) =>
-            norm === '/' ? k === '/' : norm.startsWith(normalizePath(k))
-          ) ?? keys[0]
-        if (key == null) return []
-        const val = sidebar[key]
-        if (!val) return []
-        if (Array.isArray(val)) return val
-        const base = val.base
-        const items = (val.items ?? []).map((item) => ({
-          ...item,
-          items: item.items?.length && base
-            ? item.items.map((sub) => ({
-                ...sub,
-                link: sub.link
-                  ? `${base.replace(/\/$/, '')}/${sub.link.replace(/^\//, '')}`
-                  : undefined
-              }))
-            : item.items
-        }))
-        return items
-      })()
+  sidebar: VpSidebarConfig | undefined,
+  path: string
+): VpSidebarGroup[] {
+  const items = getSidebarItems(sidebar, path)
+  const groups: VpSidebarGroup[] = []
+  let lastGroupIndex = -1
 
-  // 顶层项:有子项 → 作为分组;无子项的链接项 → 单条分组
-  return arr.map((top) =>
-    top.items?.length
-      ? { text: top.text, items: top.items }
-      : { text: undefined, items: [top] }
-  )
-}
-
-/** 展平侧边栏(保持顺序)为有序链接项,供 PrevNext 使用 */
-export function flattenSidebarItems(
-  groups: { text?: string; items: VpSidebarItem[] }[]
-) {
-  const out: { text: string; link?: string }[] = []
-  for (const group of groups) {
-    const walk = (items: VpSidebarItem[], parent?: string) => {
-      for (const item of items) {
-        const label = item.docFooterText || item.text || parent || ''
-        if (item.link) out.push({ text: label, link: item.link })
-        if (item.items?.length) walk(item.items, label)
-      }
+  for (const item of items) {
+    if (item.items) {
+      groups.push(item as VpSidebarGroup)
+      lastGroupIndex = groups.length - 1
+      continue
     }
-    walk(group.items, group.text)
+    if (lastGroupIndex === -1 || !groups[lastGroupIndex]) {
+      groups.push({ items: [] })
+      lastGroupIndex = groups.length - 1
+    }
+    groups[lastGroupIndex]!.items.push(item)
   }
-  return out
+
+  return groups
 }
 
-/** 扁平 headers → 树(children 以 level 组装;若已带 children 则原样) */
-export function headerTree(headers: Header[]): VpHeader[] {
-  const hasChildren = headers.some((h) => h.children?.length)
-  if (hasChildren) return headers as VpHeader[]
+/** 把当前分组展开成扁平链接序列(用于 prev/next 与活动项) */
+export function flattenSidebarItems(
+  groups: VpSidebarGroup[]
+): { text?: string; link: string; target?: string; rel?: string }[] {
+  const result: { text?: string; link: string; target?: string; rel?: string }[] = []
+  const walk = (items: VpSidebarItem[]) => {
+    for (const item of items) {
+      const link = item.link
+      const text = item.text ?? ''
+      if (link) {
+        const normalized = normalizePath(link)
+        if (result.every((r) => normalizePath(r.link) !== normalized)) {
+          result.push({ text, link: normalized, target: item.target, rel: item.rel })
+        }
+      }
+      if (item.items?.length) walk(item.items)
+    }
+  }
+  for (const group of groups) walk(group.items ?? [])
+  return result
+}
 
-  const roots: VpHeader[] = []
-  const stack: { level: number; node: VpHeader }[] = []
+/** 把页面 headers(扁平)构建成树(用于大纲、多级) */
+export function headerTree(headers: VpHeader[]): VpHeader[] {
+  const tree: VpHeader[] = []
+  const stack: { node: VpHeader; level: number }[] = []
   for (const h of headers) {
-    const node: VpHeader = { ...h, children: [] }
+    const node: VpHeader = {
+      level: h.level,
+      title: h.title,
+      slug: h.slug,
+      link: h.link ?? `#${h.slug}`,
+      children: []
+    }
     while (stack.length && stack[stack.length - 1]!.level >= h.level) {
       stack.pop()
     }
-    if (stack.length) {
-      stack[stack.length - 1]!.node.children.push(node)
+    const parent = stack[stack.length - 1]?.node
+    if (parent) {
+      parent.children.push(node)
     } else {
-      roots.push(node)
+      tree.push(node)
     }
-    stack.push({ level: h.level, node })
+    stack.push({ node, level: h.level })
   }
-  return roots
+  return tree
 }
