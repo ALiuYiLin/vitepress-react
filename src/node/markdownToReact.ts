@@ -858,6 +858,16 @@ function maskJsxHtmlLines(
     const prefix = line.slice(0, tagPos)
     const rest = line.slice(tagPos)
 
+    // ATX 标题行(## 标题 <ComponentInHeader /> 等):行内标签不整行接管——
+    // 若占位,占位串会漏进 anchor 插件生成的 heading id / aria-label
+    // (如 "#把组件放进标题-vp-html-4")。交给 markdown-it + anchor
+    // (干净 id/大纲纯文本)与序列化器(可解析组件名还原为 JSX 组件节点)。
+    if (/^ {0,3}#{1,6}\s+/.test(line)) {
+      out.push(line)
+      i++
+      continue
+    }
+
     // Vue 指令属性(:members/@click/v-if/#slot)不属于 React 接管 → 退回旧路径
     if (hasVueishAttr(rest)) {
       out.push(line)

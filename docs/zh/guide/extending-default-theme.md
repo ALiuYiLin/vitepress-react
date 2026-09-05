@@ -217,16 +217,13 @@ export default {
 
 可以扩展默认主题以在切换颜色模式时提供自定义过渡动画。例如：
 
-<<< @/components/AppearanceToggleTransition.vue [.vitepress/theme/Layout.vue]
-
-结果（**注意！**：画面闪烁、快速闪现、强光刺激）:
-
-<details>
-<summary>Demo</summary>
-
-![Appearance Toggle Transition Demo](/appearance-toggle-transition.webp)
-
-</details>
+::: warning 示例已随 React 迁移移除
+原示例是 **Vue 默认主题** 的演示:源码
+`docs/components/AppearanceToggleTransition.vue`(用 Vue 的 `provide/inject`
+包装 `DefaultTheme.Layout`,配合 View Transitions API 做明暗切换的圆形扩散
+过渡)已随 React 迁移移除。React 版暂不提供等价的外观切换过渡示例,
+可参考[在 Markdown 中使用 React](./using-react)。
+:::
 
 有关视图过渡动画的更多详细信息，请参阅 [Chrome 文档](https://developer.chrome.com/docs/web-platform/view-transitions/)。
 

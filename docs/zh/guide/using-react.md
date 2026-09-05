@@ -151,6 +151,27 @@ This is a .md using a custom component
 
 `<code>` 里的内容不会被解析成组件。
 
+等价于 Vue 版 `docs/components/ComponentInHeader.vue` 的最小组件
+`docs/components/ComponentInHeader.tsx` 就放在 docs 里,import 后即可用:
+
+````md
+<script>
+import ComponentInHeader from '../../components/ComponentInHeader.tsx'
+</script>
+
+#### 把组件放进标题 <ComponentInHeader />
+````
+
+实时效果:
+
+<script>
+import ComponentInHeader from '../../components/ComponentInHeader.tsx'
+</script>
+
+#### 把组件放进标题 <ComponentInHeader />
+
+上面标题里的 ⚡ 就是 `ComponentInHeader`;大纲标题只取纯文本,不含组件内容。
+
 ## 代码块与指令 {#code-blocks}
 
 代码块天然是字面量,不需要 `v-pre` 包装:
@@ -216,3 +237,25 @@ export function Counter() {
 </script>
 
 记住:所有客户端专属代码都要兼容 SSR——如果它在服务端抛错,站点构建会失败。
+
+文件版等价示例:Vue 版 `ModalDemo.vue`(按钮 + Teleport 弹窗)在 React 里
+的等价实现是 `docs/components/ModalDemo.tsx`——用 `createPortal` 挂到
+`body`(React 版的 Teleport),样式在 `ModalDemo.css`;弹层默认不渲染,
+SSR / 水合安全(Esc 或点遮罩关闭)。页面导入后直接 `<ModalDemo />`:
+
+````md
+<script>
+import ModalDemo from '../../components/ModalDemo.tsx'
+</script>
+
+<ModalDemo />
+````
+
+实时效果:
+
+<script>
+import ModalDemo from '../../components/ModalDemo.tsx'
+</script>
+
+<ModalDemo />
+

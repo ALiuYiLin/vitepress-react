@@ -1,0 +1,55 @@
+/* 等价 Vue 版 ModalDemo.vue 的 <style scoped>(类名全为字面量,全局即可) */
+
+.modal-mask {
+  position: fixed;
+  inset: 0;
+  z-index: 200;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: rgba(0, 0, 0, 0.5);
+  animation: modal-fade-in 0.3s ease;
+}
+
+.modal-container {
+  width: 18.75rem;
+  margin: auto;
+  padding: 1.25rem 1.875rem;
+  background-color: var(--vp-c-bg);
+  border-radius: 0.125rem;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.33);
+  animation: modal-pop-in 0.3s ease;
+}
+
+.modal-footer {
+  margin-top: 0.5rem;
+  text-align: right;
+}
+
+.modal-button {
+  padding: 0.25rem 0.5rem;
+  border-radius: 0.25rem;
+  border: 1px solid var(--vp-button-alt-border);
+  color: var(--vp-button-alt-text);
+  background-color: var(--vp-button-alt-bg);
+  cursor: pointer;
+}
+
+.modal-button:hover {
+  border-color: var(--vp-button-alt-hover-border);
+  color: var(--vp-button-alt-hover-text);
+  background-color: var(--vp-button-alt-hover-bg);
+}
+
+@keyframes modal-fade-in {
+  from {
+    opacity: 0;
+  }
+}
+
+@keyframes modal-pop-in {
+  from {
+    opacity: 0;
+    transform: scale(1.1);
+  }
+}
