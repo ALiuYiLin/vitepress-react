@@ -3,6 +3,7 @@ import {
   resolveSiteDataByRoute,
   type HeadConfig
 } from 'vitepress'
+import jsxScopedVitePlugin from '@10coding/vite-plugin-jsx-scoped'
 import {
   groupIconMdPlugin,
   groupIconVitePlugin,
@@ -85,7 +86,11 @@ export default defineConfig({
       }
     },
 
-    carbonAds: { code: 'CEBDT27Y', placement: 'vuejsorg' }
+    carbonAds: { code: 'CEBDT27Y', placement: 'vuejsorg' },
+
+    // md 页 <style scoped> / *.scoped.* 导入 → Vue-like 页面级 scoped 样式
+    // (需下方 vite.plugins 里的 jsxScopedVitePlugin 提供虚拟 css resolve/load)
+    markdownScopedCss: true
   },
 
   locales: {
@@ -95,6 +100,7 @@ export default defineConfig({
 
   vite: {
     plugins: [
+      jsxScopedVitePlugin(),
       groupIconVitePlugin({
         customIcon: {
           vitepress: localIconLoader(

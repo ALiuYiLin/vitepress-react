@@ -10,6 +10,7 @@
     "lunaria:open": "open-cli .vitepress/dist/_translations/index.html"
   },
   "devDependencies": {
+    "@10coding/vite-plugin-jsx-scoped": "^0.3.0",
     "@lunariajs/core": "^0.1.1",
     "markdown-it-mathjax3": "^4.3.2",
     "open-cli": "^9.0.0",

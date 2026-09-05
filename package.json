@@ -93,6 +93,7 @@
     "*": "prettier --experimental-cli --ignore-unknown --write"
   },
   "dependencies": {
+    "@10coding/vite-plugin-jsx-scoped": "^0.3.0",
     "@docsearch/css": "^4.7.0",
     "@docsearch/js": "^4.7.0",
     "@docsearch/sidepanel-js": "^4.7.0",

@@ -1,6 +1,7 @@
 import path from 'node:path'
 
 import { exactRegex } from '@rolldown/pluginutils'
+import { createJsxScopedPipeline } from '@10coding/vite-plugin-jsx-scoped'
 import c from 'picocolors'
 import {
   mergeConfig,
@@ -50,6 +51,12 @@ const startsWithThemeRE = /^@theme(?:\/|$)/
 const docsearchRE = /\bdocsearch\b/ // narrow it if any issue arises
 
 const hashRE = /\.([-\w]+)\.js$/
+
+// md scoped css(themeConfig.markdownScopedCss)的编译期 transform 实例:
+// 虚拟 css 模块的 resolve/load 由站点注册的 jsxScopedVitePlugin 提供,两者共享
+// jsx-scoped 的进程级默认 registry,因此本实例 transform 登记的内联样式可被
+// 站点插件实例读取(vitepress 核心与站点插件处于不同的 Vite 插件上下文)。
+const jsxScopedPipeline = createJsxScopedPipeline()
 
 const isPageChunk = <T extends Rolldown.OutputChunk | Rolldown.RenderedChunk>(
   chunk: Rolldown.OutputAsset | T
@@ -113,6 +120,8 @@ export async function createVitePressPlugin(
 
     async configResolved(resolvedConfig) {
       config = resolvedConfig
+      // md scoped css 管线告警走 vite logger,样式预处理读取站点 css 配置
+      jsxScopedPipeline.bindViteConfig(resolvedConfig)
       // sync with the actual resolved publicDir (can be customized via
       // vite config, or altered by other vite plugins)
       siteConfig.publicDir = config.publicDir
@@ -260,7 +269,14 @@ export async function createVitePressPlugin(
               data: payload
             })
           }
-          return compileReactSrc(reactSrc)
+          // themeConfig.markdownScopedCss:md 页 scoped 样式 → jsx-scoped
+          // transform(整行 auto-detect:无 <style scoped> / *.scoped.* 时跳过)
+          let pageSrc = reactSrc
+          if (siteConfig.site?.themeConfig?.markdownScopedCss) {
+            const scoped = jsxScopedPipeline.transform(reactSrc, cleanId)
+            if (scoped.enabled) pageSrc = scoped.code
+          }
+          return compileReactSrc(pageSrc)
         }
         if (docsearchRE.test(normalizePath(id))) {
           return code

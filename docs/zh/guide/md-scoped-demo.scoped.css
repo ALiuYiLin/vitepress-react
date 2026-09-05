@@ -1,0 +1,4 @@
+.md-scoped-h { color: var(--vp-c-brand-1); border-bottom: 2px solid var(--vp-c-brand-2); }
+
+.md-scoped-card { border: 2px dashed var(--vp-c-brand-2); border-radius: 10px; padding: 0.9rem 1.1rem; background: color-mix(in srgb, var(--vp-c-brand-1) 6%, transparent); }
+.md-scoped-card strong { color: var(--vp-c-danger-1); }

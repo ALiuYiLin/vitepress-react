@@ -201,6 +201,30 @@ export namespace DefaultTheme {
      * Customize text of 404 page.
      */
     notFound?: NotFoundOptions
+
+    /**
+     * Enable Vue-like scoped styles for markdown pages (React fork 扩展):
+     *
+     * 开启后,页面里的 `<style scoped>` 块与 `<script>` 中的 `*.scoped.*`
+     * 样式导入由 `@10coding/vite-plugin-jsx-scoped` 处理——scope 属性
+     * `data-v-{hash}`(hash 取自 md 文件路径)注入页面 DOM,样式选择器追加
+     * `[data-v-{hash}]`,实现"样式只作用于本页"。
+     *
+     * 依赖:站点 vite 配置需注册该插件(与 vitepress 核心共享进程级默认
+     * registry,否则虚拟 css 模块无法 resolve/load):
+     *
+     * ```ts
+     * // .vitepress/config.ts
+     * import jsxScopedVitePlugin from '@10coding/vite-plugin-jsx-scoped'
+     * export default defineConfig({
+     *   vite: { plugins: [jsxScopedVitePlugin()] }
+     * })
+     * ```
+     *
+     * 开启后无 scoped 标记的页面完全不受影响(auto-detect,零额外解析)。
+     * @default false
+     */
+    markdownScopedCss?: boolean
   }
 
   export type I18nRouting = (
