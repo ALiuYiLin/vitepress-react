@@ -9,7 +9,7 @@ export default defineConfig({
   assetsBase:
     mode === 'cdn' ? `http://localhost:${process.env.VP_CDN_PORT}/` : undefined,
   mpa: mode === 'mpa',
-  outDir: `.vitepress/dist-${mode}`,
+  outDir: `.vitepress-react/dist-${mode}`,
   cleanUrls: false,
   rewrites: { 'src-moved.md': 'moved/target.md' },
   vite: {

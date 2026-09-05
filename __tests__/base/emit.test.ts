@@ -4,7 +4,7 @@ import { fileURLToPath } from 'node:url'
 
 const dir = resolve(fileURLToPath(import.meta.url), '..')
 const dist = (mode: string, ...p: string[]) =>
-  join(dir, `fixture/.vitepress/dist-${mode}`, ...p)
+  join(dir, `fixture/.vitepress-react/dist-${mode}`, ...p)
 const read = (mode: string, file: string) =>
   readFileSync(dist(mode, file), 'utf-8')
 

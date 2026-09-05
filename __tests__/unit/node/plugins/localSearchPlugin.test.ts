@@ -35,7 +35,7 @@ describe('node/plugins/localSearchPlugin', () => {
 
   test('indexes rewritten pages by rewritten locale path', async () => {
     root = await mkdtemp(path.join(tmpdir(), 'vitepress-local-search-'))
-    const configDir = path.join(root, '.vitepress')
+    const configDir = path.join(root, '.vitepress-react')
     await mkdir(configDir)
 
     await writeFile(
@@ -110,7 +110,7 @@ describe('node/plugins/localSearchPlugin', () => {
 
   test('applies per-locale markdown options (#5350)', async () => {
     root = await mkdtemp(path.join(tmpdir(), 'vitepress-local-search-'))
-    const configDir = path.join(root, '.vitepress')
+    const configDir = path.join(root, '.vitepress-react')
     await mkdir(configDir)
     await mkdir(path.join(root, 'zh'))
 
@@ -187,7 +187,7 @@ describe('node/plugins/localSearchPlugin', () => {
 
   test('warns and skips pages that fail to render', async () => {
     root = await mkdtemp(path.join(tmpdir(), 'vitepress-local-search-'))
-    const configDir = path.join(root, '.vitepress')
+    const configDir = path.join(root, '.vitepress-react')
     await mkdir(configDir)
 
     await writeFile(path.join(root, 'index.md'), '# Home\n\nhealthytoken\n')

@@ -11,7 +11,7 @@ import { ALT_PREFIX, SUB_PREFIX } from './constants'
 
 const dir = resolve(fileURLToPath(import.meta.url), '..')
 const bin = resolve(dir, '../../bin/vitepress-react.js')
-const dist = (mode: string) => resolve(dir, `fixture/.vitepress/dist-${mode}`)
+const dist = (mode: string) => resolve(dir, `fixture/.vitepress-react/dist-${mode}`)
 
 const types: Record<string, string> = {
   '.html': 'text/html',

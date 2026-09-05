@@ -6,7 +6,7 @@ import { newPage, type TestPage } from './helpers'
 const dist = resolve(
   fileURLToPath(import.meta.url),
   '..',
-  'fixture/.vitepress/dist-relative'
+  'fixture/.vitepress-react/dist-relative'
 )
 
 const fileUrl = (...p: string[]) => pathToFileURL(join(dist, ...p)).href
