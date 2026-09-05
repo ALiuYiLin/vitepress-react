@@ -209,12 +209,11 @@ export default defineConfig({
 
 你可以使用这样的配置来使用多语言搜索：
 
-<details>
-<summary>点击展开</summary>
+::: details 点击展开
 
 <<< @/snippets/algolia-i18n.ts
 
-</details>
+:::
 
 更多信息请参考[官方 Algolia 文档](https://docsearch.algolia.com/docs/api#translations)。想要快速开始，你也可以从[我们的 GitHub 仓库](https://github.com/search?q=repo:vuejs/vitepress+%22function+searchOptions%22&type=code)复制此站点使用的翻译。
 
