@@ -18,6 +18,7 @@ import remarkMath from 'remark-math'
 import rehypeKatex from 'rehype-katex'
 import rehypeSlug from 'rehype-slug'
 import { collectFrontmatterPlugin, collectHeadersPlugin } from './collect'
+import { remarkContainers, normalizeContainerSpacing } from './containers'
 import type { MdxPageData } from './types'
 
 export type { MdxPageData, MdxHeader } from './types'
@@ -31,6 +32,10 @@ export interface MdxCompileOptions {
   math?: boolean
   /** 是否启用 rehype-slug 给标题生成 id(默认 true;显式 \{#id\} 已在 remark 阶段注入) */
   slug?: boolean
+  /** 容器缺省标题覆盖/新增(见 DEFAULT_CONTAINER_TITLES) */
+  containerTitles?: Record<string, string>
+  /** 容器降级警告回调(缺省 console.warn) */
+  warn?: (message: string) => void
 }
 
 export interface MdxCompileResult {
@@ -53,12 +58,18 @@ export async function compileDocument(
     gfm = true,
     math = true,
     slug = true,
+    containerTitles,
+    warn,
     remarkAttributes: _attrs = true // 预留开关;v1 恒启用
   } = options
 
+  // 容器开/闭行上下文规整(行级,fence 感知;mdx 编译前)
+  src = normalizeContainerSpacing(src)
+
   const remarkPlugins: unknown[] = [
-    // attrs 需在最前:其 micromark 扩展与后续注册的 gfm 等共存时可能触发
-    // micromark-attributes 内部断言;P0 probe 验证的可行顺序即 attrs 居首
+    // 容器化先于 attrs:容器行(::: …)不落入 remark-attributes 的节点属性处理。
+    // 注意:以 [plugin, options] 元组传入,由 compile 实例化。
+    [remarkContainers, { titles: containerTitles, warn }],
     remarkAttributes,
     remarkFrontmatter,
     // yaml 节点先采集(collectFrontmatter),再由 remark-mdx-frontmatter 转为 export const frontmatter
@@ -78,13 +89,16 @@ export async function compileDocument(
   // compile 的 remarkPlugins 数组项支持 [plugin, options] 元组。
   const remarkPluginList: any[] = remarkPlugins.map((p) =>
     // remark-attributes 需要 { mdx: true }
-    p === remarkAttributes ? [remarkAttributes, { mdx: true }] : p
+    Array.isArray(p) ? p : p === remarkAttributes ? [remarkAttributes, { mdx: true }] : p
   )
 
   const result = await compile(src, {
     format: 'mdx',
     remarkPlugins: remarkPluginList,
-    rehypePlugins: rehypePlugins as any
+    rehypePlugins: rehypePlugins as any,
+    remarkRehypeOptions: {
+      handlers: { vpContainer: renderVpContainer }
+    }
   })
 
   // 采集插件把数据写入 file.data.mdxKernel
@@ -101,4 +115,58 @@ export async function compileDocument(
     code: String(result),
     data: { frontmatter, headers, title }
   }
+}
+
+// ---------- vpContainer 渲染(mdast-util-to-hast handler) ----------
+
+/**
+ * vpContainer → hast:
+ *  - details: <details [open]><summary>标题</summary>内容…</details>
+ *  - 其余:   <div class="name custom-block [extra]" [id]><p class="custom-block-title[-default]">标题</p>内容…</div>
+ *  - no-title(raw/v-pre/标题为空且无缺省)时不输出标题 p。
+ */
+function renderVpContainer(state: any, node: any): any {
+  const name = node.name as string
+  const attrs = node.attrs ?? { classes: [], noTitle: false, open: false }
+  const noTitle = Boolean(attrs.noTitle || name === 'raw' || name === 'v-pre')
+  const content = state.all(node)
+
+  const props: any = {}
+  const classList = [name, 'custom-block', ...(attrs.classes ?? [])].filter(Boolean)
+  if (classList.length > 0) props.class = classList.join(' ')
+  if (attrs.id) props.id = attrs.id
+
+  const titleNodes = (node.titleChildren ?? []) as any[]
+  const titleHast = titleNodes.length > 0 ? state.all({ type: 'root', children: titleNodes }) : []
+
+  if (name === 'details') {
+    const detailsProps = { ...props }
+    if (attrs.open) detailsProps.open = ''
+    const summary = {
+      type: 'element',
+      tagName: 'summary',
+      properties: {},
+      children: titleHast
+    }
+    return {
+      type: 'element',
+      tagName: 'details',
+      properties: detailsProps,
+      children: [summary, ...content]
+    }
+  }
+
+  const children: any[] = []
+  if (!noTitle) {
+    const titleClass =
+      'custom-block-title' + (node.defaultTitle ? ' custom-block-title-default' : '')
+    children.push({
+      type: 'element',
+      tagName: 'p',
+      properties: { class: titleClass },
+      children: titleHast
+    })
+  }
+  children.push(...content)
+  return { type: 'element', tagName: 'div', properties: props, children }
 }

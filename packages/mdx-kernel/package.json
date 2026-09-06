@@ -1,7 +1,7 @@
 {
   "name": "@10coding/mdx-kernel",
   "version": "0.1.0",
-  "description": "MDX 内核:把文档 Markdown 编译为可渲染 React 模块并采集 PageData(frontmatter/headers/title)。自研件:PageData 契约;生态件:remark-attributes/remark-math/rehype-katex/remark-gfm 等",
+  "description": "MDX 内核:把文档 Markdown 编译为可渲染 React 模块并采集 PageData(frontmatter/headers/title)。自研件:容器/PageData 契约;生态件:remark-attributes/remark-math/rehype-katex/remark-gfm 等",
   "type": "module",
   "private": true,
   "main": "./src/index.ts",
@@ -20,10 +20,13 @@
     "rehype-katex": "^7.0.1",
     "rehype-slug": "^6.0.0",
     "remark-attributes": "^0.4.4",
+    "remark-directive": "^3.0.1",
     "remark-frontmatter": "^5.0.0",
     "remark-gfm": "^4.0.1",
     "remark-math": "^6.0.0",
     "remark-mdx-frontmatter": "^5.2.0",
+    "remark-parse": "^11.0.0",
+    "unified": "^11.0.5",
     "yaml": "^2.7.0"
   },
   "devDependencies": {
