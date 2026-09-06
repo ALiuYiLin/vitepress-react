@@ -123,7 +123,7 @@ describe('mdx 代码高亮', () => {
     expect(code).toContain('type: "radio"')
     expect(code).toContain('foo.js')
     expect(code).toContain('bar.ts')
-    const firstInput = code.indexOf('checked')
+    const firstInput = code.indexOf('defaultChecked: true')
     expect(firstInput).toBeGreaterThan(-1)
     // 首块高亮 wrapper 带 active,两个语言块都渲染
     expect(code).toContain('language-js active')

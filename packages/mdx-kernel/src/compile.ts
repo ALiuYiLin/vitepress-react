@@ -311,7 +311,10 @@ function renderCodeGroup(state: any, node: any): any {
           type: 'radio',
           name: `vp-cg-${seq}`,
           id,
-          ...(checked ? { checked: true } : {})
+          // defaultChecked(非受控):React 只在挂载时置初始选中,之后用户
+          // 点击 label 改 DOM checked 不会被 React 重渲染弹回(受控 checked
+          // 在页面任何重渲染时都会把 radio 状态重置回第一个 tab)
+          ...(checked ? { defaultChecked: true } : {})
         },
         children: []
       },
