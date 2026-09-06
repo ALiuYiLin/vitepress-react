@@ -330,7 +330,15 @@ export function rehypeCodeHighlight(options: {
               meta,
               runtime
             )
-            if (wrapper) children[i] = wrapper
+            if (wrapper) {
+              // code-group 首块:补 active(主题 css 无 :has 时的初始显示兜底;
+              // 现代浏览器由 radio :has 规则接管)
+              if (node.properties?.['data-cg-active'] != null) {
+                const cls = wrapper.properties?.className
+                if (Array.isArray(cls)) cls.push('active')
+              }
+              children[i] = wrapper
+            }
           } catch {
             // 保留占位 pre(普通文本代码块),不中断整页
           }

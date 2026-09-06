@@ -100,4 +100,47 @@ describe('mdx 代码高亮', () => {
     expect(code).not.toContain('line-numbers-wrapper')
     expect(code).toContain('const x = 1')
   })
+
+  it('code-group 输出 tabs/blocks 结构(radio+label,首块 active)', async () => {
+    const src = [
+      '::: code-group',
+      '',
+      '```js [foo.js]',
+      'const a = 1',
+      '```',
+      '',
+      '```ts [bar.ts]',
+      'const b: number = 2',
+      '```',
+      '',
+      ':::'
+    ].join('\n')
+    const { code } = await compile(src)
+    expect(code).toContain('vp-code-group')
+    expect(code).toContain('className: "tabs"')
+    expect(code).toContain('blocks')
+    // tabs:radio + label(foo.js / bar.ts),第一个 checked
+    expect(code).toContain('type: "radio"')
+    expect(code).toContain('foo.js')
+    expect(code).toContain('bar.ts')
+    const firstInput = code.indexOf('checked')
+    expect(firstInput).toBeGreaterThan(-1)
+    // 首块高亮 wrapper 带 active,两个语言块都渲染
+    expect(code).toContain('language-js active')
+    expect(code).toContain('language-ts')
+    // data 占位残留清除
+    expect(code).not.toContain('data-cg-active')
+    // 不再按普通容器渲染
+    expect(code).not.toContain('code-group custom-block')
+  })
+
+  it('未启用高亮时 code-group 保持普通容器(无 tabs)', async () => {
+    const src = ['::: code-group', '', '```js', 'const a = 1', '```', '', ':::'].join('\n')
+    const { code } = await compileDocument(src, {
+      srcDir: '.',
+      filePath: '/tmp/highlight-test.mdx'
+    })
+    expect(code).not.toContain('vp-code-group')
+    expect(code).toContain('code-group custom-block')
+  })
 })

@@ -158,10 +158,11 @@ export async function compileDocument(
       // vpContainer 是自研 mdast 节点,不在 mdast-util-to-hast 白名单里;
       // 启用高亮时用占位 code handler 保留 lang/meta(默认 handler 会丢弃)
       handlers: {
-        vpContainer: renderVpContainer,
-        ...(highlight?.highlighter
-          ? { code: renderCodePlaceholder }
-          : {})
+        vpContainer: (state: any, node: any) =>
+          renderVpContainer(state, node, {
+            codeGroup: Boolean(highlight?.highlighter)
+          }),
+        ...(highlight?.highlighter ? { code: renderCodePlaceholder } : {})
       } as Record<string, unknown>
     }
   })
@@ -214,8 +215,21 @@ function renderCodePlaceholder(_state: any, node: any): any {
  *  - 其余:   <div class="name custom-block [extra]" [id]><p class="custom-block-title[-default]">标题</p>内容…</div>
  *  - no-title(raw/v-pre/标题为空且无缺省)时不输出标题 p。
  */
-function renderVpContainer(state: any, node: any): any {
+function renderVpContainer(
+  state: any,
+  node: any,
+  ctx: { codeGroup?: boolean } = {}
+): any {
   const name = node.name as string
+
+  // code-group 专有语义:与 md-it(M1)同构的 tabs/blocks 结构
+  //   div.vp-code-group > div.tabs(input[type=radio]+label) + div.blocks(代码块们)
+  // radio 组由主题 css 的 :has 规则驱动对应块显示;首个子块标 data-cg-active,
+  // 高亮插件把它落到 div.language-*.active(不支持 :has 时的初始显示兜底)。
+  if (name === 'code-group' && ctx.codeGroup) {
+    return renderCodeGroup(state, node)
+  }
+
   const attrs = node.attrs ?? { classes: [], noTitle: false, open: false }
   const noTitle = Boolean(attrs.noTitle || name === 'raw' || name === 'v-pre')
   const content = state.all(node)
@@ -230,7 +244,7 @@ function renderVpContainer(state: any, node: any): any {
 
   if (name === 'details') {
     const detailsProps = { ...props }
-    if (attrs.open) detailsProps.open = ''
+    if (attrs.open) detailsProps.open = true
     const summary = {
       type: 'element',
       tagName: 'summary',
@@ -258,4 +272,79 @@ function renderVpContainer(state: any, node: any): any {
   }
   children.push(...content)
   return { type: 'element', tagName: 'div', properties: props, children }
+}
+
+/** 页内 code-group 序列号(radio name 组内唯一;跨编译单调递增无碍) */
+let codeGroupSeq = 0
+
+/**
+ * code-group 渲染:内容按块输出在 .blocks;tabs 里的 radio/label 由
+ * mdast 直接子 code 节点的 lang / meta([title]) 生成(顺序与块一一对应)。
+ */
+function renderCodeGroup(state: any, node: any): any {
+  const seq = ++codeGroupSeq
+  const content = state.all(node) // mdast children 1:1 的 hast
+  const mdChildren = (node.children ?? []) as any[]
+  const tabItems: any[] = []
+  let checked = true
+  let codeIndex = 0
+
+  for (let i = 0; i < mdChildren.length; i++) {
+    const ch = mdChildren[i]
+    if (!ch || ch.type !== 'code') continue
+    const lang = String(ch.lang ?? '').toLowerCase()
+    const meta = String(ch.meta ?? '').trim()
+    const titleMatch = meta.match(/\[(.*?)\]/)
+    const title = titleMatch ? titleMatch[1] : lang || 'code'
+    const id = `vp-cg-${seq}-${codeIndex}`
+    tabItems.push(
+      {
+        type: 'element',
+        tagName: 'input',
+        properties: {
+          type: 'radio',
+          name: `vp-cg-${seq}`,
+          id,
+          ...(checked ? { checked: true } : {})
+        },
+        children: []
+      },
+      {
+        type: 'element',
+        tagName: 'label',
+        properties: {
+          htmlFor: id,
+          'data-title': title
+        },
+        children: [{ type: 'text', value: title }]
+      }
+    )
+    // 首块标记 active(高亮插件消费);块与 content[i] 一一对应
+    const hast = content[i]
+    if (checked && hast && hast.properties) {
+      hast.properties['data-cg-active'] = ''
+    }
+    checked = false
+    codeIndex++
+  }
+
+  return {
+    type: 'element',
+    tagName: 'div',
+    properties: { className: ['vp-code-group'] },
+    children: [
+      {
+        type: 'element',
+        tagName: 'div',
+        properties: { className: ['tabs'] },
+        children: tabItems
+      },
+      {
+        type: 'element',
+        tagName: 'div',
+        properties: { className: ['blocks'] },
+        children: content
+      }
+    ]
+  }
 }

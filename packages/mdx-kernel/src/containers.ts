@@ -255,9 +255,11 @@ export function remarkContainers(options: RemarkContainersOptions = {}) {
 
     const applyDefaults = (node: any) => {
       const name = node.name as string
-      if (name === 'code-group' || name === 'react') {
+      // code-group 的专有语义已由渲染层(compile.ts vpContainer handler +
+      // rehype 高亮)实现(tabs/blocks 结构);react 等其它专有容器仍未实现
+      if (name === 'react') {
         warn(
-          `container "${name}" 的专有语义(code-group tabs / react JSX)尚未在 mdx-kernel 实现,已按普通容器渲染`
+          `container "${name}" 的专有语义(react JSX 区域)尚未在 mdx-kernel 实现,已按普通容器渲染`
         )
       }
       if (node.attrs.noTitle || name === 'raw' || name === 'v-pre') {

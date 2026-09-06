@@ -83,3 +83,56 @@
 .vp-block {
   padding: 1.25rem 1.5rem;
 }
+
+/* —— 纯 CSS tabs(现代浏览器用 :has 接管切换)——
+ * tabs 内 input(radio)的顺序与 .blocks 直接子代码块一一对应(生成器保证,
+ * 与 md-it/M1 的 code-group 输出同构)。点击 label 改变 radio checked,
+ * 由下面的 :has 规则显示对应块;不支持 :has 的浏览器退回第一块的
+ * `.active` 静态显示(不可切换)。
+ */
+@supports selector(:has(*)) {
+  .vp-code-group div[class*='language-'].active,
+  .vp-code-group .vp-block.active {
+    display: none;
+  }
+}
+
+.vp-code-group:has(.tabs input:nth-of-type(1):checked) .blocks > :nth-of-type(1) {
+  display: block;
+}
+
+.vp-code-group:has(.tabs input:nth-of-type(2):checked) .blocks > :nth-of-type(2) {
+  display: block;
+}
+
+.vp-code-group:has(.tabs input:nth-of-type(3):checked) .blocks > :nth-of-type(3) {
+  display: block;
+}
+
+.vp-code-group:has(.tabs input:nth-of-type(4):checked) .blocks > :nth-of-type(4) {
+  display: block;
+}
+
+.vp-code-group:has(.tabs input:nth-of-type(5):checked) .blocks > :nth-of-type(5) {
+  display: block;
+}
+
+.vp-code-group:has(.tabs input:nth-of-type(6):checked) .blocks > :nth-of-type(6) {
+  display: block;
+}
+
+.vp-code-group:has(.tabs input:nth-of-type(7):checked) .blocks > :nth-of-type(7) {
+  display: block;
+}
+
+.vp-code-group:has(.tabs input:nth-of-type(8):checked) .blocks > :nth-of-type(8) {
+  display: block;
+}
+
+.vp-code-group:has(.tabs input:nth-of-type(9):checked) .blocks > :nth-of-type(9) {
+  display: block;
+}
+
+.vp-code-group:has(.tabs input:nth-of-type(10):checked) .blocks > :nth-of-type(10) {
+  display: block;
+}
