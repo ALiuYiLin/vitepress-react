@@ -77,11 +77,37 @@ function getResolutionCache(siteConfig: SiteConfig) {
 }
 
 /**
+ * 主题 markdown 全局组件(md/mdx 页可直接写标签):与 M1 markdownToReact 的
+ * THEME_MD_TAGS 同步。页面产物检测到对应 `_components.X` 引用时,组装层
+ * 自动从 '@10coding/vitepress-react/theme' 导入并注入 MDX components。
+ */
+const THEME_MDX_COMPONENTS: Record<string, string> = {
+  Badge: 'VPBadge',
+  VPBadge: 'VPBadge'
+}
+
+/** 扫描 mdx 产物,返回页面真实用到的主题组件局部名(如 ['Badge']) */
+export function detectThemeComponents(code: string): string[] {
+  const used: string[] = []
+  for (const local of Object.keys(THEME_MDX_COMPONENTS)) {
+    // mdx v3 把未注册组件编译成 _jsx(_components.Badge, …) 或
+    // const { Badge } = _components + _missingMdxReference("Badge");
+    // 排除字符串/注释里的伪引用(前导不能是引号或标识符字符)
+    const refRe = new RegExp(`(^|[^"'\\w])_components\\.${local}\\b`)
+    const missingRe = new RegExp(`_missingMdxReference\\("${local}"`)
+    if (refRe.test(code) || missingRe.test(code)) used.push(local)
+  }
+  return used
+}
+
+/**
  * 把 compileDocument 产物(ESM:function MDXContent + export default …)
  * 组装为 vitepress-react 页面模块:
  *   1. 原 default(MDXContent)改名内部函数;
  *   2. 追加 export const __pageData(与 M1 相同的契约);
- *   3. default Page 用 _vpJsx 包一层 div.vp-doc 后渲染 MDXContent。
+ *   3. 页面用到主题 markdown 组件(Badge 等)时自动从主题导入,经 MDX
+ *      components 注入(作者 props.components 可覆盖);
+ *   4. default Page 用 _vpJsx 包一层 div.vp-doc 后渲染 MDXContent。
  * MDX 产物本身 import react/jsx-runtime;包装用独立别名,不与其冲突。
  * 供单测直接调用。
  */
@@ -90,16 +116,34 @@ export function assembleMdxPage(code: string, pageData: PageData): string {
     ? code.replace('export default function MDXContent', 'function MDXContent')
     : code
 
+  const used = detectThemeComponents(body)
+  const themeImports = used.length
+    ? `// theme components used by this mdx page\n` +
+      used
+        .map((local) => {
+          const exportName = THEME_MDX_COMPONENTS[local]
+          return exportName === local
+            ? `import { ${exportName} } from '@10coding/vitepress-react/theme'`
+            : `import { ${exportName} as ${local} } from '@10coding/vitepress-react/theme'`
+        })
+        .join('\n')
+    : ''
+
   const pageDataJson = JSON.stringify(JSON.stringify(pageData))
+  const mdxProps =
+    used.length > 0
+      ? `{\n      ...props,\n      components: {\n        ${used.join(',\n        ')},\n        ...(props.components ?? {})\n      }\n    }`
+      : `props`
   return `${body}
 
 // ---- vitepress-react mdx page wrapper (P2) ----
+${themeImports}
 import { jsx as _vpJsx } from 'react/jsx-runtime'
 export const __pageData = JSON.parse(${pageDataJson})
 export default function Page(props = {}) {
   return _vpJsx('div', {
     className: 'vp-doc',
-    children: _vpJsx(MDXContent, props)
+    children: _vpJsx(MDXContent, ${mdxProps})
   })
 }
 if (import.meta.hot) { import.meta.hot.accept() }

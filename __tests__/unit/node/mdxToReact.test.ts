@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest'
 import { transformWithOxc } from 'vite'
-import { assembleMdxPage } from 'node/mdxToReact'
+import { assembleMdxPage, detectThemeComponents } from 'node/mdxToReact'
 import type { PageData } from 'shared/shared'
 
 const pageData = {
@@ -40,5 +40,52 @@ export default function MDXContent(props = {}) {
     })
     expect(compiled.code).toContain('MDXContent')
     expect(compiled.code).toContain('__pageData')
+  })
+
+  it('未使用主题组件时不注入 components/import(产物不变形)', () => {
+    const out = assembleMdxPage(code, pageData)
+    expect(out).not.toContain('@10coding/vitepress-react/theme')
+    expect(out).toContain('_vpJsx(MDXContent, props)')
+  })
+
+  it('页面用到 <Badge> 时自动注入主题 import 并经 MDX components 传入', () => {
+    const badgeCode = `import {jsx as _jsx} from "react/jsx-runtime";
+function _createMdxContent(props) {
+  const _components = {
+    h1: "h1",
+    ...props.components
+  };
+  return _jsx(_components.h1, {
+    id: "标题",
+    children: ["标题", _jsx(_components.Badge, { type: "tip", text: "new" })]
+  })
+}
+export default function MDXContent(props = {}) {
+  return _createMdxContent(props)
+}
+`
+    const out = assembleMdxPage(badgeCode, pageData)
+    expect(out).toContain(
+      "import { VPBadge as Badge } from '@10coding/vitepress-react/theme'"
+    )
+    expect(out).toMatch(/components: \{\s*Badge,\s*\.\.\.\(props\.components \?\? \{\}\)/)
+    expect(out).not.toContain('_components.VPBadge')
+  })
+
+  it('detectThemeComponents 只返回真实引用', () => {
+    expect(
+      detectThemeComponents('_jsx(_components.Badge, { type: "tip" })')
+    ).toEqual(['Badge'])
+    expect(
+      detectThemeComponents('_jsx(_components.VPBadge, {})')
+    ).toEqual(['VPBadge'])
+    // mdx v3 形态:const { Badge } = _components + missing 引用检查
+    expect(
+      detectThemeComponents(
+        '}, { Badge } = _components;\nif (!Badge) _missingMdxReference("Badge", true);'
+      )
+    ).toEqual(['Badge'])
+    expect(detectThemeComponents('const s = "_components.Badge"')).toEqual([])
+    expect(detectThemeComponents('_missingMdxReference("Other"')).toEqual([])
   })
 })
