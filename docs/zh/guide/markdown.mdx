@@ -608,69 +608,69 @@ const line4 = 'This is line 4'
 
 ## 导入代码片段 \{#import-code-snippets\}
 
-可以通过下面的语法来从现有文件中导入代码片段：
+可以用 `<Snippet src="…" />` 从现有文件导入代码片段——它是编译期识别的标签,不需要 `import`:
 
 ```md
-<<< @/filepath
+<Snippet src="@/filepath" />
 ```
 
 此语法同时支持[行高亮](#line-highlighting-in-code-blocks)：
 
 ```md
-<<< @/filepath{highlightLines}
+<Snippet src="@/filepath" lines="…" />
 ```
 
 **输入**
 
 ```md
-<<< @/snippets/snippet.js{2}
+<Snippet src="@/snippets/snippet.js" lines="2" />
 ```
 
 **Code file**
 
-<<< @/snippets/snippet.js
+<Snippet src="@/snippets/snippet.js" />
 
 **输出**
 
-<<< @/snippets/snippet.js{2}
+<Snippet src="@/snippets/snippet.js" lines="2" />
 
 ::: tip
 `@` 的值对应于源代码根目录，默认情况下是 VitePress 项目根目录，除非配置了 `srcDir`。或者也可以从相对路径导入：
 
 ```md
-<<< ../snippets/snippet.js
+<Snippet src="../snippets/snippet.js" />
 ```
 
 :::
 
-也可以使用 [VS Code region](https://code.visualstudio.com/docs/editor/codebasics#_folding) 来只包含代码文件的相应部分。可以在文件目录后面的 `#` 符号后提供一个自定义的区域名：
+也可以使用 [VS Code region](https://code.visualstudio.com/docs/editor/codebasics#_folding) 只包含代码文件的相应部分:用 `region` 属性提供自定义区域名:
 
 **输入**
 
 ```md
-<<< @/snippets/snippet-with-region.js#snippet{1}
+<Snippet src="@/snippets/snippet-with-region.js" region="snippet" lines="1" />
 ```
 
 **Code file**
 
-<<< @/snippets/snippet-with-region.js
+<Snippet src="@/snippets/snippet-with-region.js" />
 
 **输出**
 
-<<< @/snippets/snippet-with-region.js#snippet{1}
+<Snippet src="@/snippets/snippet-with-region.js" region="snippet" lines="1" />
 
-也可以像这样在大括号内(`{}`)指定语言：
+也可以像这样用 `lang` 属性指定语言:
 
 ```md
-<<< @/snippets/snippet.cs{c#}
+<Snippet src="@/snippets/snippet.cs" lang="c#" />
 
 <!-- 带行高亮: -->
 
-<<< @/snippets/snippet.cs{1,2,4-6 c#}
+<Snippet src="@/snippets/snippet.cs" lines="1,2,4-6" lang="c#" />
 
 <!-- 带行号: -->
 
-<<< @/snippets/snippet.cs{1,2,4-6 c#:line-numbers}
+<Snippet src="@/snippets/snippet.cs" lines="1,2,4-6" lang="c#" attrs=":line-numbers" />
 ```
 
 如果无法从文件扩展名推测出源语言，这将会很有帮助
@@ -744,11 +744,11 @@ export default config
 
 <!-- 文件名默认用作标题 -->
 
-<<< @/snippets/snippet.js
+<Snippet src="@/snippets/snippet.js" />
 
 <!-- 也可以提供定制的代码组 -->
 
-<<< @/snippets/snippet-with-region.js#snippet{1,2 ts:line-numbers} [snippet with region]
+<Snippet src="@/snippets/snippet-with-region.js" region="snippet" lines="1,2" lang="ts" attrs=":line-numbers" title="snippet with region" />
 
 :::
 ```
@@ -757,9 +757,9 @@ export default config
 
 ::: code-group
 
-<<< @/snippets/snippet.js
+<Snippet src="@/snippets/snippet.js" />
 
-<<< @/snippets/snippet-with-region.js#snippet{1,2 ts:line-numbers} [snippet with region]
+<Snippet src="@/snippets/snippet-with-region.js" region="snippet" lines="1,2" lang="ts" attrs=":line-numbers" title="snippet with region" />
 
 :::
 

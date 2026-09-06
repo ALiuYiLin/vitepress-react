@@ -27,7 +27,7 @@ import {
   type CodeHighlightRuntime
 } from './highlight'
 import { expandIncludes } from './includes'
-import { expandSnippets } from './snippets'
+import { expandSnippets, remarkCodeSnippet } from './snippets'
 import type { MdxPageData } from './types'
 
 export type { MdxPageData, MdxHeader } from './types'
@@ -140,6 +140,14 @@ export async function compileDocument(
   // emoji(:tada: → 🎉):放最后(只处理正文 text,不动容器/attrs 结构)
   remarkPlugins.push(remarkGemoji)
 
+  // <Snippet src="…" /> 标签式 snippet(remark 树层展开为 code 节点)。
+  // 依赖收集:插件把读到的文件绝对路径推入 jsxSnippetDeps,compile 后并入。
+  const jsxSnippetDeps: string[] = []
+  remarkPlugins.push([
+    remarkCodeSnippet,
+    { srcDir, filePath, silent, warn, deps: jsxSnippetDeps }
+  ])
+
   const rehypePlugins: unknown[] = []
   if (math) rehypePlugins.push(rehypeKatex)
   if (slug) rehypePlugins.push(rehypeSlug)
@@ -194,6 +202,7 @@ export async function compileDocument(
   }
 
   const headers = fileData.headers ?? []
+  dependencies.push(...jsxSnippetDeps)
 
   return {
     code: String(result),

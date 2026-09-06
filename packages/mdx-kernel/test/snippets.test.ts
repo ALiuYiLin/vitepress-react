@@ -120,3 +120,55 @@ describe('compileDocument + snippet/include(端到端)', () => {
     expect(r.code).not.toContain('@include')
   })
 })
+
+describe('<Snippet src="…" /> 标签式(remark 树层展开)', () => {
+  it('展开为代码:内容注入、无 Snippet 残留、依赖记录', async () => {
+    const r = await compileDocument(
+      '前文\n\n<Snippet src="@/snippets/snippet.js" />\n\n后文\n',
+      opts
+    )
+    expect(r.code).toContain('const a = 1')
+    expect(r.code).toContain('const d = 4')
+    expect(r.code).not.toContain('Snippet')
+    expect(r.dependencies.some((d) => d.endsWith('snippet.js'))).toBe(true)
+  })
+
+  it('region 属性:裁剪 + 去标记 + 去缩进', async () => {
+    const r = await compileDocument(
+      '<Snippet src="@/snippets/snippet.js" region="snippet" />',
+      opts
+    )
+    expect(r.code).toContain('const b = 2')
+    expect(r.code).toContain('const c = 3')
+    expect(r.code).not.toContain('const a = 1')
+    expect(r.code).not.toContain('const d = 4')
+    expect(r.code).not.toContain('#region')
+  })
+
+  it('相对路径 src(filePath 基准)', async () => {
+    const r = await compileDocument('<Snippet src="snippets/snippet.js" />', opts)
+    expect(r.code).toContain('const a = 1')
+  })
+
+  it('值可用简单 {expr} 字符串字面量', async () => {
+    const r = await compileDocument(
+      "<Snippet src={'@/snippets/snippet.js'} />",
+      opts
+    )
+    expect(r.code).toContain('const a = 1')
+  })
+
+  it('缺失文件:默认抛错,silent 时删除节点并告警', async () => {
+    await expect(
+      compileDocument('<Snippet src="@/snippets/nope.js" />', opts)
+    ).rejects.toThrow()
+    const warned: string[] = []
+    const r = await compileDocument('<Snippet src="@/snippets/nope.js" />', {
+      ...opts,
+      silent: true,
+      warn: (m) => warned.push(m)
+    })
+    expect(warned.length).toBeGreaterThan(0)
+    expect(r.code).not.toContain('Snippet')
+  })
+})

@@ -1,5 +1,10 @@
-// Snippet(`<<<`)自研件:把源码里形如 `<<< @/path/to/file{2}[标题]` 的整行
-// 指令展开为代码 fence(字符层、fence 感知),行为对齐 md-it 版 snippet 插件:
+// Snippet 自研件,两种写作形态:
+//   (1) 旧式整行指令 `<<< @/path/to/file{2}[标题]`(字符层展开,与 md-it 版
+//       对齐;mdx 编译时 micromark 的 mdx-jsx 会把行首 `<` 当 JSX 起始而报
+//       语法错,故该形态仅作兼容保留);
+//   (2) `<Snippet src="@/path" … />` 标签式(推荐;mdx-jsx 语法合法,remark
+//       树层展开,见文件尾 remarkCodeSnippet)。
+// 共同语义(parseSnippetPath):
 //   path[#region][{lines [lang] [attrs]}][ [title]]
 //  - '@/' 前缀相对 srcDir 解析;否则相对当前文件目录
 //  - region 取折叠标记区段;lines 是行高亮说明(仅进 fence info 供高亮层)
@@ -249,4 +254,124 @@ export async function expandSnippets(
   }
 
   return { src: out.join('\n'), dependencies }
+}
+
+// ---- <Snippet src="…" /> 标签式写作形态 ----------------------------------
+// mdx 正文里 `<<< @/path` 行会被 micromark 的 mdx-jsx 扩展当 JSX 起始而报
+// 语法错(VS Code MDX 等静态检查同样误报),因此 snippet 的写作形态改为
+// **组件标签**:`<Snippet src="@/snippets/x.js" lines="2,4-6" lang="js" title="标题" />`。
+// 它在 mdx-jsx 语法里完全合法(不再误报),由本插件在 remark 阶段识别并替换
+// 成 code 节点——只是“长得像组件”,不注入任何 import/运行时组件(编译产物
+// 里没有 Snippet)。路径/region/加载/高亮 meta 语义与 `<<<` 完全一致:
+//   - src(必填):同 `<<<` 路径,支持 `@/`(srcDir)与相对路径(filePath 基准)、
+//     `path#region`(折叠区段);值可用字符串字面量或简单 {expr}(字符串/数字);
+//   - lines:行高亮说明(仅进 fence meta,如 `{2,4-6}`);
+//   - lang:语言(缺省取文件扩展名);attrs:额外 fence attrs(如 `:line-numbers`);
+//   - title:代码块标题(缺省显示文件名)。
+// `<<<` 字符层展开仍保留(兼容旧文档与 md-it 对齐路径)。
+interface RemarkCodeSnippetOptions extends SnippetOptions {
+  /** 收集读取到的依赖文件绝对路径(供 watch 失效) */
+  deps: string[]
+}
+
+/** 取 mdxJsx 属性值:字符串字面量或简单 {expr}(字符串/数字字面量) */
+function snippetAttr(
+  attributes: any[] | undefined,
+  name: string
+): string | undefined {
+  const attr = (attributes ?? []).find(
+    (a: any) => a?.type === 'mdxJsxAttribute' && a.name === name
+  )
+  if (!attr) return undefined
+  if (typeof attr.value === 'string') return attr.value
+  if (attr.value?.type === 'mdxJsxAttributeValueExpression') {
+    const raw = String(attr.value.value ?? '').trim()
+    const quoted = /^(['"])([\s\S]*)\1$/.exec(raw)
+    if (quoted) return quoted[2]
+    if (/^(?:0|[1-9]\d*)$/.test(raw)) return raw
+  }
+  return undefined
+}
+
+/**
+ * remark 插件:把正文里的 `<Snippet src="…" />`(mdxJsxFlowElement)展开为
+ * code 节点。异步读文件;依赖写入 options.deps。silent 时缺失文件删除节点
+ * 并告警,否则抛错。
+ */
+export function remarkCodeSnippet(
+  options: RemarkCodeSnippetOptions
+): (tree: any) => Promise<void> {
+  const { srcDir, filePath, silent, warn, deps } = options
+  const fail = (message: string): string | null => {
+    if (!silent) {
+      const error = new Error(message)
+      ;(error as { includes?: string[] }).includes = [...deps]
+      throw error
+    }
+    ;(warn ?? ((m: string) => console.warn('[mdx-kernel/snippet] ' + m)))(
+      message
+    )
+    return null
+  }
+
+  const expandNode = async (node: any): Promise<any | null> => {
+    const src = snippetAttr(node.attributes, 'src')
+    if (!src) return fail('<Snippet> requires a string "src" attribute')
+    const region = snippetAttr(node.attributes, 'region') ?? ''
+    const lines = snippetAttr(node.attributes, 'lines') ?? ''
+    const lang = snippetAttr(node.attributes, 'lang') ?? ''
+    const attrs = snippetAttr(node.attributes, 'attrs') ?? ''
+    const title = snippetAttr(node.attributes, 'title')
+
+    // 组回旧 directive 形态,复用 parseSnippetPath 的剥离/校验语义
+    let directive = src
+    if (region) directive += '#' + region
+    const metaInner = [lines, lang, attrs].filter(Boolean).join(' ')
+    if (metaInner) directive += '{' + metaInner + '}'
+    if (title) directive += ' [' + title + ']'
+    const parsed = parseSnippetPath(directive)
+
+    const resolved = resolvePath(parsed.filepath, { srcDir, filePath }, filePath)
+    if (!resolved) {
+      return fail(
+        `Code snippet path "${parsed.filepath}" cannot be resolved ` +
+          '(needs srcDir for @/ paths, or filePath for relative paths)'
+      )
+    }
+    deps.push(resolved)
+    const content = await loadSnippetContent(resolved, parsed.region, fail)
+    if (content === null) return null
+    if (content === '' && !silent) return null
+
+    const metaParts = []
+    if (parsed.lines) metaParts.push(`{${parsed.lines}}`)
+    if (parsed.attrs) metaParts.push(parsed.attrs)
+    if (parsed.title) metaParts.push(`[${parsed.title}]`)
+    return {
+      type: 'code',
+      lang: parsed.lang || parsed.extension || null,
+      meta: metaParts.length ? metaParts.join(' ') : null,
+      value: content
+    }
+  }
+
+  const process = async (nodes: any[]): Promise<any[]> => {
+    const out: any[] = []
+    for (const child of nodes) {
+      if (child?.type === 'mdxJsxFlowElement' && child.name === 'Snippet') {
+        const expanded = await expandNode(child)
+        if (expanded) out.push(expanded)
+        continue
+      }
+      if (child?.children && Array.isArray(child.children)) {
+        child.children = await process(child.children)
+      }
+      out.push(child)
+    }
+    return out
+  }
+
+  return async (tree: any) => {
+    tree.children = await process(tree.children ?? [])
+  }
 }

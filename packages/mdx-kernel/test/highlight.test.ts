@@ -3,6 +3,8 @@
 // 注意:remark-attributes 在 vitest(development 条件)下对含 \{\} 源会触发上游
 // 断言,本文件用例内容均不含 attrs 形态。
 import { describe, it, expect, beforeAll, afterAll } from 'vitest'
+import path from 'node:path'
+import { fileURLToPath } from 'node:url'
 
 import { compileDocument, createCodeHighlighter } from '../src/index'
 import type { CodeHighlighter } from '../src/index'
@@ -162,5 +164,28 @@ describe('mdx 代码高亮', () => {
     })
     expect(code).not.toContain('vp-code-group')
     expect(code).toContain('code-group custom-block')
+  })
+})
+
+describe('<Snippet … /> 高亮与 meta(与 <<< 语义一致)', () => {
+  const fixtures = path.join(path.dirname(fileURLToPath(import.meta.url)), 'fixtures')
+  const compileSnippet = (src: string) =>
+    compileDocument(src, {
+      srcDir: fixtures,
+      filePath: path.join(fixtures, 'page.mdx'),
+      highlight: { highlighter }
+    })
+
+  it('lang/extension → language wrapper;lines/title 进 meta,产物与 <<< 等价', async () => {
+    const viaTag = await compileSnippet(
+      '<Snippet src="@/snippets/snippet.js" lines="2-3" lang="js" title="我的片段" />'
+    )
+    const viaChar = await compileSnippet('<<< @/snippets/snippet.js{2-3}[我的片段]')
+    expect(viaTag.code).toBe(viaChar.code)
+    expect(viaTag.code).toContain('language-js')
+    expect(viaTag.code).toContain('highlighted')
+    expect(viaTag.code).toContain('data-title')
+    expect(viaTag.code).toContain('我的片段')
+    expect(viaTag.code).not.toContain('Snippet')
   })
 })

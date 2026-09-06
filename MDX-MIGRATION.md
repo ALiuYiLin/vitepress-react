@@ -55,7 +55,7 @@ frontmatter 剥离(remark-frontmatter / remark-mdx-frontmatter)
 | JSX / `{expr}` / import-export | mask + 序列化(自研) | **MDX 原生** | mask/序列化整层删除 |
 | attrs(标题/块/行内 id、class、键值) | `@mdit/plugin-attrs` + `((…))` 接线 | remark-attributes / remark-attrs(P0 验证) | ⚠️ **时序风险**:MDX 可能先把 `{#id}` 解析成表达式,插件未必能消费;P0 必须出结论(§5.1) |
 | 自定义容器 `::: …` | 自研 containers | **自研**(remark-directive 之上) | 保留 fence-line attrs/no-title/嵌套/code-group 语义 |
-| `<<<` 片段 / include | 自研 include/snippet | **自研** | 行号映射、依赖收集、watch 恢复 |
+| 代码片段导入(`<Snippet>` 标签)/ include | 自研 include/snippet | **自研** | 行号映射、依赖收集、watch 恢复 |
 | PageData.headers 大纲 | `@mdit-vue/plugin-headers` | 自研小件(mdast 遍历) | 层级+纯文本 title+slug,契约稳定 |
 | permalink | `@mdit/plugin-anchor` | rehype-slug + 小适配 | header-anchor DOM/样式对齐默认主题 |
 | 代码高亮/行高亮 `{4,7}`/焦点 | 自研 highlight(+preWrapper) | @shikijs/rehype 或 rehype-pretty-code(P0 选型) | meta 语法对齐 Shiki |
