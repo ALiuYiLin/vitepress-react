@@ -48,7 +48,7 @@ Only dynamically constructed paths need care — for example, an image whose `sr
 
 ```vue
 <script setup>
-import { withBase, useData } from 'vitepress'
+import { withBase, useData } from '@10coding/vitepress-react'
 
 const { theme } = useData()
 </script>
@@ -74,7 +74,7 @@ Upload the `assets` directory from the build output to the CDN so it is reachabl
 Since the value is often environment-specific, it can also be passed on the command line:
 
 ```sh
-vitepress build docs --assetsBase "$CDN_URL"
+vitepress-react build docs --assetsBase "$CDN_URL"
 ```
 
 ::: warning CORS Required

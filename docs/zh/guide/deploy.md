@@ -3,24 +3,24 @@ outline: deep
 description: 将 VitePress 站点部署到 Netlify、Vercel、GitHub Pages 等主流平台。
 ---
 
-# 部署 VitePress 站点 {#deploy-your-vitepress-site}
+# 部署 VitePress 站点 ((#deploy-your-vitepress-site))
 
 以下指南基于一些前提：
 
 - VitePress 站点位于项目的 `docs` 目录中。
-- 你使用的是默认的生成输出目录 （`.vitepress/dist`）。
+- 你使用的是默认的生成输出目录 （`.vitepress-react/dist`）。
 - VitePress 作为本地依赖项安装在项目中，并且你已在 `package.json` 中设置以下脚本：
 
   ```json [package.json]
   {
     "scripts": {
-      "docs:build": "vitepress build docs",
-      "docs:preview": "vitepress preview docs"
+      "docs:build": "vitepress-react build docs",
+      "docs:preview": "vitepress-react preview docs"
     }
   }
   ```
 
-## 本地构建与测试 {#build-and-test-locally}
+## 本地构建与测试 ((#build-and-test-locally))
 
 1. 可以运行以下命令来构建文档：
 
@@ -34,27 +34,27 @@ description: 将 VitePress 站点部署到 Netlify、Vercel、GitHub Pages 等�
    $ npm run docs:preview
    ```
 
-   `preview` 命令将启动一个本地静态 Web 服务 `http://localhost:4173`，该服务以 `.vitepress/dist` 作为源文件。这是检查生产版本在本地环境中是否正常的一种简单方法。
+   `preview` 命令将启动一个本地静态 Web 服务 `http://localhost:4173`，该服务以 `.vitepress-react/dist` 作为源文件。这是检查生产版本在本地环境中是否正常的一种简单方法。
 
 3. 可以通过传递 `--port` 作为参数来配置服务器的端口。
 
    ```json
    {
      "scripts": {
-       "docs:preview": "vitepress preview docs --port 8080"
+       "docs:preview": "vitepress-react preview docs --port 8080"
      }
    }
    ```
 
    现在 `docs:preview` 方法将会在 `http://localhost:8080` 启动服务。
 
-## 设定 public 根目录 {#setting-a-public-base-path}
+## 设定 public 根目录 ((#setting-a-public-base-path))
 
 默认情况下，我们假设站点将部署在域名 (`/`) 的根路径上。如果站点在子路径中提供服务，例如 `https://mywebsite.com/blog/`，则需要在 VitePress 配置中将 [`base`](../reference/site-config#base) 选项设置为 `'/blog/'`。
 
 **例**：如果你使用的是 GitHub（或 GitLab）页面并部署到 `user.github.io/repo/`，请将 `base` 设置为 `/repo/`。
 
-## HTTP 缓存标头 {#http-cache-headers}
+## HTTP 缓存标头 ((#http-cache-headers))
 
 如果可以控制生产服务器上的 HTTP 标头，则可以配置 `cache-control` 标头以在重复访问时获得更好的性能。
 
@@ -104,14 +104,14 @@ Cache-Control: max-age=31536000,immutable
 
 :::
 
-## 各平台部署指南 {#platform-guides}
+## 各平台部署指南 ((#platform-guides))
 
-### Netlify / Vercel / Cloudflare Pages / AWS Amplify / Render {#generic}
+### Netlify / Vercel / Cloudflare Pages / AWS Amplify / Render ((#generic))
 
 使用仪表板创建新项目并更改这些设置：
 
 - **构建命令：** `npm run docs:build`
-- **输出目录：** `docs/.vitepress/dist`
+- **输出目录：** `docs/.vitepress-react/dist`
 - **node 版本：** `20` (或更高版本)
 
 ::: warning
@@ -175,7 +175,7 @@ Cache-Control: max-age=31536000,immutable
          - name: Upload artifact
            uses: actions/upload-pages-artifact@v3
            with:
-             path: docs/.vitepress/dist
+             path: docs/.vitepress-react/dist
 
      # 部署工作
      deploy:
@@ -229,7 +229,7 @@ Cache-Control: max-age=31536000,immutable
 2. 在配置文件中设置这些值 (并删除不需要的值，如 `api_location`)：
 
    - **`app_location`**: `/`
-   - **`output_location`**: `docs/.vitepress/dist`
+   - **`output_location`**: `docs/.vitepress-react/dist`
    - **`app_build_command`**: `npm run docs:build`
 
 ### CloudRay
@@ -245,7 +245,7 @@ Cache-Control: max-age=31536000,immutable
    ```json [firebase.json]
    {
      "hosting": {
-       "public": "docs/.vitepress/dist",
+       "public": "docs/.vitepress-react/dist",
        "ignore": []
      }
    }
@@ -275,7 +275,7 @@ Cache-Control: max-age=31536000,immutable
 
    ```json [static.json]
    {
-     "root": "docs/.vitepress/dist"
+     "root": "docs/.vitepress-react/dist"
    }
    ```
 
@@ -296,7 +296,7 @@ Cache-Control: max-age=31536000,immutable
 1. 运行 `npm run docs:build` 后，运行此命令进行部署：
 
    ```sh
-   npx surge docs/.vitepress/dist
+   npx surge docs/.vitepress-react/dist
    ```
 
 ### Nginx
@@ -341,4 +341,4 @@ server {
 try_files 解析不能像其他 SPA 应用那样默认回退到 index.html，否则刷新深层链接会返回错误页面。
 :::
 
-更多信息请参见 [nginx 官方文档](https://nginx.org/en/docs/)、这些 GitHub Issue [#2837](https://github.com/vuejs/vitepress/discussions/2837)、[#3235](https://github.com/vuejs/vitepress/issues/3235)以及 Mehdi Merah 发表的[博客](https://blog.mehdi.cc/articles/vitepress-cleanurls-on-nginx-environment#readings)。
+更多信息请参见 [nginx 官方文档](https://nginx.org/en/docs/)、这些 GitHub Issue [#2837](https://github.com/ALiuYiLin/vitepress-react/discussions/2837)、[#3235](https://github.com/ALiuYiLin/vitepress-react/issues/3235)以及 Mehdi Merah 发表的[博客](https://blog.mehdi.cc/articles/vitepress-cleanurls-on-nginx-environment#readings)。

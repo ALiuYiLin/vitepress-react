@@ -22,30 +22,30 @@ VitePress can be used on its own, or be installed into an existing project. In b
 ::: code-group
 
 ```sh [npm]
-$ npm add -D vitepress@next
+$ npm add -D @10coding/vitepress-react@next
 ```
 
 ```sh [pnpm]
-$ pnpm add -D vitepress@next
+$ pnpm add -D @10coding/vitepress-react@next
 ```
 
 ```sh [yarn]
-$ yarn add -D vitepress@next vue
+$ yarn add -D @10coding/vitepress-react@next vue
 ```
 
 ```sh [bun]
-$ bun add -D vitepress@next
+$ bun add -D @10coding/vitepress-react@next
 ```
 
 ```sh [deno]
-$ deno add -D vitepress@next
+$ deno add -D @10coding/vitepress-react@next
 ```
 
 :::
 
 ::: tip NOTE
 
-VitePress is an ESM-only package. Don't use `require()` to import it, and make sure your nearest `package.json` contains `"type": "module"`, or change the file extension of your relevant files like `.vitepress/config.js` to `.mjs`/`.mts`. Refer to [Vite's troubleshooting guide](http://vite.dev/guide/troubleshooting.html#this-package-is-esm-only) for more details. Also, inside async CJS contexts, you can use `await import('vitepress')` instead.
+VitePress is an ESM-only package. Don't use `require()` to import it, and make sure your nearest `package.json` contains `"type": "module"`, or change the file extension of your relevant files like `.vitepress/config.js` to `.mjs`/`.mts`. Refer to [Vite's troubleshooting guide](http://vite.dev/guide/troubleshooting.html#this-package-is-esm-only) for more details. Also, inside async CJS contexts, you can use `await import('@10coding/vitepress-react')` instead.
 
 :::
 
@@ -56,19 +56,19 @@ VitePress ships with a command line setup wizard that will help you scaffold a b
 ::: code-group
 
 ```sh [npm]
-$ npx vitepress init
+$ npx vitepress-react init
 ```
 
 ```sh [pnpm]
-$ pnpm vitepress init
+$ pnpm vitepress-react init
 ```
 
 ```sh [yarn]
-$ yarn vitepress init
+$ yarn vitepress-react init
 ```
 
 ```sh [bun]
-$ bun vitepress init
+$ bun vitepress-react init
 ```
 
 :::
@@ -138,9 +138,9 @@ The tool should have also injected the following npm scripts to your `package.js
 {
   ...
   "scripts": {
-    "docs:dev": "vitepress dev docs",
-    "docs:build": "vitepress build docs",
-    "docs:preview": "vitepress preview docs"
+    "docs:dev": "vitepress-react dev docs",
+    "docs:build": "vitepress-react build docs",
+    "docs:preview": "vitepress-react preview docs"
   },
   ...
 }
@@ -173,19 +173,19 @@ Instead of npm scripts, you can also invoke VitePress directly with:
 ::: code-group
 
 ```sh [npm]
-$ npx vitepress dev docs
+$ npx vitepress-react dev docs
 ```
 
 ```sh [pnpm]
-$ pnpm vitepress dev docs
+$ pnpm vitepress-react dev docs
 ```
 
 ```sh [yarn]
-$ yarn vitepress dev docs
+$ yarn vitepress-react dev docs
 ```
 
 ```sh [bun]
-$ bun vitepress dev docs
+$ bun vitepress-react dev docs
 ```
 
 :::

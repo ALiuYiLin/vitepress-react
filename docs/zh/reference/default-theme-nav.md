@@ -2,11 +2,11 @@
 description: 配置 VitePress 默认主题的导航栏，包括站点标题、图标和菜单链接。
 ---
 
-# 导航栏 {#nav}
+# 导航栏 ((#nav))
 
 Nav 是显示在页面顶部的导航栏。它包含站点标题、全局菜单链接等。
 
-## 站点标题和图标 {#site-title-and-logo}
+## 站点标题和图标 ((#site-title-and-logo))
 
 默认情况下，nav 显示 [`config.title`](./site-config#title) 作为站点的标题。如果想更改导航栏上显示的内容，可以在 `themeConfig.siteTitle` 选项中定义自定义文本。
 
@@ -41,7 +41,7 @@ export default {
 
 如果想添加 `alt` 属性或根据深色/浅色模式自定义，还可以将图标作为对象传递。有关详细信息，请参阅 [`themeConfig.logo`](./default-theme-config#logo)。
 
-## 导航链接 {#navigation-links}
+## 导航链接 ((#navigation-links))
 
 可以定义 `themeConfig.nav` 选项以将链接添加到导航栏。
 
@@ -120,7 +120,7 @@ export default {
 }
 ```
 
-### 自定义链接的路由匹配状态 {#customize-link-s-active-state}
+### 自定义链接的路由匹配状态 ((#customize-link-s-active-state))
 
 当前页面位于匹配路径下时，导航菜单项将突出显示。如果想自定义要匹配的路径，请将 `activeMatch` 属性和正则表达式定义为字符串值。
 
@@ -143,7 +143,7 @@ export default {
 `activeMatch` 应为正则表达式字符串，但必须将其定义为字符串。我们不能在这里使用实际的 RegExp 对象，因为它在构建期间不可序列化。
 :::
 
-### 自定义链接的“target”和“rel”属性 {#customize-link-s-target-and-rel-attributes}
+### 自定义链接的“target”和“rel”属性 ((#customize-link-s-target-and-rel-attributes))
 
 默认情况下，VitePress 会根据链接是否为外部链接自动判断 `target` 和 `rel` 属性。但如果愿意，也可以自定义它们。
 
@@ -162,11 +162,11 @@ export default {
 }
 ```
 
-## 社交链接 {#social-links}
+## 社交链接 ((#social-links))
 
 参考 [`socialLinks`](./default-theme-config#sociallinks)。
 
 
-## 自定义组件 {#custom-components}
+## 自定义组件 ((#custom-components))
 
 `component` 形式的导航项在 React fork 中**暂不支持**（会被忽略/跳过）。如需自定义导航/菜单内容，请使用自定义 Layout，或把交互内容放进页面正文的 React 组件（见[在 Markdown 中使用 React](../guide/using-react)）。

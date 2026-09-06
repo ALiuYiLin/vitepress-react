@@ -214,7 +214,7 @@ export namespace DefaultTheme {
      * registry,否则虚拟 css 模块无法 resolve/load):
      *
      * ```ts
-     * // .vitepress/config.ts
+     * // .vitepress-react/config.ts
      * import jsxScopedVitePlugin from '@10coding/vite-plugin-jsx-scoped'
      * export default defineConfig({
      *   vite: { plugins: [jsxScopedVitePlugin()] }

@@ -52,7 +52,7 @@ if (!import.meta.env.SSR) {
 Since [`Theme.enhanceApp`](./custom-theme#theme-interface) can be async, you can conditionally import and register Vue plugins that access browser APIs on import:
 
 ```js [.vitepress/theme/index.js]
-/** @type {import('vitepress').Theme} */
+/** @type {import('@10coding/vitepress-react').Theme} */
 export default {
   // ...
   async enhanceApp({ app }) {
@@ -66,7 +66,7 @@ export default {
 
 If you're using TypeScript:
 ```ts [.vitepress/theme/index.ts]
-import type { Theme } from 'vitepress'
+import type { Theme } from '@10coding/vitepress-react'
 
 export default {
   // ...
@@ -85,7 +85,7 @@ VitePress provides a convenience helper for importing Vue components that access
 
 ```vue
 <script setup>
-import { defineClientComponent } from 'vitepress'
+import { defineClientComponent } from '@10coding/vitepress-react'
 
 const ClientComp = defineClientComponent(() => {
   return import('component-that-access-window-on-import')
@@ -102,7 +102,7 @@ You can also pass props/children/slots to the target component:
 ```vue
 <script setup>
 import { ref } from 'vue'
-import { defineClientComponent } from 'vitepress'
+import { defineClientComponent } from '@10coding/vitepress-react'
 
 const clientCompRef = ref(null)
 const ClientComp = defineClientComponent(

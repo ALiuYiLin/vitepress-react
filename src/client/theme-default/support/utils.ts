@@ -2,7 +2,7 @@
 // 注意:上游 normalizeLink 内部调用响应式 useData;React 侧没有响应式上下文,
 // 因此改为纯函数 + 显式传入 site 快照(调用方在组件顶层无条件 useData())。
 
-import { withBase } from 'vitepress'
+import { withBase } from '@10coding/vitepress-react'
 
 import { isExternal, isRelativeBase, treatAsHtml } from '../../shared'
 

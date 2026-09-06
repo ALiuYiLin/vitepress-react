@@ -3,7 +3,7 @@ NODE_VERSION = "24"
 PLAYWRIGHT_SKIP_BROWSER_DOWNLOAD = "1"
 
 [build]
-publish = "docs/.vitepress/dist"
+publish = "docs/.vitepress-react/dist"
 command = "pnpm docs:build && pnpm docs:lunaria:build"
 
 [[headers]]

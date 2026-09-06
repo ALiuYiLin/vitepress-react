@@ -12,7 +12,7 @@ Edit Link lets you display a link to edit the page on Git management services su
 export default {
   themeConfig: {
     editLink: {
-      pattern: 'https://github.com/vuejs/vitepress/edit/main/docs/:path'
+      pattern: 'https://github.com/ALiuYiLin/vitepress-react/edit/main/docs/:path'
     }
   }
 }
@@ -46,7 +46,7 @@ By default, this will add the link text "Edit this page" at the bottom of the do
 export default {
   themeConfig: {
     editLink: {
-      pattern: 'https://github.com/vuejs/vitepress/edit/main/docs/:path',
+      pattern: 'https://github.com/ALiuYiLin/vitepress-react/edit/main/docs/:path',
       text: 'Edit this page on GitHub'
     }
   }

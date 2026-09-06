@@ -770,7 +770,7 @@ const client: UserConfig = {
   deps: {
     // self-imports and dev-server virtual modules, resolved at site build time
     neverBundle: [
-      /^vitepress(?:\/|$)/,
+      /^@10coding\/vitepress-react(?:\/|$)/,
       /^react(?:\/|$)/,
       /^react-dom(?:\/|$)/,
       '@siteData',

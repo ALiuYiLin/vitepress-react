@@ -15,7 +15,7 @@ Since each CMS will work differently, here we can only provide a generic workflo
 
     ```js
     // posts/[id].paths.js
-    import { loadEnv } from 'vitepress'
+    import { loadEnv } from '@10coding/vitepress-react'
 
     const env = loadEnv('', process.cwd())
     ```

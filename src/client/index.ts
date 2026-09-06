@@ -1,5 +1,5 @@
-// exports in this file are exposed to themes and md files via 'vitepress'
-// so the user can do `import { useData, useRoute } from 'vitepress'`
+// exports in this file are exposed to themes and md files via '@10coding/vitepress-react'
+// so the user can do `import { useData, useRoute } from '@10coding/vitepress-react'`
 
 // types
 export type { Router, Route } from './app/router'

@@ -1,4 +1,4 @@
-import { useData } from 'vitepress'
+import { useData } from '@10coding/vitepress-react'
 
 import { type ThemeableImage } from './VPImage'
 import { VPHero, type VpHeroAction } from './VPHero'

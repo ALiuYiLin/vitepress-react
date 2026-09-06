@@ -2,7 +2,7 @@
 description: 配置 VitePress 页面底部显示的全局页脚。
 ---
 
-# 页脚 {#footer}
+# 页脚 ((#footer))
 
 配置好 `themeConfig.footer`，VitePress 将在全局页面底部显示页脚。
 
@@ -33,7 +33,7 @@ export interface Footer {
 export default {
   themeConfig: {
     footer: {
-      message: 'Released under the <a href="https://github.com/vuejs/vitepress/blob/main/LICENSE">MIT License</a>.',
+      message: 'Released under the <a href="https://github.com/ALiuYiLin/vitepress-react/blob/main/LICENSE">MIT License</a>.',
       copyright: 'Copyright © 2019-present <a href="https://github.com/yyx990803">Evan You</a>'
     }
   }
@@ -46,7 +46,7 @@ export default {
 
 请注意，当[侧边栏](./default-theme-sidebar)可见时，不会显示页脚。
 
-## frontmatter 配置 {#frontmatter-config}
+## frontmatter 配置 ((#frontmatter-config))
 
 可以使用 frontmatter 上的 `footer` 选项在单独页面上禁用此功能：
 

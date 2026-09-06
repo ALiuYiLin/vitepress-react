@@ -1,4 +1,4 @@
-import { useData } from 'vitepress'
+import { useData } from '@10coding/vitepress-react'
 
 import '../styles/components/VPDocAside.scoped.css'
 import { VPDocAsideOutline } from './VPDocAsideOutline'

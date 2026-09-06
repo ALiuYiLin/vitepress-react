@@ -1,4 +1,4 @@
-import { Content, useData } from 'vitepress'
+import { Content, useData } from '@10coding/vitepress-react'
 
 import { VPHomeContent } from './VPHomeContent'
 import { VPHomeFeatures } from './VPHomeFeatures'

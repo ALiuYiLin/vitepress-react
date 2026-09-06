@@ -1,4 +1,4 @@
-import { defineConfig } from 'vitepress'
+import { defineConfig } from '@10coding/vitepress-react'
 
 export default defineConfig({
   themeConfig: {

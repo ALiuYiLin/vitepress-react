@@ -1,4 +1,4 @@
-import { createContentLoader } from 'vitepress'
+import { createContentLoader } from '@10coding/vitepress-react'
 
 export default createContentLoader('data-loading/content/*.md', {
   includeSrc: true,

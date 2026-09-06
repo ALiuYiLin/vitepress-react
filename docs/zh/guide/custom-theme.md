@@ -2,16 +2,16 @@
 description: 在 VitePress（React fork）中创建和使用自定义主题，全面控制站点的外观和风格。
 ---
 
-# 自定义主题 {#using-a-custom-theme}
+# 自定义主题 ((#using-a-custom-theme))
 
-## 解析主题 {#theme-resolving}
+## 解析主题 ((#theme-resolving))
 
-可以通过创建一个 `.vitepress/theme/index.ts` 文件（即“主题入口文件”）来启用自定义主题：
+可以通过创建一个 `.vitepress-react/theme/index.ts` 文件（即“主题入口文件”）来启用自定义主题：
 
 ```
 .
 ├─ docs                # 项目根目录
-│  ├─ .vitepress
+│  ├─ .vitepress-react
 │  │  ├─ theme
 │  │  │  └─ index.ts   # 主题入口
 │  │  └─ config.ts     # 配置文件
@@ -25,13 +25,13 @@ description: 在 VitePress（React fork）中创建和使用自定义主题，�
 主题入口与组件是普通的 `.tsx`（React）文件，构建由 Vite 完成（TSX 自动 JSX runtime，无需额外插件）。不再有 `.vue` 文件或 Vue 应用实例。
 :::
 
-## 主题接口 {#theme-interface}
+## 主题接口 ((#theme-interface))
 
 VitePress 自定义主题是一个对象，该对象具有如下接口：
 
 ```ts
 import type { ComponentType, ReactNode } from 'react'
-import type { Router, SiteData } from 'vitepress'
+import type { Router, SiteData } from '@10coding/vitepress-react'
 
 interface Theme {
   /** 每个页面的根布局组件 */
@@ -54,7 +54,7 @@ interface EnhanceAppContext {
 
 主题入口文件需要将主题对象作为默认导出来导出：
 
-```ts [.vitepress/theme/index.ts]
+```ts [.vitepress-react/theme/index.ts]
 import Layout from './Layout.tsx'
 
 export default {
@@ -67,12 +67,12 @@ export default {
 
 默认导出是自定义主题的唯一方式；`Layout` 也是最常用的属性——从技术上讲，一个 VitePress 主题可以只是一个 React 布局组件。注意主题同样需要保证 [SSR 兼容](./ssr-compat)。
 
-## 构建布局 {#building-a-layout}
+## 构建布局 ((#building-a-layout))
 
 最基本的布局组件需要渲染 [`<Content />`](../reference/runtime-api#content)，它负责输出当前页面的 markdown 内容：
 
-```tsx [.vitepress/theme/Layout.tsx]
-import { Content } from 'vitepress'
+```tsx [.vitepress-react/theme/Layout.tsx]
+import { Content } from '@10coding/vitepress-react'
 
 export default function Layout() {
   return (
@@ -86,8 +86,8 @@ export default function Layout() {
 
 上面的布局只是把每个页面的 markdown 渲染为 HTML。我们添加的第一个改进是处理 404 错误：
 
-```tsx [.vitepress/theme/Layout.tsx]
-import { Content, useData } from 'vitepress'
+```tsx [.vitepress-react/theme/Layout.tsx]
+import { Content, useData } from '@10coding/vitepress-react'
 
 export default function Layout() {
   const { page } = useData()
@@ -119,8 +119,8 @@ layout: home
 
 主题据此分支渲染：
 
-```tsx [.vitepress/theme/Layout.tsx]
-import { Content, useData } from 'vitepress'
+```tsx [.vitepress-react/theme/Layout.tsx]
+import { Content, useData } from '@10coding/vitepress-react'
 
 export default function Layout() {
   const { page, frontmatter } = useData()
@@ -152,8 +152,8 @@ export default function Layout() {
 
 当然你可以把布局拆成多个组件：
 
-```tsx [.vitepress/theme/Layout.tsx]
-import { useData } from 'vitepress'
+```tsx [.vitepress-react/theme/Layout.tsx]
+import { useData } from '@10coding/vitepress-react'
 import NotFound from './NotFound.tsx'
 import Home from './Home.tsx'
 import Page from './Page.tsx'
@@ -175,8 +175,8 @@ export default function Layout() {
 }
 ```
 
-```tsx [.vitepress/theme/Page.tsx]
-import { Content } from 'vitepress'
+```tsx [.vitepress-react/theme/Page.tsx]
+import { Content } from '@10coding/vitepress-react'
 
 export default function Page() {
   return <Content />
@@ -185,7 +185,61 @@ export default function Page() {
 
 请查看[运行时 API 参考](../reference/runtime-api)获取主题组件中所有可用的内容。此外，可以利用[构建时数据加载](./data-loading)生成数据驱动布局——例如，一个列出当前项目中所有文章入口的页面。
 
-## 分发自定义主题 {#distributing-a-custom-theme}
+## 基于默认主题布局组合 ((#composing-with-the-default-layout))
+
+不必从零自绘：默认主题的 `Layout` 是**自包含的普通 React 组件**（内部自己读取数据并渲染 SkipLink/导航/侧栏/内容/页脚），可以直接从 `@10coding/vitepress-react/theme` 导入，在自己的主题 `Layout` 里按条件**整页复用**，只对特定页面走自定义分支。
+
+```tsx [.vitepress-react/theme/Layout.tsx]
+import Theme from '@10coding/vitepress-react/theme'
+import { Content, useData } from '@10coding/vitepress-react'
+
+export default function CustomLayout() {
+  const { frontmatter } = useData()
+
+  // 未打标的页面 → 整套复用默认主题布局（home / doc / layout:false 等
+  // 分流默认主题已内部处理,不需要重复实现）
+  if (frontmatter.layout !== 'custom') {
+    return <Theme.Layout />
+  }
+
+  // frontmatter 打上 layout: custom 的页面 → 自绘
+  return (
+    <div className="vp-layout">
+      <h1>Custom Layout!</h1>
+      <Content />
+    </div>
+  )
+}
+```
+
+对应页面在 frontmatter 里标记：
+
+```md
+---
+layout: custom
+---
+```
+
+接线时用 `extends` 继承默认主题的其余能力，再覆盖 `Layout`：
+
+```ts [.vitepress-react/theme/index.ts]
+import Theme from '@10coding/vitepress-react/theme'
+import CustomLayout from './Layout.tsx'
+
+export default {
+  extends: Theme, // 继承默认主题其余字段;enhanceApp 会 base-first 链式执行
+  Layout: CustomLayout
+}
+```
+
+几个注意点：
+
+- **导入来源**：`Layout` 不在 `@10coding/vitepress-react` 根导出里（那里只有 `useData`/`Content` 等）；默认主题要写 `@10coding/vitepress-react/theme`。
+- **组合粒度是"整层"**：默认 `Layout` 不接受 `children`/props，也没有插槽——想微调导航、侧栏内部结构做不到复用默认外壳再局部替换，只能整页复用或整页自绘（要改内部就 fork 一份布局组件自己拼，上面的[构建布局](#building-a-layout)列了全部可拆分部件思路）。
+- **在默认布局外面再包一层**（如全站顶部横幅）是允许的：把 `<Theme.Layout />` 放进自己的容器即可。
+- **404**：此 fork 已废弃 `Theme.NotFound`，按 `page.isNotFound` 分支（参考[构建布局](#building-a-layout)里的 404 处理）；不特殊处理时让它走 `<Theme.Layout />` 也可以。
+
+## 分发自定义主题 ((#distributing-a-custom-theme))
 
 分发自定义主题最简单的方式是将其作为 [GitHub 模版仓库](https://docs.github.com/en/repositories/creating-and-managing-repositories/creating-a-template-repository)。
 
@@ -201,11 +255,11 @@ export default function Page() {
 
 5. 提供清晰的使用说明（见下节）。
 
-## 使用自定义主题 {#consuming-a-custom-theme}
+## 使用自定义主题 ((#consuming-a-custom-theme))
 
 要使用外部主题，请导入它并重新导出：
 
-```ts [.vitepress/theme/index.ts]
+```ts [.vitepress-react/theme/index.ts]
 import Theme from 'awesome-vitepress-theme'
 
 export default Theme
@@ -213,7 +267,7 @@ export default Theme
 
 如果主题需要扩展：
 
-```ts [.vitepress/theme/index.ts]
+```ts [.vitepress-react/theme/index.ts]
 import Theme from 'awesome-vitepress-theme'
 
 export default {
@@ -228,7 +282,7 @@ export default {
 
 如果主题需要特殊的 VitePress 配置，在站点配置中扩展它：
 
-```ts [.vitepress/config.ts]
+```ts [.vitepress-react/config.ts]
 import baseConfig from 'awesome-vitepress-theme/config'
 
 export default {
@@ -238,9 +292,9 @@ export default {
 
 如果主题提供了 `ThemeConfig` 类型：
 
-```ts [.vitepress/config.ts]
+```ts [.vitepress-react/config.ts]
 import baseConfig from 'awesome-vitepress-theme/config'
-import { defineConfig } from 'vitepress'
+import { defineConfig } from '@10coding/vitepress-react'
 import type { ThemeConfig } from 'awesome-vitepress-theme'
 
 export default defineConfig({

@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useState } from 'react'
-import { useRoute } from 'vitepress'
+import { useRoute } from '@10coding/vitepress-react'
 
 import { flattenSidebarItems, normalizePath, type VpSidebarItem } from '../theme-utils'
 

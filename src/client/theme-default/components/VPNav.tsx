@@ -1,5 +1,5 @@
 import { useEffect, type ReactNode } from 'react'
-import { inBrowser, useData } from 'vitepress'
+import { inBrowser, useData } from '@10coding/vitepress-react'
 
 import { NavContext } from '../nav-context'
 import { useNav } from '../composables/use-nav'

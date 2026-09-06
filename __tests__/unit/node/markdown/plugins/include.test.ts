@@ -312,7 +312,7 @@ describe('node/markdown/plugins/include', () => {
   test('includes heading sections with custom ids up to EOF', async () => {
     await write(
       'source.md',
-      ['## My Section {#custom-id}', '', 'section text', ''].join('\n')
+      ['## My Section ((#custom-id))', '', 'section text', ''].join('\n')
     )
 
     const { html } = await render('<!-- @include: ./source.md#custom-id -->\n')

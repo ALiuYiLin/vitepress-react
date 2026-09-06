@@ -2,13 +2,13 @@
 description: 使用 VitePress 数据加载器在构建时加载任意数据，并在页面或组件中导入使用。
 ---
 
-# 构建时数据加载 {#build-time-data-loading}
+# 构建时数据加载 ((#build-time-data-loading))
 
 VitePress 提供了**数据加载**的功能，它允许加载任意数据并从页面或组件中导入它。数据加载**只在构建时**执行：最终的数据将被序列化为 JavaScript 包中的 JSON。
 
 数据加载可以被用于获取远程数据，也可以基于本地文件生成元数据。例如，可以使用数据加载来解析所有本地 API 页面并自动生成所有 API 入口的索引。
 
-## 基本用法 {#basic-usage}
+## 基本用法 ((#basic-usage))
 
 一个用于数据加载的文件必须以 `.data.js` 或 `.data.ts` 结尾。该文件应该提供一个默认导出的对象，该对象具有 `load()` 方法：
 
@@ -55,7 +55,7 @@ export default {
 }
 ```
 
-## 使用本地文件生成数据 {#data-from-local-files}
+## 使用本地文件生成数据 ((#data-from-local-files))
 
 当需要基于本地文件生成数据时，需要在 data loader 中使用 `watch` 选项，以便这些文件改动时可以触发热更新。
 
@@ -88,7 +88,7 @@ export default {
 当构建一个内容为主的站点时，我们经常需要创建一个“归档”或“索引”页面：一个我们可以列出内容中的所有可用条目的页面，例如博客文章或 API 页面。我们**可以**直接使用数据加载 API 实现这一点，但由于这会经常使用，VitePress 还提供了一个 `createContentLoader` 辅助函数来简化这个过程：
 
 ```js [posts.data.js]
-import { createContentLoader } from 'vitepress'
+import { createContentLoader } from '@10coding/vitepress-react'
 
 export default createContentLoader('posts/*.md', /* options */)
 ```
@@ -135,12 +135,12 @@ import { data as posts } from './posts.data.js'
 :::
 ```
 
-### 选项 {#options}
+### 选项 ((#options))
 
 默认数据可能不适合所有需求——可以选择使用选项转换数据：
 
 ```js [posts.data.js]
-import { createContentLoader } from 'vitepress'
+import { createContentLoader } from '@10coding/vitepress-react'
 
 export default createContentLoader('posts/*.md', {
   includeSrc: true, // 包含原始 markdown 源?
@@ -165,7 +165,7 @@ export default createContentLoader('posts/*.md', {
 
 `createContentLoader` API 也可以在[构建钩子](../reference/site-config#build-hooks)中使用：
 
-```js [.vitepress/config.js]
+```js [.vitepress-react/config.js]
 export default {
   async buildEnd() {
     const posts = await createContentLoader('posts/*.md').load()
@@ -215,12 +215,12 @@ interface ContentOptions<T = ContentData[]> {
 }
 ```
 
-## 为 data loader 导出类型 {#typed-data-loaders}
+## 为 data loader 导出类型 ((#typed-data-loaders))
 
 当使用 TypeScript 时，可以像这样为 loader 和 `data` 导出类型：
 
 ```ts
-import { defineLoader } from 'vitepress'
+import { defineLoader } from '@10coding/vitepress-react'
 
 export interface Data {
   // data 类型
@@ -238,12 +238,12 @@ export default defineLoader({
 })
 ```
 
-## 配置 {#configuration}
+## 配置 ((#configuration))
 
 要获取 data loader 中的配置信息，可以使用如下代码：
 
 ```ts
-import type { SiteConfig } from 'vitepress'
+import type { SiteConfig } from '@10coding/vitepress-react'
 
 const config: SiteConfig = (globalThis as any).VITEPRESS_CONFIG
 ```

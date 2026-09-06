@@ -2,7 +2,7 @@
 description: VitePress（React fork）运行时 API 参考，包括 hooks、辅助方法与内置组件。
 ---
 
-# 运行时 API {#runtime-api}
+# 运行时 API ((#runtime-api))
 
 VitePress 提供若干内置 API 以访问站点/页面数据，并内置少量组件。它们统一从 `vitepress` 导入，用于自定义主题组件，也可以在 `.md` 页面内使用（在 `<script>` 里导入）。
 
@@ -16,7 +16,7 @@ VitePress 提供若干内置 API 以访问站点/页面数据，并内置少量�
 interface VitePressData<T = any> {
   /** 站点级元数据 */
   site: SiteData<T>
-  /** .vitepress/config.js 中的 themeConfig */
+  /** .vitepress-react/config.js 中的 themeConfig */
   theme: T
   /** 页面级元数据 */
   page: PageData
@@ -48,8 +48,8 @@ interface PageData {
 
 **在主题组件中使用：**
 
-```tsx [.vitepress/theme/SomeWidget.tsx]
-import { useData } from 'vitepress'
+```tsx [.vitepress-react/theme/SomeWidget.tsx]
+import { useData } from '@10coding/vitepress-react'
 
 export function SomeWidget() {
   const { theme } = useData()
@@ -61,7 +61,7 @@ export function SomeWidget() {
 
 ```md
 <script>
-import { useData } from 'vitepress'
+import { useData } from '@10coding/vitepress-react'
 
 const { theme } = useData()
 </script>
@@ -110,7 +110,7 @@ interface Router {
 渲染当前页面的 markdown 内容，在[创建自定义主题](../guide/custom-theme)时使用：
 
 ```tsx
-import { Content } from 'vitepress'
+import { Content } from '@10coding/vitepress-react'
 
 export default function Layout() {
   return (
@@ -137,7 +137,7 @@ export default function Layout() {
 在自定义主题/组件里也可以这样用：
 
 ```tsx
-import { ClientOnly } from 'vitepress'
+import { ClientOnly } from '@10coding/vitepress-react'
 
 export function Demo() {
   return (
@@ -148,6 +148,6 @@ export function Demo() {
 }
 ```
 
-## frontmatter / 参数（在页面中读取） {#data-access}
+## frontmatter / 参数（在页面中读取） ((#data-access))
 
 Vue 版曾经提供的 `$frontmatter` / `$params` 模板全局与 `{{ }}` 插值在本 fork 不再可用。请在页面 `<script>` 的 page-scope 中通过 `useData()` 读取后，用正文 `{expr}` 引用——示例见 [frontmatter](../guide/frontmatter#accessing-frontmatter-data) 与[路由参数](../guide/routing#accessing-params-in-page)。

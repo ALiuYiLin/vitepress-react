@@ -1,4 +1,4 @@
-import { withBase, useData } from 'vitepress'
+import { withBase, useData } from '@10coding/vitepress-react'
 
 import { useLangs } from './composables/use-langs'
 

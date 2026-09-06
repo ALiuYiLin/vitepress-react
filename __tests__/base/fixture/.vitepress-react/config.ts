@@ -1,4 +1,4 @@
-import { defineConfig } from 'vitepress'
+import { defineConfig } from '@10coding/vitepress-react'
 
 const mode = process.env.VP_TEST_MODE || 'relative'
 
@@ -9,7 +9,7 @@ export default defineConfig({
   assetsBase:
     mode === 'cdn' ? `http://localhost:${process.env.VP_CDN_PORT}/` : undefined,
   mpa: mode === 'mpa',
-  outDir: `.vitepress/dist-${mode}`,
+  outDir: `.vitepress-react/dist-${mode}`,
   cleanUrls: false,
   rewrites: { 'src-moved.md': 'moved/target.md' },
   vite: {

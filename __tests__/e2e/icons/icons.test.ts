@@ -113,7 +113,7 @@ describe('icons', () => {
       const html = readFileSync(
         resolve(
           fileURLToPath(import.meta.url),
-          '../../.vitepress/dist/index.html'
+          '../../.vitepress-react/dist/index.html'
         ),
         'utf-8'
       )
@@ -125,7 +125,7 @@ describe('icons', () => {
       const iconsPage = readFileSync(
         resolve(
           fileURLToPath(import.meta.url),
-          '../../.vitepress/dist/icons/index.html'
+          '../../.vitepress-react/dist/icons/index.html'
         ),
         'utf-8'
       )
@@ -141,7 +141,7 @@ describe('icons', () => {
     () => {
       const assetsDir = resolve(
         fileURLToPath(import.meta.url),
-        '../../.vitepress/dist/assets'
+        '../../.vitepress-react/dist/assets'
       )
       const cssFile = readdirSync(assetsDir).find((f) =>
         /^vp-icons\.[\w-]+\.css$/.test(f)

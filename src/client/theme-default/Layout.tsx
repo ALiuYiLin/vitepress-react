@@ -1,5 +1,5 @@
 import { useEffect } from 'react'
-import { Content, useData, useRoute } from 'vitepress'
+import { Content, useData, useRoute } from '@10coding/vitepress-react'
 
 import { useNav } from './composables/use-nav'
 import { useCloseSidebarOnEscape, useSidebarControl } from './composables/use-sidebar'

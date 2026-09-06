@@ -10,7 +10,7 @@ description: Set up local or Algolia-powered search for your VitePress site.
 VitePress supports fuzzy full-text search using an in-browser index thanks to [minisearch](https://github.com/lucaong/minisearch/). To enable this feature, simply set the `themeConfig.search.provider` option to `'local'` in your `.vitepress/config.ts` file:
 
 ```ts
-import { defineConfig } from 'vitepress'
+import { defineConfig } from '@10coding/vitepress-react'
 
 export default defineConfig({
   themeConfig: {
@@ -38,7 +38,7 @@ Alternatively, you can use [Algolia DocSearch](#algolia-search) or some communit
 You can use a config like this to use multilingual search:
 
 ```ts
-import { defineConfig } from 'vitepress'
+import { defineConfig } from '@10coding/vitepress-react'
 
 export default defineConfig({
   themeConfig: {
@@ -81,7 +81,7 @@ export default defineConfig({
 You can configure MiniSearch like this:
 
 ```ts
-import { defineConfig } from 'vitepress'
+import { defineConfig } from '@10coding/vitepress-react'
 
 export default defineConfig({
   themeConfig: {
@@ -121,7 +121,7 @@ Search document IDs (as seen by `searchOptions.filter`, `boostDocument`, and in 
 You can customize the function used to render the markdown content before indexing it:
 
 ```ts
-import { defineConfig } from 'vitepress'
+import { defineConfig } from '@10coding/vitepress-react'
 
 export default defineConfig({
   themeConfig: {
@@ -130,7 +130,7 @@ export default defineConfig({
       options: {
         /**
          * @param {string} src
-         * @param {import('vitepress').MarkdownEnv} env
+         * @param {import('@10coding/vitepress-react').MarkdownEnv} env
          * @param {import('markdown-it-async')} md
          */
         async _render(src, env, md) {
@@ -149,7 +149,7 @@ This function will be stripped from client-side site data, so you can use Node.j
 You can exclude pages from search by adding `search: false` to the frontmatter of the page. Alternatively:
 
 ```ts
-import { defineConfig } from 'vitepress'
+import { defineConfig } from '@10coding/vitepress-react'
 
 export default defineConfig({
   themeConfig: {
@@ -175,7 +175,7 @@ In case a custom `_render` function is provided, you need to handle the `search:
 #### Example: Transforming content - adding anchors
 
 ```ts
-import { defineConfig } from 'vitepress'
+import { defineConfig } from '@10coding/vitepress-react'
 
 export default defineConfig({
   themeConfig: {
@@ -199,7 +199,7 @@ export default defineConfig({
 VitePress supports searching your docs site using [Algolia DocSearch](https://docsearch.algolia.com/docs/what-is-docsearch). Refer to their getting started guide. In your `.vitepress/config.ts` you'll need to provide at least the following to make it work:
 
 ```ts
-import { defineConfig } from 'vitepress'
+import { defineConfig } from '@10coding/vitepress-react'
 
 export default defineConfig({
   themeConfig: {
@@ -233,7 +233,7 @@ Refer [official Algolia docs](https://docsearch.algolia.com/docs/api#translation
 If you would like to include **Ask AI**, pass the `askAi` option (or any of the partial fields) inside `options`:
 
 ```ts
-import { defineConfig } from 'vitepress'
+import { defineConfig } from '@10coding/vitepress-react'
 
 export default defineConfig({
   themeConfig: {
@@ -268,7 +268,7 @@ If you want to default to keyword search and do not want to use Ask AI, omit the
 DocSearch v4.5+ supports an optional **Ask AI side panel**. When enabled, it can be opened with **Ctrl/Cmd+I** by default. The [Sidepanel API Reference](https://docsearch.algolia.com/docs/sidepanel/api-reference) contains the full list of options.
 
 ```ts
-import { defineConfig } from 'vitepress'
+import { defineConfig } from '@10coding/vitepress-react'
 
 export default defineConfig({
   themeConfig: {
@@ -305,7 +305,7 @@ modal display suggested questions on first open.
 If you need to disable the keyboard shortcut, use the `keyboardShortcuts` option at the sidepanel root level:
 
 ```ts
-import { defineConfig } from 'vitepress'
+import { defineConfig } from '@10coding/vitepress-react'
 
 export default defineConfig({
   themeConfig: {
@@ -343,7 +343,7 @@ You can optionally control how VitePress integrates keyword search and Ask AI:
 If you want to use **Ask AI side panel only**, you can omit top-level keyword search config and provide credentials under `askAi`:
 
 ```ts
-import { defineConfig } from 'vitepress'
+import { defineConfig } from '@10coding/vitepress-react'
 
 export default defineConfig({
   themeConfig: {

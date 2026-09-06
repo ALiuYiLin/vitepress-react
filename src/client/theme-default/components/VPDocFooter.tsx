@@ -1,4 +1,4 @@
-import { useData } from 'vitepress'
+import { useData } from '@10coding/vitepress-react'
 
 import { useEditLink } from '../composables/use-edit-link'
 import { usePrevNext } from '../composables/use-prev-next'

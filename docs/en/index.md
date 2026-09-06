@@ -15,7 +15,7 @@ hero:
       link: ./guide/getting-started
     - theme: alt
       text: GitHub
-      link: https://github.com/vuejs/vitepress
+      link: https://github.com/ALiuYiLin/vitepress-react
   image:
     src: /vitepress-logo-large.svg
     alt: VitePress

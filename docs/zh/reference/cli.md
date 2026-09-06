@@ -2,9 +2,9 @@
 description: VitePress CLI 命令参考，包括 dev、build、preview 和 init 命令。
 ---
 
-# 命令行接口 {#command-line-interface}
+# 命令行接口 ((#command-line-interface))
 
-## `vitepress dev`
+## `vitepress-react dev`
 
 使用指定目录作为根目录来启动 VitePress 开发服务器。默认为当前目录。在当前目录下运行时也可以省略 `dev` 命令。
 
@@ -15,10 +15,10 @@ description: VitePress CLI 命令参考，包括 dev、build、preview 和 init 
 vitepress
 
 # 从子目录启动
-vitepress dev [root]
+vitepress-react dev [root]
 ```
 
-### 选项 {#options}
+### 选项 ((#options))
 
 | 选项            | 说明                                       |
 | --------------- | ------------------------------------------ |
@@ -29,14 +29,14 @@ vitepress dev [root]
 | `--strictPort`  | 如果指定的端口已被占用则退出 (`boolean`)   |
 | `--force`       | 强制优化程序忽略缓存并重新绑定 (`boolean`) |
 
-## `vitepress build`
+## `vitepress-react build`
 
 构建用于生产环境的 VitePress 站点。
 
 ### 用法
 
 ```sh
-vitepress build [root]
+vitepress-react build [root]
 ```
 
 ### 选项
@@ -46,17 +46,17 @@ vitepress build [root]
 | `--mpa` (experimental)         | [MPA 模式](../guide/mpa-mode) 下构建，无需客户端激活 (`boolean`)                        |
 | `--base <path>`                | public base URL (默认值: `/`)  (`string`)                                                            |
 | `--target <target>`            | 转译目标 (默认值：`"modules"`) (`string`)                                                        |
-| `--outDir <dir>`               | 输出目录 (默认值：`.vitepress/dist`) (`string`)                                                  |
+| `--outDir <dir>`               | 输出目录 (默认值：`.vitepress-react/dist`) (`string`)                                                  |
 | `--assetsInlineLimit <number>` | 静态资源 base64 内联阈值（以字节为单位）(默认值：`4096`) (`number`)                             |
 
-## `vitepress preview`
+## `vitepress-react preview`
 
 在本地预览生产版本。
 
 ### 用法
 
 ```sh
-vitepress preview [root]
+vitepress-react preview [root]
 ```
 
 ### 选项
@@ -66,12 +66,12 @@ vitepress preview [root]
 | `--base <path>` | public base URL (默认值: `/`) (`string`) |
 | `--port <port>` | 指定端口 (`number`)                    |
 
-## `vitepress init`
+## `vitepress-react init`
 
 在当前目录中启动[安装向导](../guide/getting-started#setup-wizard)。
 
 ### 用法
 
 ```sh
-vitepress init
+vitepress-react init
 ```

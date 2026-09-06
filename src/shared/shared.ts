@@ -30,6 +30,10 @@ export type {
 export const EXTERNAL_URL_RE = /^(?:[a-z]+:|\/\/)/i
 export const APPEARANCE_KEY = 'vitepress-theme-appearance'
 
+// 站点配置目录名(vitepress 的 `.vitepress` 在 vitepress-react 下的对应物):
+// config 文件、自定义主题、默认 outDir/cacheDir/.temp 都挂在这个目录下。
+export const CONFIG_DIR_NAME = '.vitepress-react'
+
 // iconify's icon/collection name grammar
 const iconNameRE = /^[a-z0-9]+(?:-[a-z0-9]+)*$/
 
@@ -367,7 +371,7 @@ function reportConfigLayers(path: string, layers: Partial<SiteData>[]) {
 
   const summary = layers.map((c, i, arr) => {
     const n = i + 1
-    if (n === arr.length) return `${n}. .vitepress/config (root)`
+    if (n === arr.length) return `${n}. ${CONFIG_DIR_NAME}/config (root)`
     return `${n}. ${(c as any)?.[VP_SOURCE_KEY] ?? '(Unknown Source)'}`
   })
 

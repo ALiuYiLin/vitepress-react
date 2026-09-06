@@ -16,7 +16,7 @@ import {
 } from 'react'
 import { createPortal } from 'react-dom'
 import MiniSearch from 'minisearch'
-import { useData, useRouter, withBase } from 'vitepress'
+import { useData, useRouter, withBase } from '@10coding/vitepress-react'
 
 import '../styles/components/vp-local-search.scoped.css'
 

@@ -6,9 +6,9 @@
     "types": ["./client.d.ts"],
     "noUncheckedIndexedAccess": true,
     "paths": {
-      "vitepress": ["./src/client/index.ts"],
+      "@10coding/vitepress-react": ["./src/client/index.ts"],
       // placeholder theme types (until the shadcn theme lands in M4)
-      "vitepress/theme": ["./src/client/theme-default/index.ts"],
+      "@10coding/vitepress-react/theme": ["./src/client/theme-default/index.ts"],
       // dev-server virtual modules, resolved onto their ambient shims
       "@siteData": ["./src/client/shims.d.ts"],
       "@theme/index": ["./src/client/shims.d.ts"],

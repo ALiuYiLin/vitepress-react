@@ -1,4 +1,4 @@
-import { useData } from 'vitepress'
+import { useData } from '@10coding/vitepress-react'
 
 import { VPFeatures, type VpFeature } from './VPFeatures'
 

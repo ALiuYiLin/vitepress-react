@@ -18,5 +18,10 @@ TODOs.md
 *.timestamp-*.mjs
 .claude
 
+# vitepress-react site config dir
+.vitepress-react/dist
+.vitepress-react/cache
+.vitepress-react/.temp
+
 # base fixture builds
-__tests__/base/fixture/.vitepress/dist-*
+__tests__/base/fixture/.vitepress-react/dist-*

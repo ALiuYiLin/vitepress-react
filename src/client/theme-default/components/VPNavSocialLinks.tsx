@@ -1,4 +1,4 @@
-import { useData } from 'vitepress'
+import { useData } from '@10coding/vitepress-react'
 
 import { useNavOverflow } from '../composables/use-nav-overflow'
 import { VPSocialLinks, type VpSocialLink } from './vp-social-links'

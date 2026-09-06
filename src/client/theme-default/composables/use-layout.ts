@@ -1,4 +1,4 @@
-import { useData, useRoute } from 'vitepress'
+import { useData, useRoute } from '@10coding/vitepress-react'
 
 import { sidebarGroupsFor, type VpHeader } from '../theme-utils'
 

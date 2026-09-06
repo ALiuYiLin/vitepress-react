@@ -163,14 +163,10 @@ export async function createMarkdownToReactRenderFn(
     const maskedScripts: { key: string; inner: string }[] = []
     src = maskScriptBlocks(src, maskedScripts)
 
-    // ★阶段1.5(D2):JSX 整行 HTML(含 ={)→ 占位;正文 {expr} 占位
-    const exprStore: { expr?: string; literal?: string; html?: string }[] = []
+    // ★阶段1.5(D2):JSX 整行 HTML(含 ={)→ 占位;正文 {expr} → 表达式占位
+    const exprStore: { expr?: string; html?: string }[] = []
     src = maskJsxHtmlLines(src, exprStore)
-    const exprAllowed = new Set<string>()
-    for (const block of maskedScripts) {
-      collectTopLevelNames(block.inner, exprAllowed)
-    }
-    src = maskJsxExpressions(src, exprAllowed, exprStore)
+    src = maskJsxExpressions(src, exprStore)
 
     const localeIndex = getLocaleForPath(siteConfig?.site, relativePath)
 
@@ -464,76 +460,11 @@ function restoreMaskedScripts(
 }
 
 // ============================================================
-// JSX 表达式内联:正文 `{expr}` 若引用 script 绑定(模块顶层或 Page 作用域),
-// 渲染前替换为 @@VP_EXPR_n@@ 占位(不进入 markdown-it),序列化阶段还原成
-// 真实 JSX 表达式,与 Page 组件共享作用域(可配合 hooks 响应式更新)。
+// JSX 表达式内联:正文 {expr} 一律按 JSX 表达式处理(React 语义,与 Vue 的
+// {{ expr }} 对齐)。表达式在渲染前替换为 @@VP_EXPR_n@@ 占位(不进入
+// markdown-it),序列化阶段还原成真实 JSX 表达式,与 Page 组件共享作用域
+// (可配合 hooks 响应式更新)。
 // ============================================================
-
-/** 收集 script 顶层绑定名(import/export/声明/解构),作为 {expr} 白名单 */
-function collectTopLevelNames(code: string, out: Set<string>): void {
-  const add = (n: string) => {
-    if (n && !/^(?:default|import|export|type)$/.test(n)) out.add(n)
-  }
-  const idRe = /[A-Za-z_$][\w$]*/g
-  const collectIdents = (raw: string) => {
-    let m: RegExpExecArray | null
-    while ((m = idRe.exec(raw))) add(m[0])
-  }
-  for (const rawLine of code.split('\n')) {
-    const line = rawLine.replace(/\/\/.*$/, '').trim()
-    if (!line) continue
-
-    const imp = /^import\s+(?:type\s+)?/.exec(line)
-    if (imp) {
-      const rest = line.replace(/^import\s+(?:type\s+)?/, '')
-      if (rest.startsWith('"') || rest.startsWith("'")) continue // 纯副作用导入
-      const ns = /^\*\s+as\s+([A-Za-z_$][\w$]*)/.exec(rest)
-      if (ns) {
-        add(ns[1])
-        continue
-      }
-      const openB = rest.indexOf('{')
-      if (openB >= 0) {
-        const closeB = rest.indexOf('}')
-        const inner = closeB > openB ? rest.slice(openB + 1, closeB) : ''
-        for (const seg of inner.split(',')) {
-          const s = seg.trim()
-          const asM = s.match(/([A-Za-z_$][\w$]*)\s+as\s+([A-Za-z_$][\w$]*)/)
-          add(asM ? asM[2] : s.split(/\s+/)[0] ?? '')
-        }
-        // 默认导入(def from 'x')
-        const before = rest.slice(0, openB).trim()
-        const def = before.split(',').map((s) => s.trim())[0] ?? ''
-        if (/^[A-Za-z_$][\w$]*$/.test(def)) add(def)
-      } else {
-        const head = rest.split(/\s+/)[0] ?? ''
-        if (/^[A-Za-z_$][\w$]*$/.test(head) && head !== 'from') add(head)
-      }
-      continue
-    }
-
-    if (/^(?:export\s+)?(?:function|class)\b/.test(line)) {
-      const m = line.match(/(?:function|class)\s+([A-Za-z_$][\w$]*)/)
-      if (m) add(m[1])
-      continue
-    }
-    if (/^export\s*\{/.test(line)) {
-      const inner = line.slice(line.indexOf('{') + 1, line.lastIndexOf('}') || undefined)
-      for (const seg of inner.split(',')) {
-        const s = seg.trim()
-        const asM = s.match(/([A-Za-z_$][\w$]*)\s+as\s+([A-Za-z_$][\w$]*)/)
-        add(asM ? asM[2] : s.split(/\s+/)[0] ?? '')
-      }
-      continue
-    }
-    const decl = /^(?:export\s+)?(?:const|let|var)\s+(.+?)(?:\s*[=;]|$)/.exec(
-      line
-    )
-    if (decl) {
-      collectIdents(decl[1] ?? '')
-    }
-  }
-}
 
 /** 词法级括号配对:找 src 里 openIndex('{') 的匹配 '}'(跳过引号/模板串/注释) */
 function findMatchingBrace(src: string, openIndex: number): number {
@@ -570,51 +501,6 @@ function findMatchingBrace(src: string, openIndex: number): number {
     i++
   }
   return -1
-}
-
-/** 顶层(不嵌套)是否存在逗号/分号 —— 用于排除 `{1, 2}` 这类序列写法 */
-function hasTopLevelCommaOrSemi(expr: string): boolean {
-  let depth = 0
-  let i = 0
-  while (i < expr.length) {
-    const ch = expr[i]
-    if (ch === '(' || ch === '[') depth++
-    else if (ch === ')' || ch === ']') depth--
-    else if (depth === 0 && (ch === ',' || ch === ';')) return true
-    i++
-  }
-  return false
-}
-
-const JS_KEYWORDS = new Set([
-  'true',
-  'false',
-  'null',
-  'undefined',
-  'NaN',
-  'Infinity',
-  'this',
-  'new',
-  'typeof',
-  'void',
-  'delete'
-])
-
-/**
- * 判定花括号内容可安全当作 JSX 表达式:
- * - 不含中文;
- * - 引用的标识符要么在白名单(script 绑定),要么是 JS 关键字/全局字面量;
- * - 无顶层逗号/分号序列(避免 `{1, 2}` 这类正文列表被误求值)。
- */
-function isSafeJsExpr(inner: string, allowed: ReadonlySet<string>): boolean {
-  if (/[\u4e00-\u9fff]/.test(inner)) return false
-  if (hasTopLevelCommaOrSemi(inner)) return false
-  const idRe = /[A-Za-z_$][\w$]*/g
-  let m: RegExpExecArray | null
-  while ((m = idRe.exec(inner))) {
-    if (!allowed.has(m[0]) && !JS_KEYWORDS.has(m[0])) return false
-  }
-  return true
 }
 
 /** void 元素(自闭合,不增加标签深度) */
@@ -768,7 +654,7 @@ function hasVueishAttr(text: string): boolean {
  */
 function maskJsxHtmlLines(
   src: string,
-  store: { expr?: string; literal?: string; html?: string }[]
+  store: { expr?: string; html?: string }[]
 ): string {
   const lines = src.split('\n')
   const out: string[] = []
@@ -918,15 +804,47 @@ function maskJsxHtmlLines(
 }
 
 /**
- * fence/行内码/围栏感知地"保护"正文里的 {…}:
- * - `{#id}` / `{.class}` 这类 attrs 语法原样留给 @mdit/plugin-attrs;
- * - 表达式候选(引用 script 绑定,或纯数值/字面量如 `{1+1}`)→ @@VP_EXPR_n@@;
- * - 其余(中文/未绑定标识符/序列)→ @@VP_TXT_n@@ 还原为字面花括号文本。
+ * 预扫数学保护区间:同一行内按 $ 出现顺序两两配对($…$ / $$…$$),
+ * 每对的首个 $ 到第二个 $ 结束为保护区间({…} 分组不被当 JSX 表达式)。
+ * 不成对的单个 $(价格、表格示例等)不产生保护——与 markdown-it-mathjax3
+ * 的成对匹配语义一致,也不会把状态残留到后续行。
+ */
+function computeMathRanges(src: string): [number, number][] {
+  const ranges: [number, number][] = []
+  for (let lineStart = 0; lineStart <= src.length; ) {
+    // 当前行 [lineStart, lineEnd)
+    const nl = src.indexOf('\n', lineStart)
+    const lineEnd = nl === -1 ? src.length : nl
+    // 收集本行 $ 连续段(含起止)
+    const runs: number[] = []
+    for (let k = lineStart; k < lineEnd; k++) {
+      if (src[k] !== '$') continue
+      const s = k
+      while (k + 1 < lineEnd && src[k + 1] === '$') k++
+      runs.push(s, k + 1) // [start, end)
+    }
+    // 顺序两两配对:第 1 个 $ 起 → 第 2 个 $ 止(每对 2 个 run = 4 元素)
+    for (let r = 0; r + 3 < runs.length; r += 4) {
+      ranges.push([runs[r], runs[r + 3]])
+    }
+    if (nl === -1) break
+    lineStart = nl + 1
+  }
+  return ranges
+}
+
+/**
+ * fence/行内码/围栏感知地处理正文里的 {…}:按 React 语义,正文 {expr} 一律
+ * 当作 JSX 表达式求值(与 Vue 的 {{ expr }} 对齐;attrs 已改用 `((…))`
+ * 分隔,不再占用花括号)。以下情况保持字面文本、不参与求值:
+ * - `\{` 转义(作者想显示字面花括号);
+ * - `{}` 空容器与 `{{…}}` 嵌套双花括号(语义不明,原样输出,交给文本序列化);
+ * - fence / 行内码 / 数学 $…$ / <style> 块 / frontmatter / <<< snippet 指令内的
+ *   {…}(非正文)。
  */
 function maskJsxExpressions(
   src: string,
-  allowed: ReadonlySet<string>,
-  store: { expr?: string; literal?: string; html?: string }[]
+  store: { expr?: string; html?: string }[]
 ): string {
   let out = ''
   let i = 0
@@ -937,6 +855,9 @@ function maskJsxExpressions(
   // <style>…</style> 原始块内(CSS 的 {…} 不是正文表达式,整块跳过掩码,
   // 内容原样交给 plugin-sfc 提取为 sfcBlocks.styles)
   let inStyleBlock = false
+  // 数学 $…$ 保护区间(行级成对扫描),随字符游标推进
+  const mathRanges = computeMathRanges(src)
+  let rangeIdx = 0
 
   while (i < src.length) {
     const c = src[i]
@@ -1032,23 +953,39 @@ function maskJsxExpressions(
       continue
     }
 
+    // 数学 $…$ / $$…$$:LaTeX 的 {…} 是分组语法,不是 JSX 表达式。
+    // 保护区间由 computeMathRanges 预扫(行内成对 $),命中则整段原样复制,
+    // 避免正文里不成对的单 $(价格 $1600、表格示例等)把状态机带偏
+    if (rangeIdx < mathRanges.length && i >= mathRanges[rangeIdx][0]) {
+      if (i < mathRanges[rangeIdx][1]) {
+        out += c
+        i++
+        continue
+      }
+      rangeIdx++
+    }
+
     if (c === '{') {
+      // \{ 转义的字面花括号留给 markdown-it 去反斜杠,不参与表达式求值
+      if (i > 0 && src[i - 1] === '\\') {
+        out += c
+        i++
+        continue
+      }
+      // {{…}} 双花括号(嵌套)按字面输出:第二个及以后的 { 不参与掩码
+      if (i > 0 && src[i - 1] === '{') {
+        out += c
+        i++
+        continue
+      }
       const end = findMatchingBrace(src, i)
       if (end > i) {
         const raw = src.slice(i + 1, end)
         const inner = raw.trim()
-        // attrs 语法(#id/.class)留给 @mdit/plugin-attrs
-        if (inner && !/^[#.]/.test(inner) && !inner.startsWith('{')) {
-          if (isSafeJsExpr(inner, allowed)) {
-            const token = `@@VP_EXPR_${store.length}@@`
-            store.push({ expr: inner })
-            out += token
-            i = end + 1
-            continue
-          }
-          // 不安全 → 保护为字面花括号文本(避免 attrs/其它处理吞掉)
-          const token = `@@VP_TXT_${store.length}@@`
-          store.push({ literal: `{${raw}}` })
+        // 空 {} 与嵌套 {{…}} 语义不明,按字面保留(序列化时包进字符串)
+        if (inner && !inner.startsWith('{')) {
+          const token = `@@VP_EXPR_${store.length}@@`
+          store.push({ expr: inner })
           out += token
           i = end + 1
           continue
@@ -1061,21 +998,17 @@ function maskJsxExpressions(
   return out
 }
 
-/** 还原 env.headers 标题里的占位:表达式→`{code}`、字面→原花括号文本、HTML→'' */
+/** 还原 env.headers 标题里的占位:表达式→`{code}`、HTML→'' */
 function restoreHeaderExpressions(
   headers: any[],
-  store: { expr?: string; literal?: string; html?: string }[]
+  store: { expr?: string; html?: string }[]
 ): void {
   const fix = (s: any): any =>
     typeof s === 'string'
       ? s.replace(
-          /@@VP_(EXPR|TXT|HTML)_(\d+)@@/g,
+          /@@VP_(EXPR|HTML)_(\d+)@@/g,
           (_, kind, n) =>
-            kind === 'EXPR'
-              ? `{${store[Number(n)]?.expr ?? ''}}`
-              : kind === 'TXT'
-                ? (store[Number(n)]?.literal ?? '')
-                : ''
+            kind === 'EXPR' ? `{${store[Number(n)]?.expr ?? ''}}` : ''
         )
       : s
   const walk = (h: any) => {
@@ -1232,9 +1165,10 @@ function styleBlockLang(tagOpen: string): string | undefined {
  *     return ( <div className="vp-doc">…JSX…</div> )
  *   }
  *
- * 正文动态能力契约(D2):正文 `{expr}` 若引用 script 绑定,由序列化器还原成
- * 真实表达式(与 Page 同一作用域,可响应 hooks 更新);未命中的花括号仍为
- * 字面文本。需要完整交互时仍用 <script> 定义的组件标签。
+ * 正文动态能力契约(D2):正文 `{expr}` 一律为 JSX 表达式(React 语义,与
+ * Vue 的 {{ expr }} 对齐),由序列化器还原成真实表达式(与 Page 同一作用域,
+ * 可响应 hooks 更新);字面花括号需 `\{` 转义或写进行内码/代码块。需要
+ * 完整交互时仍用 <script> 定义的组件标签。
  *
  * 样式(themeConfig.markdownScopedCss 开启时,见 plugin.ts 的 jsx-scoped 管线):
  *  - <style scoped> 块:嵌入 vp-doc 根的 `<style scoped>{StringLiteral}</style>`,
@@ -1245,7 +1179,7 @@ function createReactPageSrc(
   html: string,
   sfcBlocks: MarkdownEnv['sfcBlocks'],
   pageData: PageData,
-  expressions: { expr?: string; literal?: string; html?: string }[],
+  expressions: { expr?: string; html?: string }[],
   scopedCssEnabled = false
 ): string {
   const parts: string[] = []
@@ -1322,8 +1256,8 @@ function createReactPageSrc(
         const exportName = THEME_MD_TAGS[local] ?? local
         moduleImports.push(
           exportName === local
-            ? `import { ${exportName} } from 'vitepress/theme'`
-            : `import { ${exportName} as ${local} } from 'vitepress/theme'`
+            ? `import { ${exportName} } from '@10coding/vitepress-react/theme'`
+            : `import { ${exportName} as ${local} } from '@10coding/vitepress-react/theme'`
         )
         componentNames.add(local)
       }
@@ -1363,11 +1297,10 @@ function createReactPageSrc(
     )
   }
 
-  // 正文 → JSX(组件标签解析为标识符引用;@@VP_EXPR/TXT/HTML_n@@ 还原)
-  const exprMap: Record<string, { expr?: string; literal?: string; html?: string }> = {}
+  // 正文 → JSX(组件标签解析为标识符引用;@@VP_EXPR/HTML_n@@ 还原)
+  const exprMap: Record<string, { expr?: string; html?: string }> = {}
   expressions.forEach((e, i) => {
     if (e.expr != null) exprMap[`${i}`] = { expr: e.expr }
-    else if (e.literal != null) exprMap[`${i}`] = { literal: e.literal }
     else if (e.html != null) exprMap[`${i}`] = { html: e.html }
   })
   const body = serializeHtmlToJsx(html, componentNames, exprMap)

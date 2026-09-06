@@ -1,5 +1,5 @@
 import { createElement, type ReactNode } from 'react'
-import { useData } from 'vitepress'
+import { useData } from '@10coding/vitepress-react'
 
 import { cx } from '../lib/cx'
 import { isLinkExternal, normalizeLink } from '../support/utils'

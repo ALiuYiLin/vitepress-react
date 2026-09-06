@@ -1,5 +1,5 @@
 import { useEffect, useId, useRef, useState, type CSSProperties, type MouseEvent } from 'react'
-import { onContentUpdated, useData } from 'vitepress'
+import { onContentUpdated, useData } from '@10coding/vitepress-react'
 
 import { resolveTitle } from '../composables/use-active-anchor'
 import { useBodyScrollLock } from '../composables/use-body-scroll-lock'

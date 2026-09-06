@@ -2,25 +2,23 @@
 description: 在 VitePress React 版的 Markdown 文件中编写 React 组件与表达式,让静态内容获得交互能力。
 ---
 
-# 在 Markdown 中使用 React {#using-react-in-markdown}
+# 在 Markdown 中使用 React ((#using-react-in-markdown))
 
-在本 React 版 VitePress(vitepress-react)中,每个 Markdown 文件都会被编译成静态 HTML,再经 JSX 序列化器生成页面组件。正文里的**普通文本与 HTML 是字面量**:不存在 Vue 版的 `{{ }}` 插值、指令或 `v-pre`。要加入动态能力,使用 `<script>` 块编写 React 组件/表达式。
+在本 React 版 VitePress(vitepress-react)中,每个 Markdown 文件都会被编译成静态 HTML,再经 JSX 序列化器生成页面组件。正文里的**普通文本(不含 `{…}`)与 HTML 是字面量**;正文里的**单层 `{expr}` 一律是 JSX 表达式**(与 React 语义一致,等价于 Vue 的 `{{ expr }}`)。不存在 Vue 版的 `{{ }}` 插值、指令或 `v-pre`。要加入动态能力,在正文直接写 `{expr}`,或用 `<script>` 块编写 React 组件/表达式。
 
 ::: tip SSR 兼容性
 所有用法都要兼容 SSR。避免在组件顶层直接读写 `window` / `document`,浏览器专属逻辑请放进 `useEffect` 或客户端专属封装里。参见 [SSR 兼容性](./ssr-compat)。
 :::
 
-## 正文求值规则 {#templating}
+## 正文求值规则 ((#templating))
 
-Vue 版文档里的 `{{ }}` 在这里不存在。**单层 `{…}`** 按下列规则处理:
+Vue 版文档里的 `{{ }}` 在这里不存在——正文**单层 `{…}` 一律按 JSX 表达式求值**:
 
-- **求值为 JSX 表达式**,当它
-  - 引用了 `<script>` 里的绑定(例如 `{count}`、`{fmt(page.title)}`),或
-  - 是纯数值/字面量表达式(例如 `{1 + 1}`、`{'hi'}`);
-- **保持为字面花括号文本**,当它
-  - 含中文(如 `{统计}`),
-  - 含顶层逗号/分号(如 `{1, 2}` 这类列举),
-  - 是 attrs 语法(`{#id}` / `{.class}`,交给 `@mdit/plugin-attrs`)。
+- 引用 `<script>` 里的绑定:`{count}`、`{fmt(page.title)}`;
+- 纯字面量表达式:`{1 + 1}`、`{'hi'}`;
+- 任意 JS:`{items.length > 0 ? '有' : '无'}` 等(与 React 组件里写 `{…}` 完全一致)。
+
+想显示“看起来像模板”的字面 `{…}`,用 `\{` 转义(如 `\{x\}` 显示 `{x}`)、放进**行内代码**、代码块,或写 `{{…}}` 双花括号(按字面输出)。代码块天然字面,无需转义。
 
 例如:
 
@@ -36,9 +34,9 @@ Vue 版文档里的 `{{ }}` 在这里不存在。**单层 `{…}`** 按下列规
 2
 ```
 
-想显示"看起来像模板"的字面 `{…}` 文本,把它放进**行内代码**或使用含中文/序列的内容即可;代码块天然字面,无需转义。
+`{统计}`、`{#foo}` 这类写法不再是“字面兜底”:它们会被当作 JS 引用/表达式(分别报 ReferenceError 与编译错误)——这正是 React 语义,写错即报错。给元素加类/id 请用 attrs 语法 `((.class))` / `((#id))`(见 [md 页面 scoped 样式](./md-scoped-demo))。
 
-## `<script>` 块:组件与页面作用域 {#script-and-style}
+## `<script>` 块:组件与页面作用域 ((#script-and-style))
 
 根级 `<script>` 块放在 frontmatter **之后**。块内容按两种位置编译:
 
@@ -70,7 +68,7 @@ export function Counter() {
 
 **说明**:`count` 随 `setCount`/`useEffect`/路由数据更新而**响应式重渲染**;它等价于把这段代码写进一个 React 组件函数再返回 JSX。
 
-### 在正文直接写 HTML/JSX 行 {#inline-jsx}
+### 在正文直接写 HTML/JSX 行 ((#inline-jsx))
 
 **独立成行、以 `<` 开头的 HTML 标签或 React 组件行**,会被整行占位、渲染后原样恢复成 JSX 交给 React/oxc 编译——不区分是否含 `={`。因此 `onClick={…}`、`{expr}`、组件引用(<Badge/> 等)都按 JSX 语义生效;同时意味着属性要按 JSX 写(`class` → `className`、`style` → 对象、事件用驼峰函数)。想展示字面代码请放进代码块。
 
@@ -116,7 +114,7 @@ const [count, setCount] = useState(100)
 
 只要是"独立成行的标签行"都按上面的规则处理:普通 HTML 行(如 `<b>bold</b>`)、组件行(如 `<Badge type="tip" text="x" />`,自动从主题导入)同样由 React 接管;含 Vue 指令(`:members`、`@click`、`<template #slot>`)的行不属于 React 接管范围,仍按旧 HTML 路径处理并提示。
 
-### 在 Markdown 中导入并使用组件 {#using-components}
+### 在 Markdown 中导入并使用组件 ((#using-components))
 
 如果组件只被少数页面使用,可以在页面的 `<script>` 里显式导入(可正确代码分割):
 
@@ -140,7 +138,7 @@ This is a .md using a custom component
 
 默认主题也导出可直接用的组件(`VPBadge`、`VPTeamMembers`、`VPTeamPage` 等),甚至文档里裸写 `<Badge type="tip" text="new" />` 这类 Vue 全局注册标签,编译时会自动从 `vitepress/theme` 导入。
 
-### 在标题中使用组件 {#using-components-in-headers}
+### 在标题中使用组件 ((#using-components-in-headers))
 
 可以在标题中放组件,但解析出的标题只取纯文本:
 
@@ -172,7 +170,7 @@ import ComponentInHeader from '../../components/ComponentInHeader.tsx'
 
 上面标题里的 ⚡ 就是 `ComponentInHeader`;大纲标题只取纯文本,不含组件内容。
 
-## 代码块与指令 {#code-blocks}
+## 代码块与指令 ((#code-blocks))
 
 代码块天然是字面量,不需要 `v-pre` 包装:
 
@@ -192,7 +190,7 @@ Hello {1 + 1}
 
 Vue 指令(`v-if`、`v-pre`、`@click`、`:class` 等)不属于 React:序列化时会剔除或按字面处理并给出提示,请不要依赖。
 
-## 样式与客户端专属内容 {#styles-and-client-only}
+## 样式与客户端专属内容 ((#styles-and-client-only))
 
 ::: warning 根级 `<style>` 是全局的;页面级作用域有专门的 scoped 方案
 不带 `scoped` 的 `<style>` 仍是全局样式(运行时注入全站)。想要 **Vue-like

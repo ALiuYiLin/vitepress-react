@@ -32,7 +32,7 @@ Changing locale to say `zh` will change the URL from `/foo` (or `/en/foo/`) to `
 Set `themeConfig.i18nRouting` to a function to customize the locale link. The function receives the current VitePress data, the current route, and the target locale key, and returns the target link.
 
 ```ts
-import { defineConfig } from 'vitepress'
+import { defineConfig } from '@10coding/vitepress-react'
 
 export default defineConfig({
   themeConfig: {
@@ -251,7 +251,7 @@ export default {
   themeConfig: {
     socialLinks: [
       // You can add any icon from simple-icons (https://simpleicons.org/):
-      { icon: 'github', link: 'https://github.com/vuejs/vitepress' },
+      { icon: 'github', link: 'https://github.com/ALiuYiLin/vitepress-react' },
       { icon: 'twitter', link: '...' },
       { icon: 'discord', link: '/community', target: '_self' },
       // You can use any other iconify collection installed in your project
@@ -316,7 +316,7 @@ Edit Link lets you display a link to edit the page on Git management services su
 export default {
   themeConfig: {
     editLink: {
-      pattern: 'https://github.com/vuejs/vitepress/edit/main/docs/:path',
+      pattern: 'https://github.com/ALiuYiLin/vitepress-react/edit/main/docs/:path',
       text: 'Edit this page on GitHub'
     }
   }
@@ -377,7 +377,7 @@ export interface AlgoliaSearchOptions extends DocSearchProps {
 }
 ```
 
-View full options [here](https://github.com/vuejs/vitepress/blob/main/types/docsearch.d.ts).
+View full options [here](https://github.com/ALiuYiLin/vitepress-react/blob/main/types/docsearch.d.ts).
 
 ## carbonAds {#carbon-ads}
 
@@ -540,7 +540,7 @@ interface {
 
 ```vue
 <script setup>
-import { useLayout } from 'vitepress/theme'
+import { useLayout } from '@10coding/vitepress-react/theme'
 
 const { hasSidebar } = useLayout()
 </script>

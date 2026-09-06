@@ -29,12 +29,12 @@ describe('node/markdown/markdown', () => {
     })
 
     test('attrs', async () => {
-      const enabled = await render('## Title {#custom-id}')
+      const enabled = await render('## Title ((#custom-id))')
       expect(enabled).toContain('id="custom-id"')
 
-      const disabled = await render('## Title {#custom-id}', { attrs: false })
+      const disabled = await render('## Title ((#custom-id))', { attrs: false })
       expect(disabled).not.toContain('id="custom-id"')
-      expect(disabled).toContain('{#custom-id}')
+      expect(disabled).toContain('((#custom-id))')
     })
 
     test('emoji', async () => {
@@ -44,12 +44,14 @@ describe('node/markdown/markdown', () => {
 
     test('eagerFrontmatterInterpolation', async () => {
       const src = '---\ntitle: Hello\n---\n\n{{ $frontmatter.title }}'
-      expect(await render(src)).toContain('<p>Hello</p>')
+      // fork 的 React 语义下 {{ }} 双花括号默认是字面文本,需显式开启该
+      // Vue 遗留插值选项才会替换成 frontmatter 值
+      expect(await render(src)).toContain('<p>{{ $frontmatter.title }}</p>')
 
-      const disabled = await render(src, {
-        eagerFrontmatterInterpolation: false
+      const enabled = await render(src, {
+        eagerFrontmatterInterpolation: true
       })
-      expect(disabled).toContain('<p>{{ $frontmatter.title }}</p>')
+      expect(enabled).toContain('<p>Hello</p>')
     })
 
     test('tasklist', async () => {
@@ -134,7 +136,7 @@ describe('node/markdown/markdown', () => {
 
     test('`true` enables a plugin with its default options', async () => {
       const html = await render(
-        '## Title {#custom-id}\n\n[[toc]]\n\n:tada:\n\n- [ ] todo',
+        '## Title ((#custom-id))\n\n[[toc]]\n\n:tada:\n\n- [ ] todo',
         {
           anchor: true,
           attrs: true,
@@ -161,18 +163,18 @@ describe('node/markdown/markdown', () => {
       expect(meta).not.toContain('4=""')
 
       // curly attributes have no effect on fenced code blocks
-      const backtick = await render('```js {.foo}\nconst a = 1\n```')
+      const backtick = await render('```js ((.foo))\nconst a = 1\n```')
       expect(backtick).not.toContain('class="foo"')
-      const tilde = await render('~~~js {.foo}\nconst a = 1\n~~~')
+      const tilde = await render('~~~js ((.foo))\nconst a = 1\n~~~')
       expect(tilde).not.toContain('class="foo"')
     })
 
     test('applies to inline elements and blocks', async () => {
-      expect(await render('*hi*{.cls}')).toContain('<em class="cls">')
-      expect(await render('`code`{.cls}')).toContain('class="cls"')
-      expect(await render('text {.cls}')).toContain('<p class="cls">')
-      expect(await render('- item\n{.cls}')).toContain('<ul class="cls">')
-      expect(await render('| a |\n| --- |\n| b |\n\n{.cls}')).toContain(
+      expect(await render('*hi*((.cls))')).toContain('<em class="cls">')
+      expect(await render('`code`((.cls))')).toContain('class="cls"')
+      expect(await render('text ((.cls))')).toContain('<p class="cls">')
+      expect(await render('- item\n((.cls))')).toContain('<ul class="cls">')
+      expect(await render('| a |\n| --- |\n| b |\n\n((.cls))')).toContain(
         '<table class="cls"'
       )
     })

@@ -1,6 +1,6 @@
 // 自定义主题布局(React):需要更多控制时可在此基于 useData() 组装页面。
 // 使用默认主题并微调样式时,请在主题入口 extends DefaultTheme(见 index.js)。
-import { Content, useData } from 'vitepress'
+import { Content, useData } from '@10coding/vitepress-react'
 
 export default function Layout() {
   const data = useData()

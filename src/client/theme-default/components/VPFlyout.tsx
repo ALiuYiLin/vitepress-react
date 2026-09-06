@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useId, useRef, useState, type PointerEvent, type ReactNode } from 'react'
-import { useRoute } from 'vitepress'
+import { useRoute } from '@10coding/vitepress-react'
 
 import { useFlyout } from '../composables/use-flyout'
 import '../styles/components/VPFlyout.scoped.css'

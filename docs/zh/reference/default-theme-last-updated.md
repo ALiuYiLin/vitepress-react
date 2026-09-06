@@ -2,7 +2,7 @@
 description: 基于 Git 提交历史在 VitePress 页面上显示最后更新时间。
 ---
 
-# 最后更新于 {#last-updated}
+# 最后更新于 ((#last-updated))
 
 最近一条内容的更新时间会显示在页面右下角。要启用它，请将 `lastUpdated` 选项添加到配置中。
 
@@ -25,11 +25,11 @@ VitePress 通过每个文件最近一次 Git 提交的时间戳显示"最后更�
 若上述选项不可用，可在 `package.json` 中的 `docs:build` 命令后手动添加获取操作：
 
 ```json
-"docs:build": "git fetch --unshallow && vitepress build docs"
+"docs:build": "git fetch --unshallow && vitepress-react build docs"
 ```
 :::
 
-## 全局配置 {#site-level-config}
+## 全局配置 ((#site-level-config))
 
 ```js
 export default {
@@ -37,7 +37,7 @@ export default {
 }
 ```
 
-## frontmatter 配置 {#frontmatter-config}
+## frontmatter 配置 ((#frontmatter-config))
 
 可以使用 frontmatter 上的 `lastUpdated` 选项单独禁用某个页面的最后更新展示：
 

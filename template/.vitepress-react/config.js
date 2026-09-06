@@ -1,4 +1,4 @@
-import { defineConfig } from 'vitepress'
+import { defineConfig } from '@10coding/vitepress-react'
 
 // https://vitepress.dev/reference/site-config
 export default defineConfig({<% if (srcDir) { %>
@@ -24,7 +24,7 @@ export default defineConfig({<% if (srcDir) { %>
     ],
 
     socialLinks: [
-      { icon: 'github', link: 'https://github.com/vuejs/vitepress' }
+      { icon: 'github', link: 'https://github.com/ALiuYiLin/vitepress-react' }
     ]
   }<% } %>
 })
