@@ -2,6 +2,7 @@ packages:
   - docs
   - __tests__/*
   - playground/*
+  - packages/*
 
 allowBuilds:
   playwright-chromium: true

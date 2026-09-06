@@ -1,8 +1,11 @@
-# @10coding/mdx-kernel(规划中 · 包骨架)
+# @10coding/mdx-kernel(开发中)
 
-> 状态:**目录占位 + 目标说明(已按 2026-09-06 决策更新)**。尚未接线(pnpm workspace / package.json / 源码均未创建)。
-> 命名可改;最终 npm 名拟定 `@10coding/mdx-kernel`(与已发布自研包 `@10coding/*` 同一 scope)。
-> 背景:`MDX-MIGRATION.md`(仓库根,markdown-it → @mdx-js/mdx 内核迁移评估)。
+> 状态:**v0.1 编译核心已实现(2026-09-06,`refactor/mdx` 分支)**:`compileDocument(src)` → `{ code, data }`
+> (@mdx-js/mdx 产物 + PageData 契约 frontmatter/headers/title)。依赖已入 workspace(`packages/*`);
+> **未做**:发布构建(tsdown)、主仓库 md→页面组装接入(P1)、容器/include 自研件。
+> 验证:`pnpm --filter @10coding/mdx-kernel test`(vitest 11 例)+ `pnpm --filter @10coding/mdx-kernel run smoke`
+> (attrs 生产语义;原因见 vitest.config.ts 注释:remark-attributes 上游 devlop 断言缺陷)。
+> 背景:`MDX-MIGRATION.md`(仓库根,决策基线);本节以下是规划目标,实现以 src/ 与 test/ 为准。
 
 ## 0. 定位
 
