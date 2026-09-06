@@ -2,7 +2,7 @@
 description: VitePress（React fork）运行时 API 参考，包括 hooks、辅助方法与内置组件。
 ---
 
-# 运行时 API ((#runtime-api))
+# 运行时 API \{#runtime-api\}
 
 VitePress 提供若干内置 API 以访问站点/页面数据，并内置少量组件。它们统一从 `vitepress` 导入，用于自定义主题组件，也可以在 `.mdx` 页面中使用（import 到页面模块顶层，在组件里调用）。
 
@@ -149,6 +149,6 @@ export function Demo() {
 }
 ```
 
-## frontmatter / 参数（在页面中读取） ((#data-access))
+## frontmatter / 参数（在页面中读取） \{#data-access\}
 
 Vue 版曾经提供的 `$frontmatter` / `$params` 模板全局与 `{{ }}` 插值在本 fork 不再可用。页面 frontmatter 由 mdx 内核自动导出为模块绑定 `frontmatter`，正文直接 `{frontmatter.xxx}` 引用；路由参数 `params` 通过 `useData()` 读取（hook 需封装成组件）——示例见 [frontmatter](../guide/frontmatter#accessing-frontmatter-data) 与[路由参数](../guide/routing#accessing-params-in-page)。

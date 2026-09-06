@@ -4,7 +4,7 @@ description: '在 Markdown 中使用 React 的完整规则:表达式、JSX 区�
 
 import { useState } from 'react'
 
-# 在 Markdown 中使用 React 的规则 ((#react-markdown-rules))
+# 在 Markdown 中使用 React 的规则 \{#react-markdown-rules\}
 
 本文是 [在 Markdown 中使用 React](./using-react) 的“规则手册”。本站文档由 **MDX 内核**编译:一个 `.mdx` 页面本身就是一个 React 模块——`import`/`export` 与 JSX 直接写在文件里,不存在旧 markdown-it 内核的 `<script>` 块、`::: react` 容器与「page-scope」,也不再有“编译后的 TSX(示意)”这一层中间产物概念。下面按 mdx 语义给出规则:每条先讲规则,再给**可直接照抄进 .mdx 的示例**(代码块),部分规则附本页实时渲染——本页正文就是用同一套规则写出来的。
 
@@ -27,7 +27,7 @@ import { useState } from 'react'
 | YAML frontmatter | 内核自动导出为模块变量 `frontmatter`;正文可 `{frontmatter.xxx}`(不要自行声明同名导出) |
 | 独立成行的 `<标签>…</标签>` / `<组件 />` | 直接按 JSX 编译(块级 JSX 与相邻文本之间留空行) |
 | 正文行内的 `<b>`、`<Badge …/>` 等 | 行内 JSX,同样生效 |
-| 标题行尾 `((#id))` / `((.class))` | attrs 写法沿用站内约定(新内核下 attrs 的语法差异另行迁移,本轮不涉及) |
+| 标题行尾 attrs | mdx 内核 attrs 书写为 `\{…\}`(转义形态):`## x \{#id\}` 固定锚点、`## x \{.cls\}` 加类;块级 attrs 作用于紧邻其前的块(见 §4 与 [md-scoped-demo](./md-scoped-demo)) |
 | `::: tip / warning / details … :::` | 普通容器照常渲染(见 §4);`::: react` 容器概念已移除 |
 | 代码块 / 行内代码 | 字面量,永不求值 / 编译 |
 | 旧 `<script>` page-scope、Vue 模板(`{{ }}`、`v-*`、`:prop`、`@click`) | 不存在 / 不适用;示例请放代码块,不要写进正文 |
@@ -178,7 +178,7 @@ export function LiveCounter() {
 
 - ATX 标题行与正文同一套 mdx 文本规则:行内组件与 `{expr}` 都可写(例如 `## 标题 <Badge type="tip" text="new" />`);旧内核为标题做的“整行不接管 / 序列化器还原”处理已不存在;
 - 页面大纲(headers)在编译期取标题**纯文本**,不含组件渲染输出与表达式求值结果,可见标题与大纲因此可能不完全一致;
-- 标题行尾沿用站内 attrs 写法 `((#id))` / `((.class))`(本页标题行尾即如此;mdx 内核下 attrs 的语法迁移属另一轮,本文不展开)。
+- 标题行尾可写 attrs 固定锚点 / 类(mdx 内核 attrs 书写为 `\{…\}`,本页各标题行尾的 `\{#…\}` 即如此):`## 标题 \{#my-anchor\}`。attrs 编译期生效(标题带显式 id/class),标题纯文本不含残字,大纲与可见标题一致。
 
 ### 容器
 

@@ -93,18 +93,19 @@ import './md-scoped-demo.scoped.css'
 
 带类卡片段落,`strong` 加粗文字应显示 danger 色。
 
-((.md-scoped-card))
+\{.md-scoped-card\}
 ```
 
 ### 实时效果
 
 下方卡片用的就是 `./md-scoped-demo.scoped.css`(本页顶部已真实 import;
-类名由独立一行的 `((.md-scoped-card))` 注入):
-
-((.md-scoped-card))
+类名由卡片段**之后**的独立 attrs 行 `\{.md-scoped-card\}` 注入——mdx 内核的
+attrs 书写为 `\{…\}`,作用于紧邻其前的块):
 
 **加粗文字**的 danger 色来自外部 scoped 文件的选择器
 `.md-scoped-card strong`(同样被 scope 化)。
+
+\{.md-scoped-card\}
 
 ## 作用域语义与注意点
 
@@ -112,8 +113,7 @@ import './md-scoped-demo.scoped.css'
   同页多个 scoped 文件共用同一 hash;
 - **页面内所有 DOM 都会被注入 `data-v-{hash}`**(编译期由管线统一注入),
   因此选择器也可以直接按元素写,例如 `.vp-doc p`(只会命中本页段落);
-- **给正文元素加类**:标题 `## x ((.class))` 行尾、段落换行后独立一行 `((.class))`、
-  行内文本 `文字((.class))`(attrs 语法);若在正文里直接写整行 JSX(React 接管),
+- **给正文元素加类**(mdx 内核 attrs,书写为 `\{…\}`,作用于紧邻其前的块):标题 `## x \{#id\}` 行尾(固定锚点)、块级元素后独立一行 `\{.class\}`、链接后 `[文字](url)\{target="_blank"\}` 等;若在正文里直接写整行 JSX(React 接管),
   则按 JSX 规则用 `className`;
 - **全局样式**仍写不带 `scoped` 的 `<style>`(运行时注入全站);mdx 文档页不支持
   正文内联 `<style scoped>`,多个外部 scoped 文件可同时出现在一页;

@@ -2,7 +2,7 @@
 description: 在 VitePress 中设置国际化 (i18n)，为站点提供多语言支持。
 ---
 
-# 国际化 ((#internationalization))
+# 国际化 \{#internationalization\}
 
 要使用内置的 i18n (国际化) 功能，需要创建类似于下面的目录结构：
 
@@ -57,7 +57,7 @@ interface LocaleSpecificConfig<ThemeConfig = any> {
 
 **提示**：配置文件也可以是 `docs/.vitepress-react/config/index.ts`。通过为每个语言环境创建一个配置文件，然后从 `index.ts` 合并并导出它们，可以更好地组织文件。
 
-## 为本地化设置子目录 ((#separate-directory-for-each-locale))
+## 为本地化设置子目录 \{#separate-directory-for-each-locale\}
 
 下面是一个组织良好的结构：
 
@@ -109,6 +109,6 @@ export function MyLayout() {
 
 > 默认主题导出的 `Layout`/`NotFound` 等即 React 组件；用 `...Theme` + 覆盖 `Layout` 的方式做自定义（更多见[构建自定义主题](./custom-theme)）。
 
-## RTL 支持 (实验性功能) ((#rtl-support-experimental))
+## RTL 支持 (实验性功能) \{#rtl-support-experimental\}
 
 支持 RTL 需要在配置中指定 `dir: 'rtl'` 并且使用一些 RTLCSS PostCSS 插件，例如 [rtlcss](https://github.com/MohammadYounes/rtlcss), [postcss-rtl](https://github.com/vkalinichev/postcss-rtl) 或者 [postcss-rtlcss](https://github.com/elchininet/postcss-rtlcss)。需要配置 PostCSS 插件，使用 `:where([dir="ltr"])` 和 `:where([dir="rtl"])` 作为前缀，以防止 CSS 特异性问题。

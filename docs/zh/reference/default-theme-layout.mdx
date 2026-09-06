@@ -2,7 +2,7 @@
 description: 在 VitePress 默认主题中选择 doc、page 和 home 布局。
 ---
 
-# 布局 ((#layout))
+# 布局 \{#layout\}
 
 可以通过设置页面 [frontmatter](./frontmatter-config) 选项来选择页面布局。有 3 种布局选项 `doc`、`page` 和 `home`。如果未指定任何内容，则该页面将被视为 `doc` 页面。
 
@@ -12,7 +12,7 @@ layout: doc
 ---
 ```
 
-## doc 布局 ((#doc-layout))
+## doc 布局 \{#doc-layout\}
 
 `doc` 是默认布局，它将整个 Markdown 内容设置为“documentation”外观。它的工作原理是将整个内容包装在 css `vp-doc` 类中，并将样式应用于它下面的元素。
 
@@ -25,7 +25,7 @@ layout: doc
 - [大纲](./default-theme-config#outline)
 - [Carbon Ads](./default-theme-carbon-ads)
 
-## page 布局 ((#page-layout))
+## page 布局 \{#page-layout\}
 
 `page` 被视为“空白页”。Markdown 仍然会被解析，所有的 [Markdown 扩展](../guide/markdown) 都和 `doc` 布局一样运行，但它没有任何默认样式。
 
@@ -33,15 +33,15 @@ layout: doc
 
 请注意，即使在此布局中，如果页面具有匹配的侧边栏配置，侧边栏仍会显示。
 
-## home 布局 ((#home-layout))
+## home 布局 \{#home-layout\}
 
 `home` 将生成模板化的“主页”。在此布局中，可以设置额外的选项，例如 `hero` 和 `features` 以进一步自定义内容。请访问[默认主题: 主页](./default-theme-home-page)了解更多详情。
 
-## 无布局 ((#no-layout))
+## 无布局 \{#no-layout\}
 
 如果不想要任何布局，可以通过 frontmatter 传递 `layout: false`。如果想要一个完全可自定义的登录页面（默认情况下没有任何侧边栏、导航栏或页脚），此选项很有用。
 
-## 自定义布局 ((#custom-layout))
+## 自定义布局 \{#custom-layout\}
 
 默认主题的 Layout 只识别 `doc` / `page` / `home` / `false` 几种布局；其它字符串会被当作 `doc` 处理。若要支持自定义布局名，请提供自定义 Theme，并在自己的 Layout 里按 frontmatter 分支渲染（本 fork 没有“全局注册组件后 `layout: foo` 自动命中”的机制）：
 
