@@ -106,35 +106,36 @@ frontmatter 剥离(remark-frontmatter / remark-mdx-frontmatter)
 | P3 文档迁移 | 教学页重写:`<script>`→import/export、attrs 语法、`{{}}` 移除、表达式作用域说明 | zh 文档全部页面 200 且语义与新规则一致 |
 | P4 收尾 | 删 mask/序列化/md-it 层与依赖、错误定位改 mdast position、性能/产物回归 | typecheck/build/单测/e2e、页面 200 |
 
-## 6.1 §P3 验证结果(全 zh 页 mdx 编译审计 + 结构采样)
+## 6.1 §P3 验证结果与迁移状态(全 zh 页 mdx 编译审计 + 结构采样)
 
-审计方式:`packages/mdx-kernel/scripts/audit-zh.mjs`(全量 zh/**/*.md 跑
+审计方式:`packages/mdx-kernel/scripts/audit-zh.mjs`(全量 zh/**/*.md(x) 跑
 compileDocument,含 include/snippet/@/ 解析)→ `temp/p3-mdx/report.json`;
-结构采样 `scripts/sample-zh.mjs`(guide/markdown、guide/frontmatter、
-reference/default-theme-badge 的 headers 树/容器/表格)。
+结构采样 `scripts/sample-zh.mjs`。
 
-- **总量**:zh 38 页;30 页 mdx 编译通过;8 页失败 = 6 页 M1 专属语法页
-  (using-react/md-react-rules/mpa-mode/md-scoped-demo/what-is-vitepress 等:
-  `<script>`、`::: react`、页内 JSX——待 P3 教学重写)+ **2 页纯文档页**:
-  `guide/i18n.md`、`reference/default-theme-search.md`——正文裸 URL(如
-  `http://…`)在 MDX 中报错,须改 `[text](url)` 或 `<url>`(自动链接差异)。
-- **纯文档页**(无 M1 专属语法)21 页,其中 19 页可编译。
-- 结构采样揭示的显示层差异(→ P3 迁移清单):
-  1. **attrs 未迁移(zh docs 全量)**:正文仍写 `((#id))`/`((.cls))`,mdx 内核
-     attrs 语法为 `\{#id\}`;现状标题文本残留 ` ((#…))` 字面、显式锚点 id
-     丢失(仅剩 rehype-slug 自动 slug),标题树 title 也含残字。zh docs 212 处
-     attrs 迁移是 P3 主体之一;
-  2. **emoji 未接入**(`:tada:` 字面)——内核需 remark-gemoji 或文档改 emoji
-     字符;
-  3. **主题组件(Badge/VPBadge)未注入**——mdx wrapper 的 components 映射
-     留 P2/P3 接线,default-theme-badge 页现状运行时缺组件;
-  4. **code-group 容器降级为普通容器**(无 tabs,内核已 warn);react 容器
-     同理(教学页重写时移除);
-  5. **代码高亮/行号 meta/复制按钮未接入**(P2 选型:shiki rehype vs
-     rehype-pretty-code,meta `{2,4}` 语义为 md-it 契约);
-  6. **github-flavored-alerts**(`> [!TYPE]`)在 md-it 有专用渲染,内核未实现。
+- **总量**:zh 38 页,md → .mdx 全量迁移完成(commit 8e0bae4e);当前
+  compile-ok 38/38(pure-doc 27/27),唯一输出 = code-group 高亮已随
+  tabs 实现移除(无降级 warn;react 容器无真实使用)。
+- §P3 显示层差异清单 → 迁移状态(均已落地):
+  1. **attrs `((…))`**(标题 201 处 + 正文 9 处 + 教学同步)→ 迁移为 mdx
+     内核 `\{…\}` 语法(commit 7eda2076):标题行尾 `\{#slug\}` 显式锚点
+     编译期生效、文本无残字;链接 `\{target}`/块级 `\{.class}`(作用于
+     紧邻其前块)同轮验证;容器行 attrs `((open))` 系容器自解析语法,保留;
+  2. **代码高亮/行号/复制按钮**(commit 4f0bd35c):内核 createCodeHighlighter
+     输出与 M1 同构 div.language-* + shiki token;meta {1,3-5}/:line-numbers/
+     diff/focus/error 语义与 md-it 契约一致;主题双主题/复制交互直接复用;
+  3. **主题组件(Badge/VPBadge)注入**(commit c5c7435f):页面组装层检测 mdx
+     产物组件引用(mdx v3 `_components.X`/`_missingMdxReference`),自动从
+     主题导入并经 MDX components 传入(作者可覆盖);
+  4. **code-group tabs**(commit 98a47208):内核渲染 M1 同构的 tabs/blocks
+     (radio+label,标题取 fence meta `[title]`),主题 css 补 @supports(:has)
+     纯 CSS 切换(顺带修复 md-it 同款切换缺失);不支持 :has 退回首块静态;
+  5. **github-flavored-alerts + emoji**(commit c74aa2bc):`> [!TYPE]`
+     blockquote 转容器(与 ::: note 样式共用);remark-gemoji 正文 :gemoji:
+     转字符(fence/行内码保持字面);
 - 遗留记录:dead-link 检查未接(内核未采集链接)、错误行号未映射(容器
-  规整/snippet 展开插行)。
+  规整/snippet 展开插行)、react 容器专有语义未实现(教学已移除,无真实
+  使用)、mpa-mode `<script client>` 与 cms `@content` 注入待内核能力
+  (页面已标注)。
 
 
 ## 7. 主要影响与风险
