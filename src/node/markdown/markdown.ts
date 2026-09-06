@@ -227,10 +227,16 @@ export interface MarkdownOptions extends MarkdownItAsyncOptions {
   /* ==================== Markdown Extensions ==================== */
 
   /**
-   * Options for `@mdit/plugin-attrs`. Set to `false` to disable. The `fence`
-   * rule is off by default so that curly attributes never consume code block
-   * meta (e.g. line highlighting) - add classes to code blocks using shiki
-   * transformers instead.
+   * Options for `@mdit/plugin-attrs`. Set to `false` to disable.
+   *
+   * vitepress-react 把 attrs 分隔符默认设为 `((` `))` 而非上游的 `{` `}`:
+   * 花括号在正文里保留给 JSX 表达式(md 页面按 React 语义,`{expr}` 即
+   * 表达式求值),二者互不干扰。示例:标题锚点 `## 标题 ((#id))`、段落独立
+   * 行 `((.class))`、行内 `**文字**((.cls))`。
+   *
+   * The `fence` rule is off by default so that curly attributes never consume
+   * code block meta (e.g. line highlighting) - add classes to code blocks using
+   * shiki transformers instead.
    * @see https://mdit-plugins.github.io/attrs.html
    */
   attrs?: MarkdownItAttrsOptions | boolean
@@ -463,6 +469,9 @@ export async function createMarkdownRenderer(
         'blockEnd',
         'tasklist'
       ],
+      // `((` `))` 而非 `{` `}`:花括号留给正文 {expr}(JSX 表达式)
+      left: '((',
+      right: '))',
       ...normalizePluginOptions(options.attrs)
     })
   }

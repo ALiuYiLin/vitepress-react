@@ -10,8 +10,11 @@
 // 语义要点(与蓝本一致):
 //   - 大写开头标签命中「script 块导出名集合」→ 组件引用(属性透传);
 //     未命中 → 渲染为转义文本 + 警告(避免 JSX 编译期 ReferenceError);
-//   - 正文文本一律输出为 {"字符串字面量"} 表达式 —— 双花括号 {{ }} 与任何
-//     正文表达式都不会被求值(迁移 D1:动态内容用 script 块导出组件)。
+//   - 正文文本一律输出为 {"字符串字面量"} 表达式 —— {…} 是否求值由
+//     markdownToReact 的 maskJsxExpressions 先行决定:命中 @@VP_EXPR_n@@
+//     的段还原为真实 JSX 表达式(React 语义:正文 {expr} 即表达式),
+//     未命中的字面花括号在字符串内显示(迁移 D1:动态内容用 script 块
+//     导出组件或正文 {expr})。
 //   - 顶层固定 <div className="vp-doc"> 包裹(与上游 Vue 版 template 一致)。
 
 interface JsxNode {
@@ -491,7 +494,7 @@ export function serializeHtmlToJsx(
   componentNames: ReadonlySet<string> = new Set(),
   expressions: Record<
     string,
-    { expr?: string; literal?: string; html?: string }
+    { expr?: string; html?: string }
   > = {},
   indent = '  '
 ): { code: string; warnings: string[] } {
@@ -578,11 +581,10 @@ export function serializeHtmlToJsx(
   /**
    * 把一段已解码文本渲染成 JSX:
    * - @@VP_EXPR_n@@ → 表达式 `{code}`(与 Page 作用域共享);
-   * - @@VP_TXT_n@@  → 字面花括号文本;
    * - @@VP_HTML_n@@ → 原样恢复作者写的 JSX 标签代码(整行占位,见
    *   markdownToReact 的 maskJsxHtmlLines),其余为字符串字面量段。
    */
-  const VP_EXPR_RE = /@@VP_(EXPR|TXT|HTML)_(\d+)@@/g
+  const VP_EXPR_RE = /@@VP_(EXPR|HTML)_(\d+)@@/g
   const textWithExpr = (decoded: string): string => {
     if (!decoded.includes('@@VP_')) return `{${JSON.stringify(decoded)}}`
     VP_EXPR_RE.lastIndex = 0
@@ -597,8 +599,6 @@ export function serializeHtmlToJsx(
       const entry = expressions[`${Number(m[2])}`]
       if (m[1] === 'EXPR' && entry?.expr != null) {
         parts.push(`{${entry.expr}}`)
-      } else if (m[1] === 'TXT' && entry?.literal != null) {
-        parts.push(`{${JSON.stringify(entry.literal)}}`)
       } else if (m[1] === 'HTML' && entry?.html != null) {
         parts.push(entry.html)
       } else {
@@ -612,8 +612,9 @@ export function serializeHtmlToJsx(
     return parts.join('')
   }
 
-  // 文本一律输出为 {"字符串字面量"} / 表达式段:正文里的 {{ }} / {expr} 默认
-  // 永远是字面文本;命中 @@VP_EXPR_n@@ 的段会被还原成 JSX 表达式。
+  // 文本一律输出为 {"字符串字面量"} / 表达式段:正文的 {…} 语义由
+  // markdownToReact 的 maskJsxExpressions 决定(一律为 JSX 表达式);
+  // 字面花括号需在源 md 里用 \{ 转义,或写入行内码 / 代码块。
   const renderText = (raw: string, pad: string): string => {
     const decoded = decodeEntities(raw)
     if (!decoded) return ''
