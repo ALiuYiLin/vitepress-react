@@ -86,7 +86,7 @@ export async function resolvePages(
     discoveredPages.clear()
   }
 
-  const allMarkdownFiles = await glob(['**/*.md'], {
+  const allMarkdownFiles = await glob(['**/*.md', '**/*.mdx'], {
     cwd: siteConfig.srcDir,
     ignore: siteConfig.userConfig.srcExclude
   })

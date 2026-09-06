@@ -67,7 +67,8 @@ const isPageChunk = <T extends Rolldown.OutputChunk | Rolldown.RenderedChunk>(
   !!(
     chunk.type === 'chunk' &&
     chunk.isEntry &&
-    chunk.facadeModuleId?.endsWith('.md')
+    chunk.facadeModuleId != null &&
+    /\.(?:md|mdx)$/.test(chunk.facadeModuleId)
   )
 
 const cleanUrl = (url: string): string => url.replace(/[?#].*$/s, '')
@@ -109,10 +110,12 @@ export async function createVitePressPlugin(
     cleanUrls
   } = siteConfig
 
-  let markdownToReact: (
-    src: string,
-    file: string
-  ) => Promise<MarkdownCompileResult>
+  let markdownToReact: {
+    /** M1:markdown-it + HTML→JSX(.md 默认;markdown.mdx 时不用) */
+    md: (src: string, file: string) => Promise<MarkdownCompileResult>
+    /** M2:mdx-kernel 编译(.mdx 恒用;.md 在 markdown.mdx/VP_MDX_RENDER 时用) */
+    mdx: (src: string, file: string) => Promise<MarkdownCompileResult>
+  }
 
   let siteData = site
   let allDeadLinks: MarkdownCompileResult['deadLinks'] = []
@@ -131,8 +134,9 @@ export async function createVitePressPlugin(
       siteConfig.publicDir = config.publicDir
       // pre-resolve git timestamps
       if (lastUpdated) await cacheAllGitTimestamps(srcDir)
-      // M2 预览(mdx 分支):markdown.mdx 开关,或 VP_MDX_RENDER=1 环境变量
-      // (仅 dev 实验用,不承诺 API)。两分支返回相同的页面模块契约。
+      // M2 预览:同一站点内 .mdx 恒走 mdx-kernel,en 的 .md 走 M1;
+      // markdown.mdx 开关(或 VP_MDX_RENDER=1 环境变量,dev 实验)可把
+      // .md 也切到 mdx 分支逐页对比。两分支返回相同的页面模块契约。
       const renderArgs = [
         srcDir,
         markdown ?? {},
@@ -143,10 +147,10 @@ export async function createVitePressPlugin(
         cleanUrls ?? false,
         siteConfig
       ] as const
-      markdownToReact = Boolean((markdown ?? {}).mdx) ||
-        process.env.VP_MDX_RENDER === '1'
-        ? await createMdxToReactRenderFn(...renderArgs)
-        : await createMarkdownToReactRenderFn(...renderArgs)
+      markdownToReact = {
+        md: await createMarkdownToReactRenderFn(...renderArgs),
+        mdx: await createMdxToReactRenderFn(...renderArgs)
+      }
     },
 
     config() {
@@ -233,10 +237,11 @@ export async function createVitePressPlugin(
     transform: {
       // dev 页面请求形如 /index.md?t=<ts>,需容忍 query(rolldown-vite 传给
       // filter 的 id 会带 query;build 阶段无 query)
-      filter: { id: [docsearchRE, /\.md(\?.*)?$/] },
+      filter: { id: [docsearchRE, /\.(?:md|mdx)(\?.*)?$/] },
       async handler(code, id) {
         const cleanId = id.split('?')[0]
-        if (cleanId.endsWith('.md')) {
+        if (/\.(?:md|mdx)$/.test(cleanId)) {
+          const isMdx = cleanId.endsWith('.mdx')
           const watchIncludes = (files: string[] = []) => {
             files.forEach((i) => {
               ;(importerMap[slash(i)] ??= new Set()).add(slash(cleanId))
@@ -244,10 +249,17 @@ export async function createVitePressPlugin(
             })
           }
 
-          // transform .md files into a React page module (TSX), then compile
-          // it to JS with oxc so the browser/dev-server just sees a
+          // transform .md/.mdx files into a React page module (TSX), then
+          // compile it to JS with oxc so the browser/dev-server just sees a
           // regular JS module (mirrors upstream's md→vueSrc + plugin-vue flow)
-          const { reactSrc, deadLinks, includes, pageData } = await markdownToReact(
+          // .mdx 恒走 mdx-kernel;.md 默认 M1(markdown.mdx 时也走 M2)
+          const renderFn = isMdx
+            ? markdownToReact.mdx
+            : Boolean((markdown ?? {}).mdx) ||
+                process.env.VP_MDX_RENDER === '1'
+              ? markdownToReact.mdx
+              : markdownToReact.md
+          const { reactSrc, deadLinks, includes, pageData } = await renderFn(
             code,
             cleanId
           ).catch((e: { includes?: string[] }) => {
@@ -373,7 +385,10 @@ export async function createVitePressPlugin(
           const chunk = bundle[name]
           if (isPageChunk(chunk)) {
             const hash = chunk.fileName.match(hashRE)![1]
-            pageToHashMap![chunk.name.toLowerCase()] = hash
+            // .mdx 页 chunk 名归一到 .md 形态,匹配客户端 pathToFile 的查找
+            pageToHashMap![
+              chunk.name.toLowerCase().replace(/\.mdx$/, '.md')
+            ] = hash
           }
         }
       }
@@ -384,7 +399,7 @@ export async function createVitePressPlugin(
       const relativePath = path.posix.relative(srcDir, file)
 
       // update pages, dynamicRoutes and rewrites on md file creation / deletion
-      if (file.endsWith('.md') && type !== 'update') {
+      if (/\.(?:md|mdx)$/.test(file) && type !== 'update') {
         await resolvePages(siteConfig)
       }
 

@@ -37,7 +37,7 @@ export async function renderPage(
   additionalHeadTags: HeadConfig[],
   usedIcons: Set<string>
 ) {
-  const routePath = `/${page.replace(/\.md$/, '')}`
+  const routePath = `/${page.replace(/\.(?:md|mdx)$/, '')}`
   const relativeBase = isRelativeBase(config.site.base)
   const pageBase = relativeBase ? relativePathToRoot(page) : config.site.base
 
@@ -65,7 +65,11 @@ export async function renderPage(
     rendered.vpIcons?.forEach((icon: string) => usedIcons.add(icon))
   }
 
-  const pageName = sanitizeFileName(page.replace(/\//g, '_'))
+  // 页面模块的运行时命名统一按 .md 形态(.mdx 页也归一到 .md),
+  // 与客户端 pathToFile 的 ".md" 语义对齐
+  const pageName = sanitizeFileName(
+    page.replace(/\//g, '_').replace(/\.mdx$/, '.md')
+  )
   // server build doesn't need hash
   const pageServerJsFileName = pageName + '.js'
 
@@ -239,7 +243,10 @@ export async function renderPage(
   </body>
 </html>`
 
-  const htmlFileName = path.join(config.outDir, page.replace(/\.md$/, '.html'))
+  const htmlFileName = path.join(
+    config.outDir,
+    page.replace(/\.(?:md|mdx)$/, '.html')
+  )
   await mkdir(path.dirname(htmlFileName), { recursive: true })
   const finalHtml = desentinel(html)
   const transformedHtml = await config.transformHtml?.(

@@ -9,8 +9,9 @@ export async function buildMPAClient(
   config: SiteConfig
 ): Promise<Rolldown.RolldownOutput> {
   const files = Object.keys(js)
-  const themeFiles = files.filter((f) => !f.endsWith('.md'))
-  const pages = files.filter((f) => f.endsWith('.md'))
+  const isPage = (f: string) => /\.(?:md|mdx)$/.test(f)
+  const themeFiles = files.filter((f) => !isPage(f))
+  const pages = files.filter((f) => isPage(f))
 
   return build({
     root: config.srcDir,

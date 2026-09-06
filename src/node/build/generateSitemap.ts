@@ -37,8 +37,8 @@ export async function generateSitemap(
     const localeDir = page.split('/')[0]
 
     const url = page
-      .replace(/(^|\/)index\.md$/, '$1')
-      .replace(/\.md$/, siteConfig.cleanUrls ? '' : '.html')
+      .replace(/(^|\/)index\.(?:md|mdx)$/, '$1')
+      .replace(/\.(?:md|mdx)$/, siteConfig.cleanUrls ? '' : '.html')
 
     const key = localeDirs.includes(localeDir)
       ? page.slice(localeDir.length + 1)

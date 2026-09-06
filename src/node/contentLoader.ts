@@ -117,7 +117,7 @@ export function createContentLoader<T = ContentData[]>(
       const raw = await pMap(
         files,
         async (file) => {
-          if (!file.endsWith('.md')) return null
+          if (!/\.(?:md|mdx)$/.test(file)) return null
 
           const timestamp = (await stat(file)).mtimeMs
           const cached = cache.get(file)
@@ -140,8 +140,8 @@ export function createContentLoader<T = ContentData[]>(
           const url =
             '/' +
             relativePath
-              .replace(/(^|\/)index\.md$/, '$1')
-              .replace(/\.md$/, config.cleanUrls ? '' : '.html')
+              .replace(/(^|\/)index\.(?:md|mdx)$/, '$1')
+              .replace(/\.(?:md|mdx)$/, config.cleanUrls ? '' : '.html')
 
           // pass a markdown env so plugins (e.g. the internal link plugin)
           // resolve links, `cleanUrls` and paths the same way as during a

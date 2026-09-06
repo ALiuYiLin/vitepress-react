@@ -294,7 +294,7 @@ async function emitIconsCSS(
     async (page) => {
       const file = path.join(
         config.outDir,
-        (config.rewrites.map[page] || page).replace(/\.md$/, '.html')
+        (config.rewrites.map[page] || page).replace(/\.(?:md|mdx)$/, '.html')
       )
       const html = await readFile(file, 'utf-8').catch(() => null)
       if (html === null || !html.includes(placeholder)) return

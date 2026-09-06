@@ -74,7 +74,7 @@ function normalizeDriveLetter(file: string) {
 function getResolutionCache(siteConfig: SiteConfig) {
   // @ts-expect-error internal
   if (siteConfig.__dirty) {
-    __pages = siteConfig.pages.map((p) => slash(p.replace(/\.md$/, '')))
+    __pages = siteConfig.pages.map((p) => slash(p.replace(/\.(?:md|mdx)$/, '')))
 
     __dynamicRoutes = new Map(
       siteConfig.dynamicRoutes.map((r) => [

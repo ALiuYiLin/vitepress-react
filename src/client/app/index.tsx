@@ -96,19 +96,33 @@ function loadPageModule(): (path: string) => Promise<PageModule | null> {
 
     if (pageFilePath) {
       if (import.meta.env.DEV) {
-        pageModule = await import(/*@vite-ignore*/ pageFilePath).catch((e) => {
-          // page load could fail for other reasons, don't swallow
-          console.error(e)
-          // try with/without trailing slash
-          const url = new URL(pageFilePath!, 'http://a.com')
-          const retry =
-            (url.pathname.endsWith('/index.md')
-              ? url.pathname.slice(0, -9) + '.md'
-              : url.pathname.slice(0, -3) + '/index.md') +
-            url.search +
-            url.hash
-          return import(/*@vite-ignore*/ retry)
-        })
+        pageModule = await import(/*@vite-ignore*/ pageFilePath).catch(
+          async (e) => {
+            // page load could fail for other reasons, don't swallow
+            console.error(e)
+            // 页面源文件可能为 .md 或 .mdx:pathToFile 恒生成 .md 形态,
+            // 失败时依次尝试裸页/index 互换与另一扩展
+            const url = new URL(pageFilePath!, 'http://a.com')
+            const stem = url.pathname.replace(/\.(?:md|mdx)$/, '')
+            const candidates = []
+            for (const ext of ['.md', '.mdx']) {
+              candidates.push(stem + '/index' + ext, stem + ext)
+            }
+            const tried = new Set([url.pathname])
+            for (const cand of candidates) {
+              if (tried.has(cand)) continue
+              tried.add(cand)
+              try {
+                return await import(
+                  /*@vite-ignore*/ cand + url.search + url.hash
+                )
+              } catch {
+                // try the next candidate
+              }
+            }
+            throw e
+          }
+        )
       } else {
         pageModule = await import(/*@vite-ignore*/ pageFilePath)
       }
