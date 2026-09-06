@@ -1,0 +1,25 @@
+/**
+ * 代码块标题条:独立 fence 的 meta `[title]`(如 ```json [package.json])
+ * 在代码块顶部渲染为标题行(与 md-it/M1 preWrapper 语义一致);
+ * code-group 内的块不渲染(标题已作为 tab 名)。
+ *
+ * 结构:div.language-* > div.vp-code-block-title + button.copy + span.lang + pre
+ * 标题行以 flow 子元素置于 pre 之前,背景与代码块一致、底部分隔线,
+ * 视觉上类似 code-group 的 tabs 行。
+ */
+.vp-doc [class*='language-'] > .vp-code-block-title {
+  margin: 0;
+  padding: 0.4375rem 1.5rem;
+  background-color: var(--vp-code-block-bg);
+  border-bottom: 1px solid var(--vp-code-tab-divider);
+  font-size: 0.875rem;
+  font-weight: 500;
+  line-height: 1.4;
+  color: var(--vp-code-lang-color);
+  user-select: none;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  /*rtl:ignore*/
+  text-align: left;
+}

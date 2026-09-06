@@ -2,7 +2,8 @@
 // transformers(meta 行高亮 {1,3-5}、行号 :line-numbers、diff/focus/
 // highlight/error 注释记号),输出结构与 M1 preWrapper+lineNumbers 对齐:
 //   div.language-<lang>[.active][.line-numbers-mode]
-//     > button.copy + span.lang + pre(shiki) [+ div.line-numbers-wrapper]
+//     > button.copy + span.lang [+ div.vp-code-block-title(独立 fence [title])]
+//     + pre(shiki) [+ div.line-numbers-wrapper]
 // 这样默认主题的代码块样式与复制按钮交互无需改动即可复用。
 //
 // 编译管线配合:compile.ts 在 remarkRehype options 提供自定义 `code`
@@ -308,7 +309,10 @@ export function rehypeCodeHighlight(options: {
   const runtime = options.runtime ?? {}
   return async (tree: Root): Promise<void> => {
     if (!highlighter) return
-    const walk = async (children: any[]): Promise<void> => {
+    const walk = async (
+      children: any[],
+      inCodeGroup = false
+    ): Promise<void> => {
       for (let i = 0; i < children.length; i++) {
         const node = children[i]
         if (!node || node.type !== 'element') continue
@@ -320,9 +324,7 @@ export function rehypeCodeHighlight(options: {
                 (c: any) => c.type === 'element' && c.tagName === 'code'
               )
             : undefined
-          const text = code
-            ? collectText(code.children)
-            : ''
+          const text = code ? collectText(code.children) : ''
           try {
             const wrapper = await highlighter.codeToHast(
               text,
@@ -337,13 +339,31 @@ export function rehypeCodeHighlight(options: {
                 const cls = wrapper.properties?.className
                 if (Array.isArray(cls)) cls.push('active')
               }
+              // 独立代码块标题([title],与 md-it 教学语义一致):顶部标题条;
+              // code-group 内块不显示(其标题已作 tab 名,避免重复)
+              if (!inCodeGroup) {
+                const title = meta.match(/\[(.*?)\]/)?.[1]
+                if (title) {
+                  wrapper.children.splice(2, 0, {
+                    type: 'element',
+                    tagName: 'div',
+                    properties: { className: ['vp-code-block-title'] },
+                    children: [{ type: 'text', value: title }]
+                  })
+                }
+              }
               children[i] = wrapper
             }
           } catch {
             // 保留占位 pre(普通文本代码块),不中断整页
           }
         } else if (Array.isArray(node.children)) {
-          await walk(node.children)
+          const groupHere =
+            inCodeGroup ||
+            String(node.properties?.className ?? '')
+              .split(' ')
+              .includes('vp-code-group')
+          await walk(node.children, groupHere)
         }
       }
     }

@@ -179,6 +179,9 @@ function createCodeGroupOpenRender(md: MarkdownItAsync): RenderRule {
           tabs += `<input type="radio" name="group-${idx}" id="tab-${i}" ${checked}><label data-title="${md.utils.escapeHtml(title)}" for="tab-${i}">${title}</label>`
 
           if (checked && !isHtml) tokens[i].info += ' active'
+          // 组内 fence 的 [title] 已作 tab 名:标记后 preWrapper 只剥不渲染标题条
+          // (attrGet 对空串返回 ''(falsy),须存非空值)
+          if (!isHtml) tokens[i].attrSet('data-no-title', '1')
           checked = ''
         }
       }

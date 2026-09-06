@@ -22,6 +22,9 @@ export function preWrapperPlugin(md: MarkdownItAsync, options: Options) {
     const [tokens, idx, , env] = args
     const token = tokens[idx]
 
+    // 代码块标题(```lang [title]):先于剥离捕获;code-group 内块由容器
+    // 插件打 data-no-title 标记(标题已作 tab 名),只剥不渲染
+    const title = token.info.match(/\[(.*)\]/)?.[1]
     // remove title from info
     token.info = token.info.replace(/\[.*\]/, '')
 
@@ -41,10 +44,16 @@ export function preWrapperPlugin(md: MarkdownItAsync, options: Options) {
     const copiedText =
       localeButton?.copiedText || options.codeCopyButton.copiedText
 
+    const titleBlock =
+      title && !token.attrGet('data-no-title')
+        ? `<div class="vp-code-block-title">${md.utils.escapeHtml(title)}</div>`
+        : ''
+
     return (
       `<div class="language-${lang}${active}">` +
       `<button title="${tooltipText}" data-copied="${copiedText}" class="copy"></button>` +
       `<span class="lang">${label}</span>` +
+      titleBlock +
       fence(...args) +
       '</div>'
     )

@@ -130,8 +130,23 @@ describe('mdx 代码高亮', () => {
     expect(code).toContain('language-ts')
     // data 占位残留清除
     expect(code).not.toContain('data-cg-active')
+    // 组内块的 [title] 已作 tab 名,不渲染标题条(避免与 tab 重复)
+    expect(code).not.toContain('vp-code-block-title')
     // 不再按普通容器渲染
     expect(code).not.toContain('code-group custom-block')
+  })
+
+  it('独立 fence 的 [title] 渲染标题条(vp-code-block-title)', async () => {
+    const { code } = await compile(
+      ['```json [package.json]', '{ "scripts": { "dev": "vitepress" } }', '```'].join('\n')
+    )
+    expect(code).toContain('vp-code-block-title')
+    expect(code).toContain('package.json')
+    expect(code).toContain('language-json')
+    // 标题条在 shiki pre 之前(children 顺序序列化)
+    expect(code.indexOf('vp-code-block-title')).toBeLessThan(
+      code.indexOf('shiki')
+    )
   })
 
   it('未启用高亮时 code-group 保持普通容器(无 tabs)', async () => {
