@@ -92,6 +92,13 @@ export interface MarkdownOptions extends MarkdownItAsyncOptions {
   /* ==================== General Options ==================== */
 
   /**
+   * 切换 MDX 渲染管线(M2,实验):md 页改经 @10coding/mdx-kernel 编译为
+   * React 页面模块,而非 M1 的 markdown-it + HTML→JSX 序列化。默认关闭。
+   * 差异见 src/node/mdxToReact.ts 头部注释;支持逐页回归对比(docs P3)。
+   */
+  mdx?: boolean
+
+  /**
    * Configure the markdown-it instance before any plugins are applied.
    */
   preConfig?: (md: MarkdownRenderer) => Awaitable<void>

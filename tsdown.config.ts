@@ -803,6 +803,9 @@ const node: UserConfig = {
   deps: {
     // devDependencies are bundled by design
     onlyBundle: false,
+    // mdx-kernel 是源码直出 workspace 包(无 dist 产物),强制打入 cli,
+    // 否则发布产物会把 exports 指向 .ts,Node ESM 无法直接加载
+    alwaysBundle: [/^@10coding\/mdx-kernel$/],
     // markdown-it types are provided by @types/markdown-it (a runtime dep)
     dts: { neverBundle: /^markdown-it(?:\/|$)/ }
   },

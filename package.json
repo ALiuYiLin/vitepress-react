@@ -109,11 +109,11 @@
     "vite": "^8.2.1"
   },
   "devDependencies": {
+    "@10coding/mdx-kernel": "workspace:*",
     "@10coding/plugin-jsx-scoped": "0.2.0",
     "@10coding/postcss-jsx-scoped": "0.1.0",
     "@arethetypeswrong/cli": "^0.18.5",
     "@babel/core": "^7.26.0",
-    "@types/babel__core": "^7.20.5",
     "@clack/prompts": "^1.7.0",
     "@iconify/utils": "^3.1.4",
     "@mdit-vue/plugin-component": "^3.0.2",
@@ -131,6 +131,7 @@
     "@mdit/plugin-tasklist": "^1.0.2",
     "@polka/compression": "^1.0.0-next.28",
     "@rolldown/pluginutils": "^1.0.1",
+    "@types/babel__core": "^7.20.5",
     "@types/cross-spawn": "^6.0.6",
     "@types/mark.js": "^8.11.12",
     "@types/minimist": "^1.2.5",
@@ -139,6 +140,8 @@
     "@types/react": "^19.0.0",
     "@types/react-dom": "^19.0.0",
     "@types/semver": "^7.8.0",
+    "@vitejs/plugin-vue": "^6.0.8",
+    "@vue/compiler-sfc": "^3.5.42",
     "conventional-changelog": "^8.1.1",
     "conventional-changelog-angular": "^9.2.1",
     "cross-spawn": "^7.0.6",
@@ -176,6 +179,7 @@
     "tsdown": "^0.22.14",
     "typescript": "^6.0.3",
     "vitest": "^4.1.10",
+    "vue": "^3.5.42",
     "wait-on": "^9.1.0"
   },
   "peerDependencies": {

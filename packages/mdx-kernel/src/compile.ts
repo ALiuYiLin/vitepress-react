@@ -82,12 +82,18 @@ export async function compileDocument(
 
   // 1) include 展开(字符层、递归);2) snippet 展开(字符层、fence 感知)
   if (srcDir || filePath) {
-    const includeRes = await expandIncludes(src, { srcDir, filePath, silent, warn })
-    src = includeRes.src
-    dependencies.push(...includeRes.dependencies)
-    const snippetRes = await expandSnippets(src, { srcDir, filePath, silent, warn })
-    src = snippetRes.src
-    dependencies.push(...snippetRes.dependencies)
+    try {
+      const includeRes = await expandIncludes(src, { srcDir, filePath, silent, warn })
+      src = includeRes.src
+      dependencies.push(...includeRes.dependencies)
+      const snippetRes = await expandSnippets(src, { srcDir, filePath, silent, warn })
+      src = snippetRes.src
+      dependencies.push(...snippetRes.dependencies)
+    } catch (e) {
+      // 把已收集的依赖挂到错误上:调用方(watch 失效)据此恢复页面
+      ;(e as { includes?: string[] }).includes = dependencies
+      throw e
+    }
   }
 
   // 3) 容器开/闭行上下文规整(行级,fence 感知;mdx 编译前)
@@ -124,7 +130,8 @@ export async function compileDocument(
     remarkPlugins: remarkPluginList,
     rehypePlugins: rehypePlugins as any,
     remarkRehypeOptions: {
-      handlers: { vpContainer: renderVpContainer }
+      // vpContainer 是自研 mdast 节点,不在 mdast-util-to-hast 白名单里
+      handlers: { vpContainer: renderVpContainer } as Record<string, unknown>
     }
   })
 

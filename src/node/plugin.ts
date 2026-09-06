@@ -29,6 +29,7 @@ import {
   createMarkdownToReactRenderFn,
   type MarkdownCompileResult
 } from './markdownToReact'
+import { createMdxToReactRenderFn } from './mdxToReact'
 import { assetsBasePlugin } from './plugins/assetsBasePlugin'
 import { iconsPlugin } from './plugins/iconsPlugin'
 import { dynamicRoutesPlugin } from './plugins/dynamicRoutesPlugin'
@@ -108,9 +109,10 @@ export async function createVitePressPlugin(
     cleanUrls
   } = siteConfig
 
-  let markdownToReact: Awaited<
-    ReturnType<typeof createMarkdownToReactRenderFn>
-  >
+  let markdownToReact: (
+    src: string,
+    file: string
+  ) => Promise<MarkdownCompileResult>
 
   let siteData = site
   let allDeadLinks: MarkdownCompileResult['deadLinks'] = []
@@ -129,7 +131,9 @@ export async function createVitePressPlugin(
       siteConfig.publicDir = config.publicDir
       // pre-resolve git timestamps
       if (lastUpdated) await cacheAllGitTimestamps(srcDir)
-      markdownToReact = await createMarkdownToReactRenderFn(
+      // M2 预览(mdx 分支):markdown.mdx 开关,或 VP_MDX_RENDER=1 环境变量
+      // (仅 dev 实验用,不承诺 API)。两分支返回相同的页面模块契约。
+      const renderArgs = [
         srcDir,
         markdown ?? {},
         // the site base, not the vite base: the ssr build runs under the
@@ -138,7 +142,11 @@ export async function createVitePressPlugin(
         lastUpdated ?? false,
         cleanUrls ?? false,
         siteConfig
-      )
+      ] as const
+      markdownToReact = Boolean((markdown ?? {}).mdx) ||
+        process.env.VP_MDX_RENDER === '1'
+        ? await createMdxToReactRenderFn(...renderArgs)
+        : await createMarkdownToReactRenderFn(...renderArgs)
     },
 
     config() {
