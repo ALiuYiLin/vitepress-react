@@ -79,3 +79,22 @@ describe('compileDocument: 关闭开关', () => {
     expect(code).not.toContain('katex')
   })
 })
+
+describe('compileDocument: scopeAttr(markdownScopedCss 宿主注入)', () => {
+  it('scopeAttr 注入到产物所有元素(标题/段落/代码占位)', async () => {
+    const { code } = await compileDocument(
+      '# 标题\n\n正文段落 **粗**\n\n```ts\nconst x = 1\n```\n',
+      { scopeAttr: 'data-v-abc123', srcDir: '.', filePath: '/tmp/scope-test.mdx' }
+    )
+    expect(code).toContain('data-v-abc123')
+    const first = code.indexOf('data-v-abc123')
+    expect(first).toBeGreaterThan(-1)
+    // 标题与代码块占位 pre 都被注入(计数>=3:h1/p/pre)
+    expect(code.match(/data-v-abc123/g)?.length ?? 0).toBeGreaterThanOrEqual(3)
+  })
+
+  it('不传 scopeAttr 不注入 data-v-*', async () => {
+    const { code } = await compileDocument('段落正文\n')
+    expect(code).not.toContain('data-v-')
+  })
+})

@@ -18,6 +18,7 @@ import path from 'node:path'
 
 import { compileDocument, createCodeHighlighter } from '@10coding/mdx-kernel'
 import type { CodeHighlighter } from '@10coding/mdx-kernel'
+import { computeScopeAttr } from '@10coding/plugin-jsx-scoped'
 import { LRUCache } from 'lru-cache'
 import { createDebug } from 'obug'
 
@@ -210,9 +211,20 @@ export async function createMdxToReactRenderFn(
 ) {
   // 代码高亮:shiki 实例与渲染函数同生命周期(configResolved 时创建一次)
   const highlighter = await createMdxHighlighter(options)
+  // themeConfig.markdownScopedCss:mdx 页 *.scoped.* 导入的 scoped 样式。
+  // css 由 jsx-scoped 管线处理(vite-plugin 的 babel 无法给 mdx 的 jsx()
+  // 调用产物注入 data-v-*),故此处用同源算法(computeScopeAttr,页面路径
+  // 作种子)生成 scope 属性名,编译时由 mdx-kernel 在 hast 层注入到所有元素
+  const scopeEnabled = Boolean(
+    siteConfig.site?.themeConfig?.markdownScopedCss
+  )
   return async (src: string, file: string): Promise<MarkdownCompileResult> => {
+    // scope 种子须与 vite-plugin 的 cleanId 一致:在 rewrites 改写 file 前取值
+    const scopeAttr =
+      scopeEnabled && /\.scoped\.(?:css|scss|sass|less)/i.test(src)
+        ? computeScopeAttr(file)
+        : undefined
     const { ts } = getResolutionCache(siteConfig)
-
     const srcHash = hash('sha256', src, 'base64url')
     const relativePath = slash(path.relative(srcDir, file))
     const cacheKey = `${srcHash}:${ts}:${relativePath}`
@@ -250,6 +262,7 @@ export async function createMdxToReactRenderFn(
       const compiled = await compileDocument(src, {
         srcDir,
         filePath: file,
+        scopeAttr,
         highlight: highlighter
           ? {
               highlighter,

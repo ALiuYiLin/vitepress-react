@@ -60,6 +60,14 @@ export interface MdxCompileOptions {
     highlighter: CodeHighlighter
     runtime?: CodeHighlightRuntime
   } | null
+  /**
+   * host scoped css(markdownScopedCss)的 scope 属性名,如 `data-v-6b26034f`。
+   * mdx 产物是 jsx() 调用形态(estree),vite-plugin-jsx-scoped 的 babel 只给
+   * 语法 JSX 元素注入 scope 属性——因此由本层在 hast 末尾给所有元素补该
+   * 属性(md-it/md 页同款语义:页面 DOM 全部带 data-v-{hash})。hash 须与
+   * css 侧同源(宿主用 computeScopeAttr 对页面路径生成),否则选择器不命中。
+   */
+  scopeAttr?: string
 }
 
 export interface MdxCompileResult {
@@ -148,6 +156,10 @@ export async function compileDocument(
       }
     ])
   }
+  // scope 属性注入须在高亮之后(给最终元素补 data-v-*,含高亮 wrapper/行 token)
+  if (options.scopeAttr) {
+    rehypePlugins.push([rehypeAddScopeAttr, { attr: options.scopeAttr }])
+  }
 
   // remark-attributes 通过 `this.data()` 注册 micromark 扩展,必须按实例 use;
   // compile 的 remarkPlugins 数组项支持 [plugin, options] 元组。
@@ -191,6 +203,27 @@ export async function compileDocument(
 }
 
 // ---------- vpContainer 渲染(mdast-util-to-hast handler) ----------
+
+/**
+ * scope 属性注入(rehype 阶段末尾):给所有元素补 scopeAttr(如 data-v-{hash})。
+ * 跳过 <style>(md 页 jsx-scoped 同款:style 标签不加);值用空串字符串,
+ * mdx 产物序列化为 `attr: ""`,React 渲染出 data-v-xxx=""(属性存在即可命中
+ * css 的 [data-v-{hash}] 选择器)。
+ */
+function rehypeAddScopeAttr(options: { attr: string }) {
+  return (tree: any) => {
+    const walk = (nodes: any[]): void => {
+      for (const node of nodes) {
+        if (!node || node.type !== 'element') continue
+        if (node.tagName !== 'style' && node.properties) {
+          node.properties[options.attr] = ''
+        }
+        if (Array.isArray(node.children)) walk(node.children)
+      }
+    }
+    walk(tree.children ?? [])
+  }
+}
 
 /**
  * 代码块占位 handler(仅高亮启用时):把 mdast code 的 lang/meta 暂存到
