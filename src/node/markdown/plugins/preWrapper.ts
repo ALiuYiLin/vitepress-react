@@ -44,19 +44,22 @@ export function preWrapperPlugin(md: MarkdownItAsync, options: Options) {
     const copiedText =
       localeButton?.copiedText || options.codeCopyButton.copiedText
 
-    const titleBlock =
-      title && !token.attrGet('data-no-title')
-        ? `<div class="vp-code-block-title">${md.utils.escapeHtml(title)}</div>`
-        : ''
-
-    return (
+    // 独立 fence 的 [title]:与官方 vitepress 同构 —— 语言 wrapper 整体被
+    // vp-code-block-title 包裹,内嵌标题条(bar>span[data-title]);
+    // code-group 内块由容器插件打 data-no-title 标记(只剥不渲染)
+    const titleText = md.utils.escapeHtml(title || '')
+    const block =
       `<div class="language-${lang}${active}">` +
       `<button title="${tooltipText}" data-copied="${copiedText}" class="copy"></button>` +
       `<span class="lang">${label}</span>` +
-      titleBlock +
       fence(...args) +
       '</div>'
-    )
+    const titled =
+      title && !token.attrGet('data-no-title')
+        ? `<div class="vp-code-block-title"><div class="vp-code-block-title-bar"><span class="vp-code-block-title-text" data-title="${titleText}">${titleText}</span></div>${block}</div>`
+        : block
+
+    return titled
   }
 }
 

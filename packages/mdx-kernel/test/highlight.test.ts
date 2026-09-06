@@ -136,17 +136,22 @@ describe('mdx 代码高亮', () => {
     expect(code).not.toContain('code-group custom-block')
   })
 
-  it('独立 fence 的 [title] 渲染标题条(vp-code-block-title)', async () => {
+  it('独立 fence 的 [title] 渲染标题条(官方 vitepress 结构)', async () => {
     const { code } = await compile(
       ['```json [package.json]', '{ "scripts": { "dev": "vitepress" } }', '```'].join('\n')
     )
-    expect(code).toContain('vp-code-block-title')
+    // 外层 vp-code-block-title 包裹 bar > span[data-title] 与 language wrapper
+    expect(code).toContain('vp-code-block-title-bar')
+    expect(code).toContain('vp-code-block-title-text')
+    expect(code).toContain('data-title')
     expect(code).toContain('package.json')
     expect(code).toContain('language-json')
-    // 标题条在 shiki pre 之前(children 顺序序列化)
-    expect(code.indexOf('vp-code-block-title')).toBeLessThan(
-      code.indexOf('shiki')
-    )
+    const outerIdx = code.indexOf('vp-code-block-title')
+    const barIdx = code.indexOf('vp-code-block-title-bar')
+    const langIdx = code.indexOf('language-json')
+    expect(outerIdx).toBeGreaterThan(-1)
+    expect(barIdx).toBeGreaterThan(outerIdx)
+    expect(langIdx).toBeGreaterThan(barIdx)
   })
 
   it('未启用高亮时 code-group 保持普通容器(无 tabs)', async () => {

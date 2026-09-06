@@ -2,8 +2,11 @@
 // transformers(meta 行高亮 {1,3-5}、行号 :line-numbers、diff/focus/
 // highlight/error 注释记号),输出结构与 M1 preWrapper+lineNumbers 对齐:
 //   div.language-<lang>[.active][.line-numbers-mode]
-//     > button.copy + span.lang [+ div.vp-code-block-title(独立 fence [title])]
-//     + pre(shiki) [+ div.line-numbers-wrapper]
+//     > button.copy + span.lang + pre(shiki) [+ div.line-numbers-wrapper]
+//   独立 fence 带 [title] 时,外层再包(与官方 vitepress 同构):
+//     div.vp-code-block-title
+//       > div.vp-code-block-title-bar > span.vp-code-block-title-text[data-title]
+//       > div.language-<lang>(上述结构)
 // 这样默认主题的代码块样式与复制按钮交互无需改动即可复用。
 //
 // 编译管线配合:compile.ts 在 remarkRehype options 提供自定义 `code`
@@ -339,20 +342,46 @@ export function rehypeCodeHighlight(options: {
                 const cls = wrapper.properties?.className
                 if (Array.isArray(cls)) cls.push('active')
               }
-              // 独立代码块标题([title],与 md-it 教学语义一致):顶部标题条;
-              // code-group 内块不显示(其标题已作 tab 名,避免重复)
+              // 独立代码块标题([title]):结构对齐官方 vitepress —— 整个
+              // 语言 wrapper 被外层 vp-code-block-title 包裹,内嵌标题条:
+              //   div.vp-code-block-title
+              //     > div.vp-code-block-title-bar
+              //         > span.vp-code-block-title-text[data-title] 标题
+              //     > div.language-<lang>(button+span.lang+pre 原样)
+              // code-group 内块不渲染(标题已作 tab 名,避免重复)
               if (!inCodeGroup) {
                 const title = meta.match(/\[(.*?)\]/)?.[1]
                 if (title) {
-                  wrapper.children.splice(2, 0, {
+                  children[i] = {
                     type: 'element',
                     tagName: 'div',
                     properties: { className: ['vp-code-block-title'] },
-                    children: [{ type: 'text', value: title }]
-                  })
+                    children: [
+                      {
+                        type: 'element',
+                        tagName: 'div',
+                        properties: { className: ['vp-code-block-title-bar'] },
+                        children: [
+                          {
+                            type: 'element',
+                            tagName: 'span',
+                            properties: {
+                              className: ['vp-code-block-title-text'],
+                              'data-title': title
+                            },
+                            children: [{ type: 'text', value: title }]
+                          }
+                        ]
+                      },
+                      wrapper
+                    ]
+                  }
+                } else {
+                  children[i] = wrapper
                 }
+              } else {
+                children[i] = wrapper
               }
-              children[i] = wrapper
             }
           } catch {
             // 保留占位 pre(普通文本代码块),不中断整页

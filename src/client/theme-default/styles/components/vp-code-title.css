@@ -1,25 +1,37 @@
 /**
- * 代码块标题条:独立 fence 的 meta `[title]`(如 ```json [package.json])
- * 在代码块顶部渲染为标题行(与 md-it/M1 preWrapper 语义一致);
- * code-group 内的块不渲染(标题已作为 tab 名)。
- *
- * 结构:div.language-* > div.vp-code-block-title + button.copy + span.lang + pre
- * 标题行以 flow 子元素置于 pre 之前,背景与代码块一致、底部分隔线,
- * 视觉上类似 code-group 的 tabs 行。
+ * 代码块标题条(独立 fence 的 meta `[title]`,与官方 vitepress DOM/样式对齐):
+ *   div.vp-code-block-title
+ *     > div.vp-code-block-title-bar > span.vp-code-block-title-text[data-title]
+ *     > div.language-<lang>(普通代码块 wrapper)
+ * 标题条与 code-group tabs 同风格(底部分隔线),块顶圆角归零,
+ * code-group 内的块不渲染此结构(标题已作 tab 名)。
  */
-.vp-doc [class*='language-'] > .vp-code-block-title {
-  margin: 0;
-  padding: 0.4375rem 1.5rem;
+.vp-code-block-title-bar {
+  position: relative;
+  margin: 16px -24px 0px;
   background-color: var(--vp-code-block-bg);
-  border-bottom: 1px solid var(--vp-code-tab-divider);
-  font-size: 0.875rem;
+  overflow-x: auto;
+  font-size: 14px;
   font-weight: 500;
-  line-height: 1.4;
-  color: var(--vp-code-lang-color);
-  user-select: none;
+  color: var(--vp-code-tab-text-color);
   white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  /*rtl:ignore*/
-  text-align: left;
+  transition: background-color 0.5s;
+  border-radius: 8px 8px 0px 0px;
+  padding: 0px 12px;
+  box-shadow: inset 0 -1px var(--vp-code-tab-divider);
+}
+
+.custom-block .vp-code-block-title-bar {
+  margin: 16px 0px 0px;
+}
+
+.vp-code-block-title-text {
+  padding: 0px 12px;
+  line-height: 48px;
+}
+
+.vp-code-block-title div[class*='language-'] {
+  margin-top: 0px !important;
+  border-top-left-radius: 0px !important;
+  border-top-right-radius: 0px !important;
 }
