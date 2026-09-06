@@ -60,11 +60,11 @@ vitepress-react 内置该插件的编译管线,但虚拟 css 的加载需要**�
 
 ## 用法一:内联 `<style scoped>`
 
-样式块直接写在 md 里;正文中想被选中的元素用 attrs 语法 `{.class}` 加类
+样式块直接写在 md 里;正文中想被选中的元素用 attrs 语法 `((.class))` 加类
 (标题写在行尾,段落写在独立一行):
 
 ```md
-## 卡片标题 {.scoped-card-title}
+## 卡片标题 ((.scoped-card-title))
 
 <style scoped>
 .scoped-card-title {
@@ -88,9 +88,9 @@ vitepress-react 内置该插件的编译管线,但虚拟 css 的加载需要**�
 
 ### 实时效果
 
-`#### 这就是标题 {.md-scoped-live-title}` + 下面的 `<style scoped>`:
+`#### 这就是标题 ((.md-scoped-live-title))` + 下面的 `<style scoped>`:
 
-#### 这就是标题 {.md-scoped-live-title}
+#### 这就是标题 ((.md-scoped-live-title))
 
 <style scoped>
 .md-scoped-live-title {
@@ -129,15 +129,15 @@ import './md-scoped-demo.scoped.css'
 
 带类卡片段落,`strong` 加粗文字应显示 danger 色。
 
-{.md-scoped-card}
+((.md-scoped-card))
 ```
 
 ### 实时效果
 
 下方卡片用的就是 `./md-scoped-demo.scoped.css`(本页顶部 `<script>` 已真实导入;
-类名由独立一行的 `{.md-scoped-card}` 注入):
+类名由独立一行的 `((.md-scoped-card))` 注入):
 
-{.md-scoped-card}
+((.md-scoped-card))
 
 **加粗文字**的 danger 色来自外部 scoped 文件的选择器
 `.md-scoped-card strong`(同样被 scope 化)。
@@ -148,8 +148,8 @@ import './md-scoped-demo.scoped.css'
   同页多个 scoped 资源(内联 + 外部)共用同一 hash;
 - **页面内所有 DOM 都会被注入 `data-v-{hash}`**(编译期由管线统一注入),
   因此选择器也可以直接按元素写,例如 `.vp-doc p`(只会命中本页段落);
-- **给正文元素加类**:标题 `## x {.class}` 行尾、段落换行后独立一行 `{.class}`、
-  行内文本 `文字{.class}`(attrs 语法);若在正文里直接写整行 JSX(React 接管),
+- **给正文元素加类**:标题 `## x ((.class))` 行尾、段落换行后独立一行 `((.class))`、
+  行内文本 `文字((.class))`(attrs 语法);若在正文里直接写整行 JSX(React 接管),
   则按 JSX 规则用 `className`;
 - **全局样式**仍写不带 `scoped` 的 `<style>`(运行时注入全站),两种写法可同时
   出现在一页;

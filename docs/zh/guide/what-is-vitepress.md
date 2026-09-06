@@ -2,15 +2,15 @@
 description: VitePress 是一个专为构建快速、以内容为中心的网站而设计的静态站点生成器，由 Vite 和 React 驱动。
 ---
 
-# VitePress 是什么？ {#what-is-vitepress}
+# VitePress 是什么？ ((#what-is-vitepress))
 
 VitePress 是一个[静态站点生成器](https://en.wikipedia.org/wiki/Static_site_generator) (SSG)，专为构建快速、以内容为中心的站点而设计。简而言之，VitePress 获取用 Markdown 编写的内容，对其应用主题，并生成可以轻松部署到任何地方的静态 HTML 页面。
 
-::: tip {no-title}
+::: tip ((no-title))
 只是想尝试一下？跳到[快速开始](./getting-started)。
 :::
 
-## 使用场景 {#use-cases}
+## 使用场景 ((#use-cases))
 
 - **文档**
 
@@ -20,7 +20,7 @@ VitePress 是一个[静态站点生成器](https://en.wikipedia.org/wiki/Static_
 
   VitePress 支持[完全的自定义主题](./custom-theme)，具有标准 Vite + React 应用程序的开发体验。基于 Vite 构建还意味着可以直接利用其生态系统中丰富的 Vite 插件。此外，VitePress 提供了灵活的 API 来[加载数据](./data-loading)（本地或远程），也可以[动态生成路由](./routing#dynamic-routes)。只要可以在构建时确定数据，就可以使用它来构建几乎任何东西。
 
-## 开发体验 {#developer-experience}
+## 开发体验 ((#developer-experience))
 
 VitePress 旨在使用 Markdown 生成内容时提供出色的开发体验。
 
@@ -30,7 +30,7 @@ VitePress 旨在使用 Markdown 生成内容时提供出色的开发体验。
 
 - **[React 增强的 Markdown](./using-react)**：Markdown 被编译为静态 HTML 并经 JSX 序列化。可以用 `<script>` 块编写 React 组件 / 页面作用域状态（hooks 合法），在正文中用组件标签或 `{expr}` 嵌入交互性；页面级 scoped 样式见 [md 页面 scoped 样式](./md-scoped-demo)。
 
-## 性能 {#performance}
+## 性能 ((#performance))
 
 与许多传统的 SSG 不同，每次导航都会导致页面完全重新加载，VitePress 生成的网站在初次访问时提供静态 HTML，但它会变成[单页应用程序](https://en.wikipedia.org/wiki/Single-page_application)（SPA）以进行站点内的后续导航。我们认为，这种模式为性能提供了最佳平衡：
 
@@ -46,7 +46,7 @@ VitePress 旨在使用 Markdown 生成内容时提供出色的开发体验。
 
   为了在静态 Markdown 中嵌入动态 React 内容，每个 Markdown 页面都会先被编译为 TSX 页面模块，再交给 oxc 转成 JavaScript。页面正文的静态部分在编译期即被序列化，动态部分（表达式、组件）只承担其自身的水合成本，从而最小化激活开销与有效负载。
 
-## 与 VuePress / 上游 VitePress 的关系 {#what-about-vuepress}
+## 与 VuePress / 上游 VitePress 的关系 ((#what-about-vuepress))
 
 VitePress 灵感来源于 VuePress（一个基于 Vue 的静态站点生成器）。**本仓库是 VitePress 的 React 移植版**：构建/路由/默认主题/正文渲染均为 React 实现，配置项与文档沿用上游语义；需要 Vue 语法与组件的地方（如部分历史文档、`{{ }}` 插值、`.vue` 组件）不再适用，请参考[在 Markdown 中使用 React](./using-react) 的规则。
 

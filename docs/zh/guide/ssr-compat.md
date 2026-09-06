@@ -3,7 +3,7 @@ outline: deep
 description: 确保 VitePress 主题组件和自定义代码兼容服务端渲染 (SSR)。
 ---
 
-# SSR 兼容性 {#ssr-compatibility}
+# SSR 兼容性 ((#ssr-compatibility))
 
 VitePress 使用 React 的服务端渲染能力，在生产构建期间于 Node.js 中预渲染整个应用。这意味着主题组件、页面 `<script>` 里的组件以及任何自定义代码都要考虑 **SSR 兼容性**。
 
@@ -25,11 +25,11 @@ VitePress 使用 React 的服务端渲染能力，在生产构建期间于 Node.
 
 `ClientOnly` 在主题与 md 页面里都可直接使用（见[样式与客户端专属内容](./using-react#styles-and-client-only)）。
 
-## 在导入时访问浏览器 API 的库 {#libraries-that-access-browser-api-on-import}
+## 在导入时访问浏览器 API 的库 ((#libraries-that-access-browser-api-on-import))
 
 一些库在**模块导入时**就读取 `window`/`document`。要安全使用它们，请延迟到浏览器端再 `import()`。
 
-### 在 effect 中导入 {#importing-in-effect}
+### 在 effect 中导入 ((#importing-in-effect))
 
 页面 `<script>` 里定义组件，把动态导入放进 `useEffect`：
 
@@ -59,7 +59,7 @@ export function WindowLibDemo() {
 <WindowLibDemo />
 ```
 
-### 条件导入 {#conditional-import}
+### 条件导入 ((#conditional-import))
 
 也可以使用 `import.meta.env.SSR`（[Vite 环境变量](https://cn.vite.dev/guide/env-and-mode.html#env-and-mode)）在客户端才导入依赖：
 
@@ -89,7 +89,7 @@ export default {
 
 > 本 fork 没有 Vue 的插件（plugin/`app.use`）概念；对应注册行为通过 `enhanceApp` 或主题组件的 effect 完成。
 
-### 懒加载客户端组件(`React.lazy`) {#lazy-client-components}
+### 懒加载客户端组件(`React.lazy`) ((#lazy-client-components))
 
 VitePress 的 Vue 版提供了 `defineClientComponent` 辅助函数；React fork 用标准的 `React.lazy` + `Suspense` 即可，再配合 `<ClientOnly>` 保证 SSR 不解析该组件：
 

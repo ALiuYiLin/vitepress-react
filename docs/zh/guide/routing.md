@@ -3,9 +3,9 @@ outline: deep
 description: 了解 VitePress 基于文件的路由系统、动态路由、简洁 URL 和路径重写。
 ---
 
-# 路由 {#routing}
+# 路由 ((#routing))
 
-## 基于文件的路由 {#file-based-routing}
+## 基于文件的路由 ((#file-based-routing))
 
 VitePress 使用基于文件的路由，这意味着生成的 HTML 页面是从源 Markdown 文件的目录结构映射而来的。例如，给定以下目录结构：
 
@@ -29,11 +29,11 @@ guide/getting-started.md  -->  /guide/getting-started.html
 
 生成的 HTML 可以托管在任何支持静态文件的 Web 服务器上。
 
-## 根目录和源目录 {#root-and-source-directory}
+## 根目录和源目录 ((#root-and-source-directory))
 
 VitePress 项目的文件结构中有两个重要的概念：项目根目录 (**project root**) 和源目录 (**source directory**)。
 
-### 项目根目录 {#project-root}
+### 项目根目录 ((#project-root))
 
 项目根目录是 VitePress 将尝试寻找 `.vitepress-react` 特殊目录的地方。`.vitepress-react` 目录是 VitePress 配置文件、开发服务器缓存、构建输出和可选主题自定义代码的预留位置。
 
@@ -59,7 +59,7 @@ docs/index.md            -->  /index.html (可以通过 / 访问)
 docs/getting-started.md  -->  /getting-started.html
 ```
 
-### 源目录 {#source-directory}
+### 源目录 ((#source-directory))
 
 源目录是 Markdown 源文件所在的位置。默认情况下，它与项目根目录相同。但是，可以通过 [`srcDir`](../reference/site-config#srcdir) 配置选项对其进行配置。
 
@@ -80,7 +80,7 @@ src/index.md            -->  /index.html (可以通过 / 访问)
 src/getting-started.md  -->  /getting-started.html
 ```
 
-## 链接页面 {#linking-between-pages}
+## 链接页面 ((#linking-between-pages))
 
 在页面之间链接时，可以使用绝对路径和相对路径。请注意，虽然 `.md` 和 `.html` 扩展名都可以使用，但最佳做法是省略文件扩展名，以便 VitePress 可以根据配置生成最终的 URL。
 
@@ -96,19 +96,19 @@ src/getting-started.md  -->  /getting-started.html
 
 在[资源处理](./asset-handling)中了解有关链接到资源（例如图像）的更多信息。
 
-### 链接到非 VitePress 页面 {#linking-to-non-vitepress-pages}
+### 链接到非 VitePress 页面 ((#linking-to-non-vitepress-pages))
 
 如果想链接到站点中不是由 VitePress 生成的页面，需要使用完整的 URL（在新选项卡中打开）或明确指定 target：
 
 **输入**
 
 ```md
-[Link to pure.html](/pure.html){target="_self"}
+[Link to pure.html](/pure.html)((target="_self"))
 ```
 
 **输出**
 
-[Link to pure.html](/pure.html){target="_self"}
+[Link to pure.html](/pure.html)((target="_self"))
 
 ::: tip 注意
 
@@ -122,7 +122,7 @@ src/getting-started.md  -->  /getting-started.html
 
 :::
 
-## 生成简洁的 URL {#generating-clean-urls}
+## 生成简洁的 URL ((#generating-clean-urls))
 
 ::: warning 需要服务器支持
 要使 VitePress 提供简洁 URL，需要服务器端支持。
@@ -151,7 +151,7 @@ src/getting-started.md  -->  /getting-started.html
 └─ index.md
 ```
 
-## 路由重写 {#route-rewrites}
+## 路由重写 ((#route-rewrites))
 
 可以自定义源目录结构和生成页面之间的映射。当有一个复杂的项目结构时，它很有用。例如，假设有一个包含多个包的 monorepo，并且希望将文档与源文件一起放置，如下所示：
 
@@ -207,11 +207,11 @@ export default {
 ```
 :::
 
-## 动态路由 {#dynamic-routes}
+## 动态路由 ((#dynamic-routes))
 
 可以使用单个 Markdown 文件和动态数据生成许多页面。例如，可以创建一个 `packages/[pkg].md` 文件，为项目中的每个包生成相应的页面。这里，`[pkg]` 段是一个路由参数，用于区分每个页面。
 
-### 路径加载文件 {#paths-loader-file}
+### 路径加载文件 ((#paths-loader-file))
 
 由于 VitePress 是静态站点生成器，因此**必须**在构建时确定可能的页面路径。因此，动态路由页面必须伴随**路径加载文件**。对于 `packages/[pkg].md`，我们需要 `packages/[pkg].paths.js` (也支持 `.ts`)：
 
@@ -247,7 +247,7 @@ export default {
    └─ bar.html
 ```
 
-### 多参数 {#multiple-params}
+### 多参数 ((#multiple-params))
 
 动态路由可以包含多个参数：
 
@@ -284,7 +284,7 @@ export default {
    └─ bar-2.0.0.html
 ```
 
-### 动态生成路径 {#dynamically-generating-paths}
+### 动态生成路径 ((#dynamically-generating-paths))
 
 路径加载器模块在 Node.js 中运行，并且仅在构建期间执行。可以使用本地或远程的任何数据动态生成路径数组。
 
@@ -323,7 +323,7 @@ export default {
 }
 ```
 
-### 访问页面中的参数 {#accessing-params-in-page}
+### 访问页面中的参数 ((#accessing-params-in-page))
 
 可以使用参数将附加数据传递到每个页面。本 fork 是 React 语义（没有 `$params` 全局或 `{{ }}` 插值，规则见[在 Markdown 中使用 React](./using-react)）：在页面 `<script>` 的 page-scope 里通过 [`useData()`](../reference/runtime-api#usedata) 读取 `params`，再用正文 `{expr}` 引用：
 
@@ -340,7 +340,7 @@ const { params } = useData()
 
 `useData()` 是 hook，因此这段读取逻辑必须写在页面的 `<script>` 里（编译进 `Page()` 作用域），不能在模块顶层；`params` 即当前路由的参数对象。
 
-### 渲染原始内容 {#rendering-raw-content}
+### 渲染原始内容 ((#rendering-raw-content))
 
 传递给页面的参数将在客户端 JavaScript payload 中序列化，因此应该避免在参数中传递大量数据，例如从远程 CMS 获取的原始 Markdown 或 HTML 内容。
 

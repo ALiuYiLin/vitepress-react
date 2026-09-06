@@ -2,9 +2,9 @@
 description: 在文档页面上显示编辑链接，让用户可以在 GitHub 或 GitLab 上提交修改建议。
 ---
 
-# 编辑链接 {#edit-link}
+# 编辑链接 ((#edit-link))
 
-## 站点级配置 {#site-level-config}
+## 站点级配置 ((#site-level-config))
 
 编辑链接让你可以显示一个链接，以在 GitHub 或 GitLab 等 Git 管理服务上编辑页面。要启用它，请将 `themeConfig.editLink` 选项添加到配置中。
 
@@ -53,7 +53,7 @@ export default {
 }
 ```
 
-## frontmatter 配置 {#frontmatter-config}
+## frontmatter 配置 ((#frontmatter-config))
 
 可以使用 frontmatter 上的 `editLink` 选项单独禁用某个页面的编辑链接：
 

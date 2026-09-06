@@ -2,7 +2,7 @@
 description: VitePress 默认主题所有可用配置选项的参考。
 ---
 
-# 默认主题配置 {#default-theme-config}
+# 默认主题配置 ((#default-theme-config))
 
 主题配置可以让你能够自定义主题。可以通过将 `themeConfig` 添加到配置文件来进行主题配置：
 
@@ -342,7 +342,7 @@ export interface AlgoliaSearchOptions extends DocSearchProps {
 
 在[这里](https://github.com/ALiuYiLin/vitepress-react/blob/main/types/docsearch.d.ts)查看完整配置。
 
-## carbonAds {#carbon-ads}
+## carbonAds ((#carbon-ads))
 
 - 类型：`CarbonAdsOptions`
 

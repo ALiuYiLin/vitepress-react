@@ -2,7 +2,7 @@
 description: VitePress CLI 命令参考，包括 dev、build、preview 和 init 命令。
 ---
 
-# 命令行接口 {#command-line-interface}
+# 命令行接口 ((#command-line-interface))
 
 ## `vitepress-react dev`
 
@@ -18,7 +18,7 @@ vitepress
 vitepress-react dev [root]
 ```
 
-### 选项 {#options}
+### 选项 ((#options))
 
 | 选项            | 说明                                       |
 | --------------- | ------------------------------------------ |

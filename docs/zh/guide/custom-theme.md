@@ -2,9 +2,9 @@
 description: 在 VitePress（React fork）中创建和使用自定义主题，全面控制站点的外观和风格。
 ---
 
-# 自定义主题 {#using-a-custom-theme}
+# 自定义主题 ((#using-a-custom-theme))
 
-## 解析主题 {#theme-resolving}
+## 解析主题 ((#theme-resolving))
 
 可以通过创建一个 `.vitepress-react/theme/index.ts` 文件（即“主题入口文件”）来启用自定义主题：
 
@@ -25,7 +25,7 @@ description: 在 VitePress（React fork）中创建和使用自定义主题，�
 主题入口与组件是普通的 `.tsx`（React）文件，构建由 Vite 完成（TSX 自动 JSX runtime，无需额外插件）。不再有 `.vue` 文件或 Vue 应用实例。
 :::
 
-## 主题接口 {#theme-interface}
+## 主题接口 ((#theme-interface))
 
 VitePress 自定义主题是一个对象，该对象具有如下接口：
 
@@ -67,7 +67,7 @@ export default {
 
 默认导出是自定义主题的唯一方式；`Layout` 也是最常用的属性——从技术上讲，一个 VitePress 主题可以只是一个 React 布局组件。注意主题同样需要保证 [SSR 兼容](./ssr-compat)。
 
-## 构建布局 {#building-a-layout}
+## 构建布局 ((#building-a-layout))
 
 最基本的布局组件需要渲染 [`<Content />`](../reference/runtime-api#content)，它负责输出当前页面的 markdown 内容：
 
@@ -185,7 +185,7 @@ export default function Page() {
 
 请查看[运行时 API 参考](../reference/runtime-api)获取主题组件中所有可用的内容。此外，可以利用[构建时数据加载](./data-loading)生成数据驱动布局——例如，一个列出当前项目中所有文章入口的页面。
 
-## 分发自定义主题 {#distributing-a-custom-theme}
+## 分发自定义主题 ((#distributing-a-custom-theme))
 
 分发自定义主题最简单的方式是将其作为 [GitHub 模版仓库](https://docs.github.com/en/repositories/creating-and-managing-repositories/creating-a-template-repository)。
 
@@ -201,7 +201,7 @@ export default function Page() {
 
 5. 提供清晰的使用说明（见下节）。
 
-## 使用自定义主题 {#consuming-a-custom-theme}
+## 使用自定义主题 ((#consuming-a-custom-theme))
 
 要使用外部主题，请导入它并重新导出：
 
