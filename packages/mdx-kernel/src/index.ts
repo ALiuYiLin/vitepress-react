@@ -19,4 +19,5 @@ export {
   remarkContainers,
   DEFAULT_CONTAINER_TITLES
 } from './containers'
+export { remarkGithubAlerts } from './alerts'
 export { findRegions, stripRegionMarkers, dedent } from './regions'

@@ -12,11 +12,13 @@
 import { compile } from '@mdx-js/mdx'
 import remarkAttributes from 'remark-attributes'
 import remarkFrontmatter from 'remark-frontmatter'
+import remarkGemoji from 'remark-gemoji'
 import remarkMdxFrontmatter from 'remark-mdx-frontmatter'
 import remarkGfm from 'remark-gfm'
 import remarkMath from 'remark-math'
 import rehypeKatex from 'rehype-katex'
 import rehypeSlug from 'rehype-slug'
+import { remarkGithubAlerts } from './alerts'
 import { collectFrontmatterPlugin, collectHeadersPlugin } from './collect'
 import { remarkContainers, normalizeContainerSpacing } from './containers'
 import {
@@ -118,6 +120,8 @@ export async function compileDocument(
     // 注意:以 [plugin, options] 元组传入,由 compile 实例化。
     [remarkContainers, { titles: containerTitles, warn }],
     remarkAttributes,
+    // github-flavored alerts:blockquote 首行 > [!NOTE];在容器/attrs 之后跑
+    remarkGithubAlerts,
     remarkFrontmatter,
     // yaml 节点先采集(collectFrontmatter),再由 remark-mdx-frontmatter 转为 export const frontmatter
     collectFrontmatterPlugin,
@@ -125,6 +129,8 @@ export async function compileDocument(
   ]
   if (gfm) remarkPlugins.push(remarkGfm)
   if (math) remarkPlugins.push(remarkMath)
+  // emoji(:tada: → 🎉):放最后(只处理正文 text,不动容器/attrs 结构)
+  remarkPlugins.push(remarkGemoji)
 
   const rehypePlugins: unknown[] = []
   if (math) rehypePlugins.push(rehypeKatex)

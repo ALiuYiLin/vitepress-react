@@ -23,6 +23,7 @@
     "remark-attributes": "^0.4.4",
     "remark-frontmatter": "^5.0.0",
     "remark-gfm": "^4.0.1",
+    "remark-gemoji": "^8.0.0",
     "remark-math": "^6.0.0",
     "remark-mdx-frontmatter": "^5.2.0",
     "remark-parse": "^11.0.0",
