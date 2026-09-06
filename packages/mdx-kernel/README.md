@@ -70,14 +70,21 @@ vitepress-react **不是 VitePress 的 fork**,后续开发自己的独有能力�
 
 ## 4. attrs:社区方案评估(替代自研)
 
-候选:
-- **[remark-attributes](https://github.com/manuelmeister/remark-attributes)**(manuelmeister):README 明示"支持类似 markdown-it-attrs 的语法",即标题/块尾 `{#id}` / `{.cls}` / `{key=value}`;
-- `remark-attrs`(npm,维护状态一般)。
+**结论(v1,2026-09-06)**:采用 **[remark-attributes](https://github.com/manuelmeister/remark-attributes)**,作者**手动转义花括号**书写:
 
-**P0 必须验证的两点**:
-1. **语法形态**:若只支持 `{}` 大括号后缀,而 MDX 会把文本里的 `{…}` 解析为表达式——需要确认该插件作用于哪个阶段、能否在 MDX 表达式解析前消费(若不能,需编译前掩码,等于退回私有语法,届时再议);
-2. 覆盖位置(标题/段落/表格/行内)与 Vue 版 `@mdit/plugin-attrs` 语义的差异。
-> 若 POC 证明不可行,再回到"自研 mdast 属性注入 + 掩码"方案(见 `MDX-MIGRATION.md` §6 方案 C)。
+```md
+# 标题 \{#my-anchor\}
+
+段落 \{.lead\}
+
+[链接](https://a.com)\{target=_blank\}
+```
+
+- P0 实测(`@mdx-js/mdx` + remark-attributes `{mdx:true}`):标题/段落/链接/块级独立行均消费生效(见 `MDX-MIGRATION.md` §P0);
+- 裸 `{#id}` 会被 MDX 当表达式解析报 acorn 错——**必须转义**;
+- `key=val` 的 `key` 被插件按 React key 特殊处理;标题 children 可能带尾随空格(实现细节 P1 再核对);
+- **backlog(后续优化方向)**:自动转义适配层(位置状态机复用 `maskJsxExpressions` 保护清单 + 内容判别:acorn 必败形态与后缀位 `k=v` 才转义,行尾真表达式如 `{count}` 绝不转义 + 已转义 `\{…\}` 不二次转义),待核心切换稳定后评估。
+- ⚠️ 包为 WIP,支持面可能窄于 markdown-it-attrs:P1 需对每类节点做"转义→消费"矩阵实测,缺口处记录。
 
 ## 5. 已废弃/不迁移(相对 md-it 版)
 
