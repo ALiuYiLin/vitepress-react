@@ -1,0 +1,4 @@
+export default {
+  // 演示用初始配置
+  base: './'
+}

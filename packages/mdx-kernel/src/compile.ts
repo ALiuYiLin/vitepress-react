@@ -19,6 +19,8 @@ import rehypeKatex from 'rehype-katex'
 import rehypeSlug from 'rehype-slug'
 import { collectFrontmatterPlugin, collectHeadersPlugin } from './collect'
 import { remarkContainers, normalizeContainerSpacing } from './containers'
+import { expandIncludes } from './includes'
+import { expandSnippets } from './snippets'
 import type { MdxPageData } from './types'
 
 export type { MdxPageData, MdxHeader } from './types'
@@ -34,7 +36,13 @@ export interface MdxCompileOptions {
   slug?: boolean
   /** 容器缺省标题覆盖/新增(见 DEFAULT_CONTAINER_TITLES) */
   containerTitles?: Record<string, string>
-  /** 容器降级警告回调(缺省 console.warn) */
+  /** 文档根目录:include/snippet 的 '@/' 前缀解析基准 */
+  srcDir?: string
+  /** 当前文档文件绝对路径:include/snippet 的相对路径解析基准 */
+  filePath?: string
+  /** include/snippet 缺失时:警告并替换为空而非抛错(默认 false 抛错) */
+  silent?: boolean
+  /** 告警回调(容器降级、include/snippet 缺失等;缺省 console.warn) */
   warn?: (message: string) => void
 }
 
@@ -43,12 +51,16 @@ export interface MdxCompileResult {
   code: string
   /** PageData 契约(frontmatter/headers/title) */
   data: MdxPageData
+  /** include/snippet 读取的依赖文件绝对路径(供 watch 失效) */
+  dependencies: string[]
 }
 
 /**
  * 编译单个文档源字符串。
  * 说明:attrs 需作者转义(\{#id\}),裸 {#id} 会被 MDX 当表达式报错;
  * fence/行内码里的 {…} 由 markdown 解析天然保护,不经表达式。
+ * 管线:include 展开(文本) → snippet 展开(文本→fence) → 容器行规整
+ *      → @mdx-js/mdx 编译(容器化+attrs+frontmatter+gfm/math+headers)。
  */
 export async function compileDocument(
   src: string,
@@ -59,11 +71,26 @@ export async function compileDocument(
     math = true,
     slug = true,
     containerTitles,
+    srcDir,
+    filePath,
+    silent,
     warn,
     remarkAttributes: _attrs = true // 预留开关;v1 恒启用
   } = options
 
-  // 容器开/闭行上下文规整(行级,fence 感知;mdx 编译前)
+  const dependencies: string[] = []
+
+  // 1) include 展开(字符层、递归);2) snippet 展开(字符层、fence 感知)
+  if (srcDir || filePath) {
+    const includeRes = await expandIncludes(src, { srcDir, filePath, silent, warn })
+    src = includeRes.src
+    dependencies.push(...includeRes.dependencies)
+    const snippetRes = await expandSnippets(src, { srcDir, filePath, silent, warn })
+    src = snippetRes.src
+    dependencies.push(...snippetRes.dependencies)
+  }
+
+  // 3) 容器开/闭行上下文规整(行级,fence 感知;mdx 编译前)
   src = normalizeContainerSpacing(src)
 
   const remarkPlugins: unknown[] = [
@@ -113,7 +140,8 @@ export async function compileDocument(
 
   return {
     code: String(result),
-    data: { frontmatter, headers, title }
+    data: { frontmatter, headers, title },
+    dependencies
   }
 }
 
