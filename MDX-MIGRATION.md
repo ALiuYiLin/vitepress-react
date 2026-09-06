@@ -17,7 +17,7 @@ vitepress-react 不是 VitePress 的 fork,不继承上游后续功能,将开发�
 | # | 决策 | 一句话 |
 | --- | --- | --- |
 | D1 | Vue 模板语法(`{{ }}` 等)**不保留** | React 版不支持 Vue 语法;正文按 MDX 标准 |
-| D2 | attrs 走 **remark-attributes**(或 remark-attrs)**社区方案** | 不自研;P0 验证时序与语法(§5 风险) |
+| D2 | attrs 走 **remark-attributes** 社区方案 | P0 已验证:MDX 下可用,但**必须转义花括号**(`\{#id\}`);裸 `{#id}` 会被 MDX 当表达式(acorn 报错)。见 §P0 |
 | D3 | `<script>`/`<style>` 提取**本次不做** | 用 MDX 顶层 import/export 与 `import './x.css'`;后续需要再议 |
 | D4 | frontmatter 用 remark-frontmatter / remark-mdx-frontmatter | PageData 契约不变 |
 
@@ -76,6 +76,25 @@ frontmatter 剥离(remark-frontmatter / remark-mdx-frontmatter)
 1. `## 标题 {#id}` 与 `段落 {.cls}` 在 `@mdx-js/mdx compile` + remark-attributes 下:正常消费?报错?静默失效?
 2. 若失效:remark-attributes 放 remark 链的前/后是否有差异?是否需要先对 `{#id}` 形态掩码?
 3. 若可行:产物中 attrs 是否注入到对应节点(h2 id / p class)。
+
+## P0. 选型 POC 验证结果(2026-09-06)
+
+方法:独立实验目录 `temp/p0-mdx`(gitignored;`package.json` + `probe.mjs`/`probe2.mjs`,`@mdx-js/mdx@latest` compile 直出 JSX 产物)。
+
+| 项 | 结论 | 细节 |
+| --- | --- | --- |
+| **attrs + remark-attributes**(v0.4.4,`{mdx:true}`) | ✅ 可用,**但必须转义**:`\{#t1\}` | 标题/段落/链接/块级(独立行)均消费:`h1 id="t1"`、`p className="cls"`、`a target=_blank`、`ul className="a"`。**裸 `{#t1}` 一律失败**(acorn 表达式错)——MDX 的表达式解析先于属性语法,包自带 micromark 扩展也无法拦截。⚠️ WIP 包;`key=val` 里的 `key` 会被当 React key 特殊处理(产物进 `_jsx` 第三参);标题 children 可能带尾随空格 |
+| math(remark-math + rehype-katex) | ✅ | inline `$…$` 与 block `$$…$$` 均出 katex 产物;输出含 MathML 标签,主题需引 katex CSS |
+| 高亮(@shikijs/rehype) | ✅ 基础;**行高亮 meta `{2,4}` 不直接支持** | `pre.shiki` + span 高亮正常;Shiki transformers 走注释标记(`// [!code highlight]`)而非 md-it 的行号 meta。要保留 `{2,4}` 书写需 rehype-pretty-code 或自研 parseMeta(→ P2 选型) |
+| frontmatter | ✅ remark-frontmatter 剥离 + remark-mdx-frontmatter 暴露 | 产物:`export const frontmatter = {…}`;无 frontmatter 时输出 `export const frontmatter = undefined`(可接受) |
+| GFM 表格 | ✅ remark-gfm | table/thead/tr 齐全 |
+| 组合(全链) | ✅ | attrs + math + gfm 同页可共存 |
+
+### P0 对决策的影响
+
+1. **MDX 版 attrs 写作语法 = `\{…\}`(转义)**:md-it 版拍板的 `((…))` 在 MDX 内核下不适用(`((#id))` 也是表达式/报错);docs 现有 212 处 attrs 需在 P3 迁移到 `\{#id\}` / `\{.cls\}`。
+2. 「作者免转义」可选方案(轻量适配层:把行尾符合 attrs 形态的 `{#id}`/`{.cls}` 在喂给 mdx 前转义成 `\{…\}`)留作产品决策——写进正文还是保持显式转义,待定。
+3. 代码高亮引擎 P2 需在「@shikijs/rehype + 自研 meta」与「rehype-pretty-code(自带 `{2,4}` meta)」间定选,并把 md-it 版行高亮语义(meta 解析/代码组/复制)作为验收契约。
 
 ## 6. 阶段与里程碑
 
