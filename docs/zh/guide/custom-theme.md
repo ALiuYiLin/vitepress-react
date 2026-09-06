@@ -185,6 +185,60 @@ export default function Page() {
 
 请查看[运行时 API 参考](../reference/runtime-api)获取主题组件中所有可用的内容。此外，可以利用[构建时数据加载](./data-loading)生成数据驱动布局——例如，一个列出当前项目中所有文章入口的页面。
 
+## 基于默认主题布局组合 ((#composing-with-the-default-layout))
+
+不必从零自绘：默认主题的 `Layout` 是**自包含的普通 React 组件**（内部自己读取数据并渲染 SkipLink/导航/侧栏/内容/页脚），可以直接从 `@10coding/vitepress-react/theme` 导入，在自己的主题 `Layout` 里按条件**整页复用**，只对特定页面走自定义分支。
+
+```tsx [.vitepress-react/theme/Layout.tsx]
+import Theme from '@10coding/vitepress-react/theme'
+import { Content, useData } from '@10coding/vitepress-react'
+
+export default function CustomLayout() {
+  const { frontmatter } = useData()
+
+  // 未打标的页面 → 整套复用默认主题布局（home / doc / layout:false 等
+  // 分流默认主题已内部处理,不需要重复实现）
+  if (frontmatter.layout !== 'custom') {
+    return <Theme.Layout />
+  }
+
+  // frontmatter 打上 layout: custom 的页面 → 自绘
+  return (
+    <div className="vp-layout">
+      <h1>Custom Layout!</h1>
+      <Content />
+    </div>
+  )
+}
+```
+
+对应页面在 frontmatter 里标记：
+
+```md
+---
+layout: custom
+---
+```
+
+接线时用 `extends` 继承默认主题的其余能力，再覆盖 `Layout`：
+
+```ts [.vitepress-react/theme/index.ts]
+import Theme from '@10coding/vitepress-react/theme'
+import CustomLayout from './Layout.tsx'
+
+export default {
+  extends: Theme, // 继承默认主题其余字段;enhanceApp 会 base-first 链式执行
+  Layout: CustomLayout
+}
+```
+
+几个注意点：
+
+- **导入来源**：`Layout` 不在 `@10coding/vitepress-react` 根导出里（那里只有 `useData`/`Content` 等）；默认主题要写 `@10coding/vitepress-react/theme`。
+- **组合粒度是"整层"**：默认 `Layout` 不接受 `children`/props，也没有插槽——想微调导航、侧栏内部结构做不到复用默认外壳再局部替换，只能整页复用或整页自绘（要改内部就 fork 一份布局组件自己拼，上面的[构建布局](#building-a-layout)列了全部可拆分部件思路）。
+- **在默认布局外面再包一层**（如全站顶部横幅）是允许的：把 `<Theme.Layout />` 放进自己的容器即可。
+- **404**：此 fork 已废弃 `Theme.NotFound`，按 `page.isNotFound` 分支（参考[构建布局](#building-a-layout)里的 404 处理）；不特殊处理时让它走 `<Theme.Layout />` 也可以。
+
 ## 分发自定义主题 ((#distributing-a-custom-theme))
 
 分发自定义主题最简单的方式是将其作为 [GitHub 模版仓库](https://docs.github.com/en/repositories/creating-and-managing-repositories/creating-a-template-repository)。
