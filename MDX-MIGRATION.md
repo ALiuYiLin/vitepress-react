@@ -100,11 +100,42 @@ frontmatter 剥离(remark-frontmatter / remark-mdx-frontmatter)
 
 | 阶段 | 内容 | 出口标准 |
 | --- | --- | --- |
-| **P0 选型 POC(进行中)** | 最小 mdxjs 站点:remark-attributes 时序、remark-math+rehype-katex、Shiki 行高亮 meta、remark-frontmatter;纯文档页产物对比 | 四问有结论,写入本文档 §P0;决策 attrs 走社区还是回退自研 |
-| P1 内核替换 | compile 入口替换;PageData(headers/frontmatter/title)采集改 mdast;dead-link/行号重算;缓存适配 | 无 JSX 的纯文档页全量回归(对照 docs 现有页) |
-| P2 能力落地 | 自研件(containers、include/snippet、headers、permalink)+ 生态件接线 | 现有单测(markdown/containers/include/…)语义级验收 + docs 逐页对比 |
+| **P0 选型 POC(完成)** | 最小 mdxjs 站点:remark-attributes 时序、remark-math+rehype-katex、Shiki 行高亮 meta、remark-frontmatter;纯文档页产物对比 | 四问有结论,写入本文档 §P0;决策 attrs 走社区还是回退自研 |
+| **P1 内核(完成)** | mdx-kernel:compile 入口、PageData 采集、容器自研件、include/snippet | vitest 36 + smoke(attrs 生产语义)通过;containers 13 例、snippet 12 例 |
+| **P2 接入主仓库(完成)** | markdown.mdx 开关/VP_MDX_RENDER 分支;compileDocument 产物组装为页面模块(__pageData + div.vp-doc 包装);tsdown alwaysBundle 打包内核 | typecheck/build 绿;docs dev 默认与 mdx 模式代表页均 200;assembleMdxPage 单测 |
 | P3 文档迁移 | 教学页重写:`<script>`→import/export、attrs 语法、`{{}}` 移除、表达式作用域说明 | zh 文档全部页面 200 且语义与新规则一致 |
 | P4 收尾 | 删 mask/序列化/md-it 层与依赖、错误定位改 mdast position、性能/产物回归 | typecheck/build/单测/e2e、页面 200 |
+
+## 6.1 §P3 验证结果(全 zh 页 mdx 编译审计 + 结构采样)
+
+审计方式:`packages/mdx-kernel/scripts/audit-zh.mjs`(全量 zh/**/*.md 跑
+compileDocument,含 include/snippet/@/ 解析)→ `temp/p3-mdx/report.json`;
+结构采样 `scripts/sample-zh.mjs`(guide/markdown、guide/frontmatter、
+reference/default-theme-badge 的 headers 树/容器/表格)。
+
+- **总量**:zh 38 页;30 页 mdx 编译通过;8 页失败 = 6 页 M1 专属语法页
+  (using-react/md-react-rules/mpa-mode/md-scoped-demo/what-is-vitepress 等:
+  `<script>`、`::: react`、页内 JSX——待 P3 教学重写)+ **2 页纯文档页**:
+  `guide/i18n.md`、`reference/default-theme-search.md`——正文裸 URL(如
+  `http://…`)在 MDX 中报错,须改 `[text](url)` 或 `<url>`(自动链接差异)。
+- **纯文档页**(无 M1 专属语法)21 页,其中 19 页可编译。
+- 结构采样揭示的显示层差异(→ P3 迁移清单):
+  1. **attrs 未迁移(zh docs 全量)**:正文仍写 `((#id))`/`((.cls))`,mdx 内核
+     attrs 语法为 `\{#id\}`;现状标题文本残留 ` ((#…))` 字面、显式锚点 id
+     丢失(仅剩 rehype-slug 自动 slug),标题树 title 也含残字。zh docs 212 处
+     attrs 迁移是 P3 主体之一;
+  2. **emoji 未接入**(`:tada:` 字面)——内核需 remark-gemoji 或文档改 emoji
+     字符;
+  3. **主题组件(Badge/VPBadge)未注入**——mdx wrapper 的 components 映射
+     留 P2/P3 接线,default-theme-badge 页现状运行时缺组件;
+  4. **code-group 容器降级为普通容器**(无 tabs,内核已 warn);react 容器
+     同理(教学页重写时移除);
+  5. **代码高亮/行号 meta/复制按钮未接入**(P2 选型:shiki rehype vs
+     rehype-pretty-code,meta `{2,4}` 语义为 md-it 契约);
+  6. **github-flavored-alerts**(`> [!TYPE]`)在 md-it 有专用渲染,内核未实现。
+- 遗留记录:dead-link 检查未接(内核未采集链接)、错误行号未映射(容器
+  规整/snippet 展开插行)。
+
 
 ## 7. 主要影响与风险
 
