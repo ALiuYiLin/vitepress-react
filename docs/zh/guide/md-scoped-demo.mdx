@@ -1,31 +1,26 @@
 ---
 title: md 页面 scoped 样式
-description: 在 Markdown 中使用 Vue-like 页面级 scoped 样式 —— 外部 *.scoped.css 导入
+description: 在 Markdown 页面里使用页面级 scoped 样式:外部 *.scoped.css 导入、[data-v-hash] 作用域机制与 attrs 加类。
 ---
 
 import './md-scoped-demo.scoped.css'
 
 # md 页面 scoped 样式
 
-在 Markdown 页面里,除了全局 `<style>`(运行时注入,作用到全站),还可以写
-**Vue-like 的页面级 scoped 样式**:样式编译后选择器会追加 `[data-v-{hash}]`,
-同一页面的 DOM 也会带上 `data-v-{hash}` 属性——规则**只命中当前页面**,不会
-泄漏到其它页面(hash 由页面 md 文件的绝对路径生成,各页互不相同)。
+页面级 scoped 样式把样式**只作用于当前页面**:样式编译后选择器会追加 `[data-v-{hash}]`,页面正文的 DOM 也自动带上同一属性——规则只命中本页,不会泄漏到其它页面。`{hash}` 由页面文件的绝对路径生成,每一页各不相同;同一页面的多个 scoped 文件共用同一个 hash。
 
-开启后有两种写法:
+使用流程只有两步:**把样式写进独立的 `*.scoped.css` 文件,再在页面模块顶层 import 它**。
 
-| 写法 | 说明 |
-| --- | --- |
-| 内联 `<style scoped>…</style>` | 仅旧 markdown-it 内核(md 页)支持;mdx 文档页不支持(见下方「用法一」说明) |
-| 外部 `*.scoped.css` 导入 | 在文档顶层直接 `import './xx.scoped.css'`(模块级导入),样式放独立文件 |
-
-{/* 本页实时示例需要:下面的外部 scoped 样式导入(见「用法二」) */}
+::: tip 两种样式的分工
+- **全局样式**:普通 CSS 文件(不以 `.scoped.` 命名)顶层 `import './style.css'` —— 交给 Vite css 管线,作用于全局;
+- **页面级 scoped 样式**:`*.scoped.css` 文件顶层 `import './page.scoped.css'` —— 自动 scope 化,只命中本页。本页顶部就是真实导入。
+:::
 
 ## 启用
 
-该功能默认关闭(`false`)。需要两步:
+功能默认关闭,需要两步(本示例站点已开启,可直接跳到[用法](#usage)):
 
-1. 站点安装插件(虚拟 css 模块的 resolve/load 由它提供):
+1. 安装插件(虚拟 css 模块的 resolve/load 由它提供):
 
 ```bash
 pnpm add -D @10coding/vite-plugin-jsx-scoped
@@ -49,81 +44,70 @@ export default defineConfig({
 })
 ```
 
-::: tip 说明
-vitepress-react 内置该插件的编译管线,但虚拟 css 的加载需要**站点自己注册**
-一个插件实例(vitepress 核心与站点插件共享进程级 registry)。
-开启后,没有任何 `<style scoped>` / `*.scoped.*` 标记的页面完全不受影响
-(编译期快速检测,未命中时零解析开销)。
-:::
+## 用法 \{#usage\}
 
-## 用法一:内联 `<style scoped>`
-
-直接在 md 正文里写 `<style scoped>…</style>` 是旧 markdown-it 内核(md 页)支持的
-写法;在 .mdx 文档页(新 mdx 内核)中不再支持:mdx 会把 `<style>` 当作 JSX 标签
-解析,块内 CSS 的 `{}` 不是合法的 JSX 子文本,整页会编译直接失败;新内核也不
-提取正文里的 style 块。页面级 scoped 样式请统一使用下面的
-「用法二:外部 `*.scoped.css` 导入」;全局样式可写到站点样式或主题组件中。
-
-```md
-<!-- 反例:.mdx 正文中不要直接写 <style scoped> 块(CSS 的 {} 会令编译失败) -->
-  <style scoped>
-  .example { color: red; }
-  </style>
-```
-
-## 用法二:外部 `*.scoped.css` 导入
-
-把样式放进独立文件(文件名必须以 `.scoped.css` / `.scoped.scss` / `.scoped.sass`
-/ `.scoped.less` 结尾),再在文档顶层按**相对本 .mdx 文件**的路径 import:
+**1. 样式放进独立文件。** 文件名以 `.scoped.css`(或 `.scoped.scss` 等)结尾,内容就是普通 CSS,不需要手写任何属性选择器:
 
 ```css
-/* md-scoped-demo.scoped.css(与页面同目录) */
-.md-scoped-card {
-  border: 2px dashed var(--vp-c-brand-2);
-  border-radius: 10px;
-  padding: 0.9rem 1.1rem;
-}
-.md-scoped-card strong {
-  color: var(--vp-c-danger-1);
-}
+/* md-scoped-demo.scoped.css(与本页同目录) */
+.md-scoped-card { border: 2px dashed var(--vp-c-brand-2); border-radius: 10px; padding: 0.9rem 1.1rem; background: color-mix(in srgb, var(--vp-c-brand-1) 6%, transparent); }
+.md-scoped-card strong { color: var(--vp-c-danger-1); }
 ```
 
-```md
-import './md-scoped-demo.scoped.css'
+**2. 在页面模块顶层 import。** 与普通 `import` 一样写在 frontmatter 之后:
 
-带类卡片段落,`strong` 加粗文字应显示 danger 色。
+```mdx
+---
+title: 我的页面
+---
+
+import './page.scoped.css'
+
+# 我的页面
+
+正文……
+```
+
+编译时,`*.scoped.css` 里的每条规则都会被改写为带 `[data-v-{hash}]` 的形式(例如 `.md-scoped-card` → `.md-scoped-card[data-v-6b26034f]`),页面正文由 markdown 编译出的 DOM 元素也自动带上 `data-v-{hash}` 属性——写样式时按普通 CSS 写即可,不需要也不应该自己拼属性选择器。
+
+### 给正文元素加类与锚点 \{#adding-classes-and-anchors\}
+
+页面级 scoped 样式通常配合 **attrs** 给正文元素加类。mdx 内核的 attrs 书写为转义形态 `\{…\}`,作用于元素本身:
+
+| 位置 | 写法 | 作用 |
+| --- | --- | --- |
+| 标题行尾 | `## 标题 \{#anchor-1\}`、`## 标题 \{.my-cls\}` | 给该标题加 id / class(固定锚点) |
+| 块级元素之后独立一行 | `\{.my-card\}` | 作用于**紧邻其前的块**(段落、列表等) |
+
+下一节「实时效果」的卡片段落就是「块后独立 attrs 行」的例子,其源码是
+
+```mdx
+**加粗文字**的 danger 色来自……(同样被 scope 化)。
 
 \{.md-scoped-card\}
 ```
 
+attrs 语法更多说明见[Markdown 中的 React 规则](./md-react-rules#attrs)与[在 Markdown 中使用 React](./using-react)。
+
 ### 实时效果
 
-下方卡片用的就是 `./md-scoped-demo.scoped.css`(本页顶部已真实 import;
-类名由卡片段**之后**的独立 attrs 行 `\{.md-scoped-card\}` 注入——mdx 内核的
-attrs 书写为 `\{…\}`,作用于紧邻其前的块):
+本页顶部已真实导入 `./md-scoped-demo.scoped.css`。下面这段落被 `.md-scoped-card` 卡片化,**加粗文字**的 danger 色来自 `.md-scoped-card strong`——段落上的 class 由紧邻其后的独立 attrs 行注入(见上节):
 
-**加粗文字**的 danger 色来自外部 scoped 文件的选择器
-`.md-scoped-card strong`(同样被 scope 化)。
+**加粗文字**的 danger 色来自外部 scoped 文件的选择器 `.md-scoped-card strong`(同样被 scope 化)。
 
 \{.md-scoped-card\}
 
 ## 作用域语义与注意点
 
-- **hash 唯一**:`data-v-{hash}` 由页面文件绝对路径生成,每一页各不相同;
-  同页多个 scoped 文件共用同一 hash;
-- **页面内所有 DOM 都会被注入 `data-v-{hash}`**(编译期由管线统一注入),
-  因此选择器也可以直接按元素写,例如 `.vp-doc p`(只会命中本页段落);
-- **给正文元素加类**(mdx 内核 attrs,书写为 `\{…\}`,作用于紧邻其前的块):标题 `## x \{#id\}` 行尾(固定锚点)、块级元素后独立一行 `\{.class\}`、链接后 `[文字](url)\{target="_blank"\}` 等;若在正文里直接写整行 JSX(React 接管),
-  则按 JSX 规则用 `className`;
-- **全局样式**仍写不带 `scoped` 的 `<style>`(运行时注入全站);mdx 文档页不支持
-  正文内联 `<style scoped>`,多个外部 scoped 文件可同时出现在一页;
-- **失败降级**:极少数语法边界导致页面代码无法解析时,管线会告警并跳过 scoped
-  处理,页面照常编译;
-- **构建产物**:scoped css 交给 Vite css 管线(dev 注入 + HMR,build 抽取成 css
-  资源、仅由对应页面引入)。
+- **hash 唯一**:`data-v-{hash}` 由页面文件绝对路径生成,各页各不相同;同一页多个 scoped 文件共用同一 hash;
+- **全 DOM 注入**:页面正文编译出的所有元素都会带上 `data-v-{hash}`,因此选择器可以按元素直接写——例如 `.vp-doc p` 只会命中本页的段落;
+- **子选择器同样被 scope 化**:`.md-scoped-card strong` 编译为 `.md-scoped-card strong[data-v-{hash}]`,命中卡片内的后代 `strong`(后代元素自身也带属性);
+- **样式文件只归一个页面**:同一个 `*.scoped.css` 只能被一个页面 import,跨页面共享会在构建时报错;需要多页复用的样式请放进全局 css;
+- **失败降级**:极少数语法边界导致页面代码无法解析时,管线会告警并跳过 scoped 处理,页面照常编译。
+
+## 检查方式
 
 ::: details 检查方式
-- dev:打开本页,元素检查可见正文 DOM 带 `data-v-xxxxxxxx` 属性;
-- build:产物 html 同样带 `data-v-xxxxxxxx`,对应 css 资源里选择器形如
-  `.md-scoped-card[data-v-xxxxxxxx]`。
+- **dev**:打开本页,元素检查可见正文 DOM 带 `data-v-xxxxxxxx` 属性,样式规则形如 `.md-scoped-card[data-v-xxxxxxxx]`;
+- **build**:产物 html 同样带 `data-v-xxxxxxxx`,对应 css 资源里选择器形如 `.md-scoped-card[data-v-xxxxxxxx]`,且该 css 仅由本页引入。
 :::
