@@ -2,6 +2,8 @@
 description: 在 .mdx 文档页里直接写 React:顶层 import/export、正文 {expr} 表达式与 JSX 组件,让静态页面获得交互。
 ---
 
+import { useState } from 'react'
+
 # 在 Markdown 中使用 React
 
 需要组件 / 表达式的页面写成 **`.mdx`** 文件,由 mdx 内核编译:整份文件就是一个 React 模块,`import` / `export` 与 JSX 可以直接写在文件里。正文中普通文本是字面量,**单层 `{…}` 一律按 JSX 表达式求值**,与在 React 组件里写 JSX 是同一套语义。
@@ -11,13 +13,32 @@ description: 在 .mdx 文档页里直接写 React:顶层 import/export、正文 
 1. 在**模块顶层**(frontmatter 之后)用 `import` / `export` 声明组件、常量或数据;
 2. 在正文写 `{expr}` 求值表达式,或直接放 `<组件 />`。
 
-完整的规则清单(哪些写法会报错、attrs 的各个位置等)见[Markdown 中的 React 规则](./md-react-rules);给页面写只作用于本页的样式见[md 页面 scoped 样式](./md-scoped-demo)。
+给页面写只作用于本页的样式见[md 页面 scoped 样式](./md-scoped-demo);Markdown 扩展语法(表格、容器、告警、数学公式等)见[Markdown 扩展](./markdown)。
 
 ::: tip 正文的三个基本事实
 - **普通文本与 HTML 是字面量**,原样渲染;
 - **正文里的 `{…}` 按 JSX 表达式求值**——引用顶层绑定、做字面量运算、跑任意 JS 都行;
 - **代码块与行内代码永远是字面量**,里面的 `{…}` 不会被求值,也不需要任何转义。
 :::
+
+## 速查表
+
+| 写法 / 位置 | 处理结果 |
+| --- | --- |
+| 普通正文文字(不含 `{…}`) | 字面文本,原样渲染 |
+| 正文 `{expr}` | 按 **JSX 表达式**求值(React 语义):引用顶层绑定、纯字面量、任意 JS 都行;未定义引用 → 运行时 `ReferenceError`,语法错误 → 编译报错 |
+| 行内代码 / 代码块里的 `{…}` | 字面量,永不求值,可放心展示模板或示例 |
+| 顶层 `import` | 模块导入,正文与组件都可引用 |
+| 顶层 `export const` / `export function` | 声明组件、常量与数据;组件以 `<Xxx />` 使用,常量以 `{name}` 引用 |
+| hooks | 只能在**组件函数体内**调用;文件顶层与正文中都不允许 |
+| YAML frontmatter | 自动导出为模块变量 `frontmatter`,正文可写 `{frontmatter.xxx}` |
+| 独立成行的 `<标签>…</标签>` / `<组件 />` | 按 JSX 编译(块级 JSX 与相邻文本之间留空行) |
+| 段落里的 `<b>`、`<Badge … />` 等 | 行内 JSX,同样生效 |
+| 标题行尾 / 块后独立行的 `\{…\}` | **attrs 语法**(转义书写形态):`\{#id\}` 锚点、`\{.cls\}` 加类,作用于所在标题或紧邻其前的块(见[md 页面 scoped 样式](./md-scoped-demo#adding-classes-and-anchors)) |
+| `::: tip … :::` 等容器、`> [!NOTE]` 提示 | 照常渲染(见[Markdown 扩展](./markdown)) |
+| mdx 正文里的 `<style>` 块 | 会被当作 JSX 解析而编译失败;样式请走外部文件(见[样式](#styles-and-client-only)) |
+
+**JSX 属性按 React 规则写**:`class` → `className`,`style` → 对象,事件 → 驼峰函数(`onClick`);自定义组件用 PascalCase 命名,且必须先 import 或在本文件 export。
 
 ## 正文表达式
 
@@ -27,9 +48,9 @@ description: 在 .mdx 文档页里直接写 React:顶层 import/export、正文 
 - 字面量运算:`{1 + 1}`、`{'hi'.toUpperCase()}`;
 - 任意 JS 表达式:`{items.length ? '有' : '无'}`。
 
-例如正文里写 `{1 + 1}` 会渲染成 `2`。
+**实时演示**:本页的 `{1 + 1}` 就渲染成 **{1 + 1}**。
 
-想在**正文里显示花括号本身**(例如展示模板语法),把内容放进行内代码或代码块即可:`` `{x}` ``、`` `{1 + 1}` `` 都按字面显示。不要在正文里用转义花括号 `\{…\}` 显示字面量——在 mdx 内核里 `\{…\}` 是 **attrs(属性)语法**的书写形态,另有用途(见[给元素加类与锚点](./md-scoped-demo#adding-classes-and-anchors))。
+想**显示花括号本身**(例如展示模板语法),把内容放进行内代码或代码块即可:`` `{x}` ``、`` `{1 + 1}` `` 都按字面显示。不要在正文里用转义花括号 `\{…\}` 显示字面量——在 mdx 内核里 `\{…\}` 是 **attrs(属性)语法**的书写形态,另有用途(见[给元素加类与锚点](./md-scoped-demo#adding-classes-and-anchors))。
 
 写错即报错,与 JSX 一致:
 
@@ -71,15 +92,14 @@ export function Note() {
 要点:
 
 - 需要被正文引用的常量 / 组件,要么 `import` 进来、要么在本文件 `export`——正文只能引用**模块顶层绑定**,不要写不带 `export` 的裸顶层语句;
-- `frontmatter` 无需 import,也不要自行声明同名导出。
+- `frontmatter` 无需 import,也不要自行声明同名导出;
+- 构建期数据(data loader)与普通 ESM 一样导入:`import { data as posts } from './posts.data.js'`,然后在正文或组件里用 `{posts.length}`、`posts.map(...)` 消费(示例见[数据加载](./data-loading))。
 
-## 组件与 hooks:让内容交互
+## 组件与 hooks:让内容交互 \{#components-and-hooks\}
 
 正文本身不能持有状态或调用 hooks。需要交互(状态、副作用、事件)时,把 UI 封装成**组件并导出**,再在正文放 `<组件 />`:
 
 ````mdx
-import { useState } from 'react'
-
 export function Counter() {
   const [count, setCount] = useState(0)
   return (
@@ -92,11 +112,28 @@ export function Counter() {
 <Counter />
 ````
 
-保存为 `.mdx` 页面后,正文会渲染出一个可点击的按钮。规则:
+保存为 `.mdx` 页面后,正文会渲染出一个可点击的按钮。**本页实时渲染**(下方按钮就是本文用同一规则写的):
+
+export function LiveCounter() {
+  const [count, setCount] = useState(0)
+  return (
+    <button
+      style={{ border: '1px solid var(--vp-c-brand-1)', borderRadius: 8, padding: '4px 14px', cursor: 'pointer' }}
+      onClick={() => setCount(count + 1)}
+    >
+      count: {count}
+    </button>
+  )
+}
+
+<LiveCounter />
+
+规则:
 
 - **hooks(`useState` / `useEffect` / `useData` / `useRoute`…)只能在组件函数体内调用**,不能出现在文件顶层或正文;页面要状态,就把它封装成组件——每个组件各自持有自己的 state;
 - 组件名必须 **PascalCase**(React 依靠首字母大小写区分组件与原生元素),且是模块顶层绑定(import 或 export 而来);
-- `export function Xxx() {}` 与 `export const Xxx = () => …` 两种写法皆可。
+- `export function Xxx() {}` 与 `export const Xxx = () => …` 两种写法皆可;
+- 需要站点数据时同理——把 `useData()` 封装进组件(见[页面数据](#page-data))。
 
 ### 多行 JSX 与列表渲染
 
@@ -122,7 +159,7 @@ export const items = [
 
 行内小元素(`<b>…</b>`、`<Badge … />`)可以与文字在同一段落;**独立成行的块级 JSX**(`<ul>`、`<div>`、组件等)与前后文本之间用空行隔开。JSX 属性按 React 规则写:`class` → `className`,`style` → 对象,事件 → 驼峰函数 `onClick`;`{expr}` 照常求值。
 
-## 页面数据:useData / useRoute
+## 页面数据:useData / useRoute \{#page-data\}
 
 需要把站点/页面数据交进组件逻辑(例如作为 `useEffect` 的依赖)、或读取 `page` / `params` 字段时,用 `useData()`(返回 `site` / `page` / `frontmatter` / `params` 等)与 `useRoute()`——它们是 React hook,只能在**组件函数体内**调用:
 
@@ -234,4 +271,17 @@ import { ClientOnly } from '@10coding/vitepress-react'
 </ClientOnly>
 ````
 
-页面上的所有组件都要兼容 SSR——组件在服务端抛错会让构建失败,详见[SSR 兼容性](./ssr-compat)。
+## 常见错误与 SSR
+
+| 场景 | 结果 / 处理 |
+| --- | --- |
+| 正文 `{统计}`(未定义引用) | 运行时 `ReferenceError` |
+| 正文 `{#foo}`、`{1 +` 等非法表达式 | mdx 编译报错,错误信息定位到 `.mdx` 的行列;id / class 请用 attrs 写法 |
+| 使用了未 import / export 的 PascalCase 标签 | 运行时找不到该组件;先 `import` 或在本文件 `export` |
+| 在正文或模块顶层调用 hooks / 写普通 JS 语句 | 非法:封装成组件(见[组件与 hooks](#components-and-hooks)),或移进组件函数体 |
+| mdx 正文写 `<style>` / `<style scoped>` | 编译失败;样式放外部文件,页面级用 `*.scoped.css`(见[md 页面 scoped 样式](./md-scoped-demo)) |
+| 想展示 `{…}` / 模板示例本身 | 放进行内代码或代码块,永不求值 |
+
+::: warning SSR 兼容性
+页面上的所有 live 组件都要兼容 SSR:避免在组件体或模块顶层读写 `window` / `document`;浏览器专属逻辑放 `useEffect`、客户端专属组件或 `ClientOnly` 里——组件在服务端抛错会让构建失败,详见[SSR 兼容性](./ssr-compat)。
+:::
