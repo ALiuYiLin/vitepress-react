@@ -19,6 +19,11 @@ import rehypeKatex from 'rehype-katex'
 import rehypeSlug from 'rehype-slug'
 import { collectFrontmatterPlugin, collectHeadersPlugin } from './collect'
 import { remarkContainers, normalizeContainerSpacing } from './containers'
+import {
+  rehypeCodeHighlight,
+  type CodeHighlighter,
+  type CodeHighlightRuntime
+} from './highlight'
 import { expandIncludes } from './includes'
 import { expandSnippets } from './snippets'
 import type { MdxPageData } from './types'
@@ -44,6 +49,15 @@ export interface MdxCompileOptions {
   silent?: boolean
   /** 告警回调(容器降级、include/snippet 缺失等;缺省 console.warn) */
   warn?: (message: string) => void
+  /**
+   * 代码块语法高亮(可选):传 createCodeHighlighter 的实例 + 运行时选项;
+   * 缺省不高亮。启用后代码块输出与 md-it(M1)同构的
+   * `div.language-*` 包装(shiki token 着色/copy/lang 标签/行号/行高亮 meta)。
+   */
+  highlight?: {
+    highlighter: CodeHighlighter
+    runtime?: CodeHighlightRuntime
+  } | null
 }
 
 export interface MdxCompileResult {
@@ -117,6 +131,17 @@ export async function compileDocument(
   if (slug) rehypePlugins.push(rehypeSlug)
   // headers 采集是 rehype 插件(hast 上跑),须排在 rehype-slug 之后(id 已生成)
   rehypePlugins.push(collectHeadersPlugin)
+  // 代码高亮在最后跑(把占位 pre 替换成高亮结构,不改动其它节点)
+  const highlight = options.highlight
+  if (highlight?.highlighter) {
+    rehypePlugins.push([
+      rehypeCodeHighlight,
+      {
+        highlighter: highlight.highlighter,
+        runtime: highlight.runtime ?? {}
+      }
+    ])
+  }
 
   // remark-attributes 通过 `this.data()` 注册 micromark 扩展,必须按实例 use;
   // compile 的 remarkPlugins 数组项支持 [plugin, options] 元组。
@@ -130,8 +155,14 @@ export async function compileDocument(
     remarkPlugins: remarkPluginList,
     rehypePlugins: rehypePlugins as any,
     remarkRehypeOptions: {
-      // vpContainer 是自研 mdast 节点,不在 mdast-util-to-hast 白名单里
-      handlers: { vpContainer: renderVpContainer } as Record<string, unknown>
+      // vpContainer 是自研 mdast 节点,不在 mdast-util-to-hast 白名单里;
+      // 启用高亮时用占位 code handler 保留 lang/meta(默认 handler 会丢弃)
+      handlers: {
+        vpContainer: renderVpContainer,
+        ...(highlight?.highlighter
+          ? { code: renderCodePlaceholder }
+          : {})
+      } as Record<string, unknown>
     }
   })
 
@@ -153,6 +184,29 @@ export async function compileDocument(
 }
 
 // ---------- vpContainer 渲染(mdast-util-to-hast handler) ----------
+
+/**
+ * 代码块占位 handler(仅高亮启用时):把 mdast code 的 lang/meta 暂存到
+ * data-* 属性,内容按原文保留;随后的 rehypeCodeHighlight 会整块替换。
+ */
+function renderCodePlaceholder(_state: any, node: any): any {
+  const props: Record<string, string> = {}
+  if (node.lang) props['data-lang'] = String(node.lang)
+  if (node.meta) props['data-meta'] = String(node.meta)
+  return {
+    type: 'element',
+    tagName: 'pre',
+    properties: { ...props, dir: 'ltr' },
+    children: [
+      {
+        type: 'element',
+        tagName: 'code',
+        properties: {},
+        children: [{ type: 'text', value: node.value ?? '' }]
+      }
+    ]
+  }
+}
 
 /**
  * vpContainer → hast:

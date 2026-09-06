@@ -6,14 +6,18 @@
 //
 // 与 M1 的差异与留白(backlog):
 //   - deadLinks 恒空:mdx-kernel 尚未采集正文链接(dead-link 检查 P4 补);
-//   - 主题 markdown 组件(Badge 等)映射/代码高亮/复制按钮:留 P3 diff 补齐;
+//   - 主题 markdown 组件(Badge 等)映射:留 P3 diff 补齐;
 //   - frontmatter.title 未做 md 语法剥离(纯文本页面不受影响);
 //   - include/snippet 已由内核展开并返回 dependencies(plugin 负责 watch)。
+// 代码块:mdx-kernel 高亮(createCodeHighlighter)与 M1 同构输出
+// div.language-* 结构(copy 按钮交互复用客户端 codeCopy 逻辑),并沿用
+// markdown 配置的 theme/languages/colorReplacements/codeCopyButton 等。
 
 import { hash } from 'node:crypto'
 import path from 'node:path'
 
-import { compileDocument } from '@10coding/mdx-kernel'
+import { compileDocument, createCodeHighlighter } from '@10coding/mdx-kernel'
+import type { CodeHighlighter } from '@10coding/mdx-kernel'
 import { LRUCache } from 'lru-cache'
 import { createDebug } from 'obug'
 
@@ -131,6 +135,27 @@ const getHeadMetaContent = (head: HeadConfig[], name: string) => {
   return meta && meta[1].content
 }
 
+/** 按 markdown options 创建 mdx 代码高亮器(preWrapper: false 时禁用) */
+async function createMdxHighlighter(
+  options: MarkdownOptions
+): Promise<CodeHighlighter | null> {
+  if (options.preWrapper === false) return null
+  try {
+    return await createCodeHighlighter({
+      theme: options.theme,
+      languages: options.languages,
+      languageAlias: options.languageAlias,
+      defaultHighlightLang: options.defaultHighlightLang,
+      codeTransformers: options.codeTransformers,
+      colorReplacements: options.colorReplacements,
+      shikiSetup: options.shikiSetup
+    })
+  } catch (e) {
+    console.warn('[vitepress] failed to init mdx code highlighter:', e)
+    return null
+  }
+}
+
 export async function createMdxToReactRenderFn(
   srcDir: string,
   options: MarkdownOptions,
@@ -139,6 +164,8 @@ export async function createMdxToReactRenderFn(
   _cleanUrls: boolean,
   siteConfig: SiteConfig
 ) {
+  // 代码高亮:shiki 实例与渲染函数同生命周期(configResolved 时创建一次)
+  const highlighter = await createMdxHighlighter(options)
   return async (src: string, file: string): Promise<MarkdownCompileResult> => {
     const { ts } = getResolutionCache(siteConfig)
 
@@ -178,7 +205,17 @@ export async function createMdxToReactRenderFn(
     try {
       const compiled = await compileDocument(src, {
         srcDir,
-        filePath: file
+        filePath: file,
+        highlight: highlighter
+          ? {
+              highlighter,
+              runtime: {
+                codeCopyButton: options.codeCopyButton,
+                languageLabel: options.languageLabel,
+                lineNumbers: options.lineNumbers
+              }
+            }
+          : null
       })
       const data = compiled.data
       const frontmatter = data.frontmatter ?? {}
