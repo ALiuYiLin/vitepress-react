@@ -16,7 +16,7 @@ editLink: true
 ---
 ```
 
-在页面里访问 frontmatter：在 `<script>` 的 page-scope 中 `useData()` 读取、正文 `{expr}` 引用（示例见[指南 frontmatter](../guide/frontmatter#accessing-frontmatter-data)）。本 fork 没有 Vue 的 `$frontmatter` 全局与 `{{ }}` 插值。
+在页面里访问 frontmatter：mdx 内核会把 YAML frontmatter 自动导出为模块绑定 `frontmatter`，正文直接 `{frontmatter.xxx}` 引用（示例见[指南 frontmatter](../guide/frontmatter#accessing-frontmatter-data)）。本 fork 没有 Vue 的 `$frontmatter` 全局与 `{{ }}` 插值。
 
 ## title
 

@@ -1,7 +1,9 @@
 ---
 title: md 页面 scoped 样式
-description: 在 Markdown 中使用 Vue-like 页面级 scoped 样式 —— <style scoped> 内联块与 *.scoped.css 外部导入
+description: 在 Markdown 中使用 Vue-like 页面级 scoped 样式 —— 外部 *.scoped.css 导入
 ---
+
+import './md-scoped-demo.scoped.css'
 
 # md 页面 scoped 样式
 
@@ -14,14 +16,10 @@ description: 在 Markdown 中使用 Vue-like 页面级 scoped 样式 —— <sty
 
 | 写法 | 说明 |
 | --- | --- |
-| 内联 `<style scoped>…</style>` | CSS 直接写在 md 里(可带 `lang="scss"` 等) |
-| 外部 `*.scoped.css` 导入 | 在 `<script>` 里 `import './xx.scoped.css'`,样式放独立文件 |
+| 内联 `<style scoped>…</style>` | 仅旧 markdown-it 内核(md 页)支持;mdx 文档页不支持(见下方「用法一」说明) |
+| 外部 `*.scoped.css` 导入 | 在文档顶层直接 `import './xx.scoped.css'`(模块级导入),样式放独立文件 |
 
-<!-- 本页实时示例需要:下面的外部 scoped 样式导入(见「用法二」) -->
-
-<script>
-import './md-scoped-demo.scoped.css'
-</script>
+{/* 本页实时示例需要:下面的外部 scoped 样式导入(见「用法二」) */}
 
 ## 启用
 
@@ -60,55 +58,23 @@ vitepress-react 内置该插件的编译管线,但虚拟 css 的加载需要**�
 
 ## 用法一:内联 `<style scoped>`
 
-样式块直接写在 md 里;正文中想被选中的元素用 attrs 语法 `((.class))` 加类
-(标题写在行尾,段落写在独立一行):
+直接在 md 正文里写 `<style scoped>…</style>` 是旧 markdown-it 内核(md 页)支持的
+写法;在 .mdx 文档页(新 mdx 内核)中不再支持:mdx 会把 `<style>` 当作 JSX 标签
+解析,块内 CSS 的 `{}` 不是合法的 JSX 子文本,整页会编译直接失败;新内核也不
+提取正文里的 style 块。页面级 scoped 样式请统一使用下面的
+「用法二:外部 `*.scoped.css` 导入」;全局样式可写到站点样式或主题组件中。
 
 ```md
-## 卡片标题 ((.scoped-card-title))
-
-<style scoped>
-.scoped-card-title {
-  color: var(--vp-c-brand-1);
-  border-bottom: 2px solid var(--vp-c-brand-2);
-}
-</style>
+<!-- 反例:.mdx 正文中不要直接写 <style scoped> 块(CSS 的 {} 会令编译失败) -->
+  <style scoped>
+  .example { color: red; }
+  </style>
 ```
-
-样式块也支持 `lang` 属性(站点需已安装对应预处理器):
-
-```md
-<style scoped lang="scss">
-.scoped-card-title {
-  &:hover {
-    text-decoration: underline;
-  }
-}
-</style>
-```
-
-### 实时效果
-
-`#### 这就是标题 ((.md-scoped-live-title))` + 下面的 `<style scoped>`:
-
-#### 这就是标题 ((.md-scoped-live-title))
-
-<style scoped>
-.md-scoped-live-title {
-  color: var(--vp-c-brand-1);
-  border-bottom: 2px solid var(--vp-c-brand-2);
-}
-.md-scoped-live-title:hover {
-  text-decoration: underline;
-}
-</style>
-
-编译结果:标题 DOM 带 `data-v-xxxxxxxx`,规则被改写为
-`.md-scoped-live-title[data-v-xxxxxxxx]`,只作用于本页(悬停有下划线)。
 
 ## 用法二:外部 `*.scoped.css` 导入
 
 把样式放进独立文件(文件名必须以 `.scoped.css` / `.scoped.scss` / `.scoped.sass`
-/ `.scoped.less` 结尾),再在页面的 `<script>` 里按**相对本 md 文件**的路径导入:
+/ `.scoped.less` 结尾),再在文档顶层按**相对本 .mdx 文件**的路径 import:
 
 ```css
 /* md-scoped-demo.scoped.css(与页面同目录) */
@@ -123,9 +89,7 @@ vitepress-react 内置该插件的编译管线,但虚拟 css 的加载需要**�
 ```
 
 ```md
-<script>
 import './md-scoped-demo.scoped.css'
-</script>
 
 带类卡片段落,`strong` 加粗文字应显示 danger 色。
 
@@ -134,7 +98,7 @@ import './md-scoped-demo.scoped.css'
 
 ### 实时效果
 
-下方卡片用的就是 `./md-scoped-demo.scoped.css`(本页顶部 `<script>` 已真实导入;
+下方卡片用的就是 `./md-scoped-demo.scoped.css`(本页顶部已真实 import;
 类名由独立一行的 `((.md-scoped-card))` 注入):
 
 ((.md-scoped-card))
@@ -144,15 +108,15 @@ import './md-scoped-demo.scoped.css'
 
 ## 作用域语义与注意点
 
-- **hash 唯一**:`data-v-{hash}` 由 md 文件绝对路径生成,每一页各不相同;
-  同页多个 scoped 资源(内联 + 外部)共用同一 hash;
+- **hash 唯一**:`data-v-{hash}` 由页面文件绝对路径生成,每一页各不相同;
+  同页多个 scoped 文件共用同一 hash;
 - **页面内所有 DOM 都会被注入 `data-v-{hash}`**(编译期由管线统一注入),
   因此选择器也可以直接按元素写,例如 `.vp-doc p`(只会命中本页段落);
 - **给正文元素加类**:标题 `## x ((.class))` 行尾、段落换行后独立一行 `((.class))`、
   行内文本 `文字((.class))`(attrs 语法);若在正文里直接写整行 JSX(React 接管),
   则按 JSX 规则用 `className`;
-- **全局样式**仍写不带 `scoped` 的 `<style>`(运行时注入全站),两种写法可同时
-  出现在一页;
+- **全局样式**仍写不带 `scoped` 的 `<style>`(运行时注入全站);mdx 文档页不支持
+  正文内联 `<style scoped>`,多个外部 scoped 文件可同时出现在一页;
 - **失败降级**:极少数语法边界导致页面代码无法解析时,管线会告警并跳过 scoped
   处理,页面照常编译;
 - **构建产物**:scoped css 交给 Vite css 管线(dev 注入 + HMR,build 抽取成 css

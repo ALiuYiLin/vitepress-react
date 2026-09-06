@@ -109,7 +109,7 @@ export default defineConfig({
 
   // prettier-ignore
   transformPageData: prod ? (pageData, ctx) => {
-    const url = new URL(pageData.relativePath.replace(/(?:(^|\/)index)?\.md$/, '$1'), siteUrl).href
+    const url = new URL(pageData.relativePath.replace(/(?:(^|\/)index)?\.(?:md|mdx)$/, '$1'), siteUrl).href
     const site = resolveSiteDataByRoute(ctx.siteConfig.site, pageData.relativePath)
     const title = pageData.title ? `${pageData.title} | VitePress` : site.title
     const description = pageData.description || site.description

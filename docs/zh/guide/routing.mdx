@@ -325,20 +325,25 @@ export default {
 
 ### 访问页面中的参数 ((#accessing-params-in-page))
 
-可以使用参数将附加数据传递到每个页面。本 fork 是 React 语义（没有 `$params` 全局或 `{{ }}` 插值，规则见[在 Markdown 中使用 React](./using-react)）：在页面 `<script>` 的 page-scope 里通过 [`useData()`](../reference/runtime-api#usedata) 读取 `params`，再用正文 `{expr}` 引用：
+可以使用参数将附加数据传递到每个页面。本 fork 是 React 语义（没有 `$params` 全局或 `{{ }}` 插值，规则见[在 Markdown 中使用 React](./using-react)）：`params` 由当前路由提供，[`useData()`](../reference/runtime-api#usedata) 是 React hook，只能在组件（含自定义/主题组件）内调用；页面正文想直接展示动态数据时，把读取封装成组件即可：
 
-```md
-<script>
+```mdx
 import { useData } from '@10coding/vitepress-react'
 
-const { params } = useData()
-</script>
+export function PageParams() {
+  const { params } = useData()
+  return (
+    <ul>
+      <li>package name: {params.pkg}</li>
+      <li>version: {params.version}</li>
+    </ul>
+  )
+}
 
-- package name: {params.pkg}
-- version: {params.version}
+<PageParams />
 ```
 
-`useData()` 是 hook，因此这段读取逻辑必须写在页面的 `<script>` 里（编译进 `Page()` 作用域），不能在模块顶层；`params` 即当前路由的参数对象。
+`useData()` 不能在模块顶层调用（hook 只能在组件体内执行）；`params` 即当前路由的参数对象。
 
 ### 渲染原始内容 ((#rendering-raw-content))
 

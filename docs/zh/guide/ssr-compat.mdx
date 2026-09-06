@@ -5,9 +5,9 @@ description: 确保 VitePress 主题组件和自定义代码兼容服务端渲�
 
 # SSR 兼容性 ((#ssr-compatibility))
 
-VitePress 使用 React 的服务端渲染能力，在生产构建期间于 Node.js 中预渲染整个应用。这意味着主题组件、页面 `<script>` 里的组件以及任何自定义代码都要考虑 **SSR 兼容性**。
+VitePress 使用 React 的服务端渲染能力，在生产构建期间于 Node.js 中预渲染整个应用。这意味着主题组件、mdx 页面模块里的组件以及任何自定义代码都要考虑 **SSR 兼容性**。
 
-[React 官方 SSR 文档](https://react.dev/reference/react-dom/server) 介绍了 SSR / SSG 是什么以及如何编写服务端/客户端都能运行的代码。原则非常简单：**只在 effect（`useEffect`/`useLayoutEffect`）里访问浏览器或 DOM API**——服务端预渲染不会执行 effect，因此写在 effect 内的副作用天然 SSR 安全；`<script>` 的 page-scope 代码只放 hooks 调用与纯计算。
+[React 官方 SSR 文档](https://react.dev/reference/react-dom/server) 介绍了 SSR / SSG 是什么以及如何编写服务端/客户端都能运行的代码。原则非常简单：**只在 effect（`useEffect`/`useLayoutEffect`）里访问浏览器或 DOM API**——服务端预渲染不会执行 effect，因此写在 effect 内的副作用天然 SSR 安全；组件体内只放 hooks 调用与纯计算。
 
 ::: tip 顶层副作用要谨慎
 模块顶层或组件渲染体内的 `window`/`document`/`navigator` 访问会在服务端抛错并导致构建失败。所有浏览器专属逻辑请放进 `useEffect` 或专门的客户端组件（下节）。
@@ -31,10 +31,9 @@ VitePress 使用 React 的服务端渲染能力，在生产构建期间于 Node.
 
 ### 在 effect 中导入 ((#importing-in-effect))
 
-页面 `<script>` 里定义组件，把动态导入放进 `useEffect`：
+在页面模块里定义组件，把动态导入放进 `useEffect`：
 
-```md
-<script>
+```mdx
 import { useEffect, useState } from 'react'
 
 export function WindowLibDemo() {
@@ -54,7 +53,6 @@ export function WindowLibDemo() {
 
   return ready ? <p>已加载</p> : null
 }
-</script>
 
 <WindowLibDemo />
 ```
@@ -93,12 +91,10 @@ export default {
 
 VitePress 的 Vue 版提供了 `defineClientComponent` 辅助函数；React fork 用标准的 `React.lazy` + `Suspense` 即可，再配合 `<ClientOnly>` 保证 SSR 不解析该组件：
 
-```md
-<script>
+```mdx
 import { lazy, Suspense } from 'react'
 
 const ClientComp = lazy(() => import('component-that-access-window-on-import'))
-</script>
 
 <ClientOnly>
   <Suspense fallback={null}>

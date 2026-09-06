@@ -1,0 +1,212 @@
+---
+description: '在 Markdown 中使用 React 的完整规则:表达式、JSX 区域、::: react 容器、编译产物与真实渲染。'
+---
+
+import { useState } from 'react'
+
+# 在 Markdown 中使用 React 的规则 ((#react-markdown-rules))
+
+本文是 [在 Markdown 中使用 React](./using-react) 的“规则手册”。本站文档由 **MDX 内核**编译:一个 `.mdx` 页面本身就是一个 React 模块——`import`/`export` 与 JSX 直接写在文件里,不存在旧 markdown-it 内核的 `<script>` 块、`::: react` 容器与「page-scope」,也不再有“编译后的 TSX(示意)”这一层中间产物概念。下面按 mdx 语义给出规则:每条先讲规则,再给**可直接照抄进 .mdx 的示例**(代码块),部分规则附本页实时渲染——本页正文就是用同一套规则写出来的。
+
+::: tip 先记住三件事
+1. 文档即 mdx:`import`/`export` 与 JSX 直接书写,不存在 `<script>` 块、`::: react` 容器与「page-scope」;
+2. 模块绑定来自顶层 import 与 export:正文 `{expr}` 引用它们;组件用 `export function Xxx() {}` / `export const Xxx = () => …` 定义后,以 `<Xxx />` 使用;
+3. hooks(`useState`/`useEffect`/`useData`/`useRoute`)只能出现在**组件函数体内**;想要“页面状态”,就把它封装成组件。
+:::
+
+## 0. 规则速查表
+
+| 写法 / 位置 | 处理结果 |
+| --- | --- |
+| 普通正文文字(不含 `{…}`) | 字面文本 |
+| 正文 `{expr}` | 一律按 **JSX 表达式**求值(React 语义):引用模块顶层绑定(`{items.length}`、`{fmt(x)}`)、纯字面(`{1 + 1}`)或任意 JS 都行;未定义引用 → 运行时 `ReferenceError`,语法错误 → 编译报错 |
+| 字面花括号(想显示 `{x}` 本身) | 放进行内代码 / 代码块,内容永不求值;旧式 `\{` 转义已让位给 attrs 语法、`{{ }}` 豁免已废弃 |
+| 顶层 `import` | 模块导入,正文 `{expr}` 与组件都可引用;import 之外的一般 JS 语句不能写在顶层 |
+| 顶层 `export const` / `export function` | 声明组件、常量与数据;组件以 `<Xxx />` 使用,常量以 `{name}` 引用 |
+| hooks(useState/useEffect/useData…) | **只能在组件函数体内**;不允许在正文或模块顶层执行 |
+| YAML frontmatter | 内核自动导出为模块变量 `frontmatter`;正文可 `{frontmatter.xxx}`(不要自行声明同名导出) |
+| 独立成行的 `<标签>…</标签>` / `<组件 />` | 直接按 JSX 编译(块级 JSX 与相邻文本之间留空行) |
+| 正文行内的 `<b>`、`<Badge …/>` 等 | 行内 JSX,同样生效 |
+| 标题行尾 `((#id))` / `((.class))` | attrs 写法沿用站内约定(新内核下 attrs 的语法差异另行迁移,本轮不涉及) |
+| `::: tip / warning / details … :::` | 普通容器照常渲染(见 §4);`::: react` 容器概念已移除 |
+| 代码块 / 行内代码 | 字面量,永不求值 / 编译 |
+| 旧 `<script>` page-scope、Vue 模板(`{{ }}`、`v-*`、`:prop`、`@click`) | 不存在 / 不适用;示例请放代码块,不要写进正文 |
+
+**JSX 属性按 React 规则写**:`class` → `className`,`style` → 对象,事件 → 驼峰函数(`onClick`)。自定义组件用 PascalCase 命名,且必须先 import 或在本文件 export。
+
+## 1. 正文 `{expr}` 一律求值(表达式与字面花括号)
+
+- **一律求值**:正文里每对 `{…}` 都是 JSX 表达式——引用本模块的绑定(`{items.length}`、`{fmt(x)}`)、纯字面(`{1 + 1}`、`{'hi'}`)或任意 JS 表达式,与 React 组件里写 `{…}` 完全一致;
+- **可引用的范围 = 模块顶层绑定**:只有 import 的符号与 export 出的常量/函数/组件。旧内核“页面 script 顶层状态 + 正文 `{state}`”的模型不存在,正文无法引用隐式的页面状态(要状态就封装成组件,见 §3);
+- **展示字面花括号**:放进行内代码 / 代码块即可,内容永不求值(如 `` `{x}` ``、`` `{1 + 1}` `` 都按字面显示)。旧式的“`\{` 转义显示字面”已不适用——转义花括号 `\{…\}` 在 mdx 内核里是 attrs 语法的书写形式(§4),正文中的 `\{x\}` 会被当作属性语法消费,不能按字面显示;Vue 遗留的 `{{ }}` 同样不是“字面豁免”,会按 JSX 表达式解析报错,不要依赖;
+- **写错即报错**(与 JSX 一致):`{统计}` 引用未定义变量 → 运行时 `ReferenceError`;`{#foo}` 这类残留写法会被当作表达式解析 → 编译报错(元素的 id/class 请用标题行尾 / 容器行的 attrs 约定写法)。
+
+**示例(可直接照抄到 .mdx)**
+
+```mdx
+export const version = '1.2.3'
+
+当前版本:{version};1 + 1 = {1 + 1};字面花括号用行内代码 `{x}` 或 `{1 + 1}` 即可
+```
+
+上面的正文会渲染成:**当前版本:1.2.3;1 + 1 = 2;字面花括号用行内代码 `{x}` 或 `{1 + 1}` 即可**(行内代码 / 代码块里的 `{…}` 永不求值)。
+
+**本页实时渲染**(这一行就是真实表达式)
+
+1 + 1 = {1 + 1}
+
+::: tip 想展示字面花括号?
+放进行内代码或代码块即可,例如 `{x}`、`{1 + 1}` 都按字面显示。正文里任何未转义的 `{…}` 都会被当作 JSX 表达式求值——不要裸写,也不要用旧式的 `\{` 转义或 `{{ }}`。
+:::
+
+## 2. import / export:定义模块绑定
+
+- `import … from '…'` 是模块顶层语句,习惯放在 frontmatter 之后、正文之前;正文 `{expr}` 与页面组件共享同一份模块作用域;
+- 页面内要复用的数据、常量、函数一律用 **export** 声明(`export const items = […]`),这是正文能引用的唯一“自建绑定”方式;
+- import/export 是真实 ESM:相对路径组件、npm 包、`.data.js` 数据加载器都可以直接导入,不再需要任何 `<script>` 包装。
+
+**示例**
+
+```mdx
+import CustomWidget from '../../components/CustomWidget.tsx'
+
+export const tagline = 'Docs with React'
+
+自定义组件:<CustomWidget label={tagline} />
+```
+
+需要构建期数据时,像普通 ESM 一样导入 data loader 的具名导出:
+
+```mdx
+import { data as posts } from './posts.data.js'
+```
+
+然后在正文或组件里用 `{posts.length}`、`posts.map(...)` 消费它(多行列表的写法见 §3)。
+
+### frontmatter 自动导出
+
+内核把页面顶部的 YAML frontmatter 自动导出为模块变量 `frontmatter`,正文直接 `{frontmatter.xxx}` 引用——不需要也不能再用 hook 或自行声明同名导出:
+
+```mdx
+---
+title: Docs with VitePress
+editLink: true
+---
+
+本页标题是:{frontmatter.title},是否可编辑:{frontmatter.editLink ? '是' : '否'}
+```
+
+`useData()` / `useRoute()` 仍用于读取站点级数据(site/theme 等),但它们是 hook,只能放进组件里(见 §3);页面自身的 frontmatter 用上面的 `frontmatter` 变量即可。
+
+## 3. 组件定义与 JSX(hooks 的归宿)
+
+旧的“在 `<script>` 顶层 `useState`,正文 `{count}`”写作法已不存在。要让一段内容可交互,就把它**定义成一个组件**(具名导出),再以 JSX 挂到正文:
+
+**示例:带 hooks 的交互组件(可直接照抄)**
+
+```mdx
+import { useState } from 'react'
+
+export function Counter() {
+  const [count, setCount] = useState(0)
+  return (
+    <button onClick={() => setCount(count + 1)}>
+      count: {count}
+    </button>
+  )
+}
+
+<Counter />
+```
+
+- `import` 在最前;组件用 `export function Xxx() {}`(或 `export const Xxx = () => …`)定义;`useState` 等 hooks **写在组件函数体内**,不能出现在正文或模块顶层;
+- 正文只负责挂载 `<Counter />`:状态、副作用、事件都在组件内部,每个组件各自持有自己的 state;
+- 需要站点数据时同理——把 `useData()` 封装进组件(主题组件、`.tsx` 组件文件、本文件内定义的组件都行):
+
+```mdx
+import { useData } from '@10coding/vitepress-react'
+
+export function FooterCopyright() {
+  const { theme } = useData()
+  return <p>页脚版权:{theme.footer.copyright}</p>
+}
+
+<FooterCopyright />
+```
+
+- 使用组件前确保已 import 或在本文件 export;PascalCase 的未知标签会因找不到组件而在运行时报错。
+
+**多行 JSX / 列表:直接写在正文**(不再需要 `::: react` 容器)
+
+```mdx
+export const items = [
+  { id: 1, name: 'Alpha' },
+  { id: 2, name: 'Beta' },
+  { id: 3, name: 'Gamma' }
+]
+
+<ul>
+  {items.map((item) => (
+    <li key={item.id}>{item.name}</li>
+  ))}
+</ul>
+```
+
+- **块级 JSX**(独立成行的 `<ul>`、组件等)与前后文本之间用空行隔开(上面的示例已示范);行内小元素(`<b>`、`<Badge …/>`)可以与文字在同一段落;
+- JSX 属性按 React 写:`class` → `className`、`style` → 对象、事件 → `onClick` 等驼峰函数;
+- 浏览器专属副作用(读写 `window`/`document`)要放组件内 `useEffect` 或客户端组件里,保证 SSR 安全(见 §5)。
+
+**本页实时渲染**(同一规则真实写在本文:`export function LiveCounter()` + 挂载)
+
+export function LiveCounter() {
+  const [count, setCount] = useState(0)
+  return (
+    <button
+      style={{ border: '1px solid var(--vp-c-brand-1)', borderRadius: 8, padding: '4px 14px', cursor: 'pointer' }}
+      onClick={() => setCount(count + 1)}
+    >
+      count: {count}
+    </button>
+  )
+}
+
+<LiveCounter />
+
+## 4. 标题、容器与样式
+
+### 标题
+
+- ATX 标题行与正文同一套 mdx 文本规则:行内组件与 `{expr}` 都可写(例如 `## 标题 <Badge type="tip" text="new" />`);旧内核为标题做的“整行不接管 / 序列化器还原”处理已不存在;
+- 页面大纲(headers)在编译期取标题**纯文本**,不含组件渲染输出与表达式求值结果,可见标题与大纲因此可能不完全一致;
+- 标题行尾沿用站内 attrs 写法 `((#id))` / `((.class))`(本页标题行尾即如此;mdx 内核下 attrs 的语法迁移属另一轮,本文不展开)。
+
+### 容器
+
+非 react 的容器照常可用:`::: tip`、`::: warning`、`::: danger`、`::: details ((open)) …` 等行为与之前一致(标题写在同一行,内容与容器行之间用空行)。`::: react` 容器概念已移除——需要“多行 JSX 区域”时直接写在正文(见 §3),不需要任何容器:
+
+```mdx
+::: tip 写法不变
+非 react 容器与之前一致;`::: react` 已移除,多行 JSX 直接写在正文即可。
+:::
+```
+
+### 样式
+
+- 样式文件用普通 ESM 导入,写在模块顶层:`import './page.css'`(全局样式同理,引用外部 css 文件);
+- 页面级 **scoped 样式**:把规则放进外部 `*.scoped.css` 文件,同样顶层导入:`import './page.scoped.css'`。开启步骤与作用域语义见 [md 页面 scoped 样式](./md-scoped-demo);
+- 内联 `<style>` / `<style scoped>` 块与 `<script>` 一样不再由内核提取,不要写在 `.mdx` 里;组件文件内部样式仍用 CSS Modules、样式文件或内联样式。
+
+## 5. 常见错误、旧语法对照与 SSR
+
+| 场景 | 结果 / 处理 |
+| --- | --- |
+| 正文 `{统计}`(未定义引用) | 运行时 `ReferenceError` |
+| 正文 `{#foo}`、`{1 +` 等非法表达式 | mdx 编译报错,错误信息定位到 `.mdx` 的行列;id/class 请用 attrs 约定写法 |
+| 使用了未 import/export 的 PascalCase 标签 | 运行时找不到该组件 |
+| 在正文或模块顶层写 hooks / 普通 JS 语句 | 不是组件函数体 / 不是合法顶层语句,编译或运行时报错(封装成组件,见 §3) |
+| 旧写法 `<script>` page-scope、`::: react`、Vue `{{ }}` | 均已废弃 / 不存在;需要展示时放进代码块,不要写进正文 |
+| 代码块 / 行内代码里的 `{…}` | 字面量,可放心用来展示旧语法或 Vue 写法示例 |
+
+::: warning SSR 兼容性
+所有 live 代码都要兼容 SSR:避免在组件体或模块顶层读写 `window` / `document`;浏览器专属逻辑放 `useEffect`、客户端专属组件或 `ClientOnly` 里(参见 [SSR 兼容性](./ssr-compat))。
+:::

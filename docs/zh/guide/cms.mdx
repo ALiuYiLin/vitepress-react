@@ -42,21 +42,25 @@ description: 使用动态路由和数据加载器将 VitePress 连接到无头 C
     }
     ```
 
-3. 在页面中渲染内容：
+3. 在页面中渲染内容（`params` 里的标题/作者等信息经 `useData()` 读取——hook 需封装成组件）：
 
-    ```md
-    <script>
+    ```mdx
     import { useData } from '@10coding/vitepress-react'
 
-    const { params } = useData()
-    </script>
+    export function PostHeader() {
+      const { params } = useData()
+      return (
+        <>
+          <h1>{params.title}</h1>
+          <p>by {params.author} on {params.date}</p>
+        </>
+      )
+    }
 
-    # {params.title}
-
-    - by {params.author} on {params.date}
-
-    <!-- @content -->
+    <PostHeader />
     ```
+
+    > 注：旧内核的 `<!-- @content -->`（把路径对象的 `content` 作为原始 HTML 注入正文）能力在 mdx 内核中尚未提供，动态正文内容请先在页面里手写或后续跟进内核支持。
 
 ## 整合指南 ((#integration-guides))
 

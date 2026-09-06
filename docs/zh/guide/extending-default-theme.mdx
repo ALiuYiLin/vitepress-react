@@ -90,7 +90,7 @@ export default {
 
 本 fork 是 React，**没有 Vue 的 `app.component` 全局注册机制**（`EnhanceAppContext` 里的 `registerComponent` 为未来预留，当前不会渲染到 md 页面）。可用方案：
 
-1. **页面级导入**（推荐）：在用到该组件的每个 md 页面的 `<script>` 顶层 `import`，正文用大写标签（见[在 Markdown 中使用 React](./using-react#using-components)）。默认主题导出的组件（`VPBadge`、`VPTeamMembers`、`VPTeamPage` 等）也按此导入，或在 markdown 里直接用 `@10coding/vitepress-react/theme` 自动导入的标签名。
+1. **页面级导入**（推荐）：在用到该组件的每个 mdx 页面顶部 `import`，正文用大写标签（见[在 Markdown 中使用 React](./using-react#using-components)）。默认主题导出的组件（`VPBadge`、`VPTeamMembers`、`VPTeamPage` 等）也按此导入，或在 markdown 里直接用 `@10coding/vitepress-react/theme` 自动导入的标签名。
 2. **Layout 注入**：若组件需要出现在“每个页面”的固定位置（例如全站横幅），把它放进你的自定义 Layout 里（见下一节）。
 
 ## 用 Layout 包装注入内容 ((#layout-slots))

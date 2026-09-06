@@ -111,4 +111,4 @@ export function MyLayout() {
 
 ## RTL 支持 (实验性功能) ((#rtl-support-experimental))
 
-支持 RTL 需要在配置中指定 `dir: 'rtl'` 并且使用一些 RTLCSS PostCSS 插件，例如 <https://github.com/MohammadYounes/rtlcss>, <https://github.com/vkalinichev/postcss-rtl> 或者 <https://github.com/elchininet/postcss-rtlcss>。需要配置 PostCSS 插件，使用 `:where([dir="ltr"])` 和 `:where([dir="rtl"])` 作为前缀，以防止 CSS 特异性问题。
+支持 RTL 需要在配置中指定 `dir: 'rtl'` 并且使用一些 RTLCSS PostCSS 插件，例如 [rtlcss](https://github.com/MohammadYounes/rtlcss), [postcss-rtl](https://github.com/vkalinichev/postcss-rtl) 或者 [postcss-rtlcss](https://github.com/elchininet/postcss-rtlcss)。需要配置 PostCSS 插件，使用 `:where([dir="ltr"])` 和 `:where([dir="rtl"])` 作为前缀，以防止 CSS 特异性问题。

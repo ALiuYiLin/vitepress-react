@@ -2,10 +2,9 @@
 description: 使用 VitePress 内置的团队组件创建包含成员资料的团队页面。
 ---
 
-<script setup>
 import { VPTeamMembers } from '@10coding/vitepress-react/theme'
 
-const members = [
+export const members = [
   {
     avatar: 'https://github.com/yyx990803.png',
     name: 'Evan You',
@@ -25,7 +24,6 @@ const members = [
     ]
   }
 ]
-</script>
 
 # 团队页 ((#team-page))
 
@@ -36,10 +34,9 @@ const members = [
 你可以在任何页面上使用从 `vitepress/theme` 暴露出的公共组件 `<VPTeamMembers>` 显示团队成员。
 
 ```html
-<script setup>
 import { VPTeamMembers } from '@10coding/vitepress-react/theme'
 
-const members = [
+export const members = [
   {
     avatar: 'https://www.github.com/yyx990803.png',
     name: 'Evan You',
@@ -51,18 +48,17 @@ const members = [
   },
   ...
 ]
-</script>
 
 # Our Team
 
 Say hello to our awesome team.
 
-<VPTeamMembers size="small" :members />
+<VPTeamMembers size="small" members={members} />
 ```
 
 以上将在卡片外观元素中显示团队成员。它应该显示类似于下面的内容。
 
-<VPTeamMembers size="small" :members />
+<VPTeamMembers size="small" members={members} />
 
 `<VPTeamMembers>` 组件有 2 种不同的尺寸，`small` 和 `medium`。虽然它取决于你的偏好，但通常尺寸在文档页面中使用时 `small` 应该更适合。此外，你可以为每个成员添加更多属性，例如添加“描述”或“赞助”按钮。在 [`<VPTeamMembers>`](#vpteammembers) 中了解更多信息。
 
@@ -74,20 +70,20 @@ Say hello to our awesome team.
 
 除了将团队成员添加到 doc 页面，你还可以创建一个完整的团队页面，类似于创建自定义[默认主题：主页](./default-theme-home-page)的方式。
 
-要创建团队页面，首先，创建一个新的 md 文件。文件名无所谓，这里我们就叫它 `team.md` 吧。在这个文件中，在 frontmatter 设置 `layout: page`，然后你可以使用 `TeamPage` 组件来组成页面结构。
+要创建团队页面，首先，创建一个新的 mdx 文件。文件名无所谓，这里我们就叫它 `team.mdx` 吧。在这个文件中，在 frontmatter 设置 `layout: page`，然后你可以使用 `TeamPage` 组件来组成页面结构。
 
 ```html
 ---
 layout: page
 ---
-<script setup>
+
 import {
   VPTeamPage,
   VPTeamPageTitle,
   VPTeamMembers
 } from '@10coding/vitepress-react/theme'
 
-const members = [
+export const members = [
   {
     avatar: 'https://www.github.com/yyx990803.png',
     name: 'Evan You',
@@ -99,7 +95,6 @@ const members = [
   },
   ...
 ]
-</script>
 
 <VPTeamPage>
   <VPTeamPageTitle>
@@ -111,7 +106,7 @@ const members = [
       team, some of whom have chosen to be featured below.
     </template>
   </VPTeamPageTitle>
-  <VPTeamMembers :members />
+  <VPTeamMembers members={members} />
 </VPTeamPage>
 ```
 
@@ -125,13 +120,13 @@ const members = [
 
 你可以将“section”添加到团队页面。例如，你可能有不同类型的团队成员，例如核心团队成员和社区合作伙伴。你可以将这些成员分成几个部分，以更好地解释每组的角色。
 
-为此，将 `<VPTeamPageSection>` 组件添加到我们之前创建的 `team.md` 文件中。
+为此，将 `<VPTeamPageSection>` 组件添加到我们之前创建的 `team.mdx` 文件中。
 
 ```html
 ---
 layout: page
 ---
-<script setup>
+
 import {
   VPTeamPage,
   VPTeamPageTitle,
@@ -139,21 +134,20 @@ import {
   VPTeamPageSection
 } from '@10coding/vitepress-react/theme'
 
-const coreMembers = [...]
-const partners = [...]
-</script>
+export const coreMembers = [...]
+export const partners = [...]
 
 <VPTeamPage>
   <VPTeamPageTitle>
     <template #title>Our Team</template>
     <template #lead>...</template>
   </VPTeamPageTitle>
-  <VPTeamMembers size="medium" :members="coreMembers" />
+  <VPTeamMembers size="medium" members={coreMembers} />
   <VPTeamPageSection>
     <template #title>Partners</template>
     <template #lead>...</template>
     <template #members>
-      <VPTeamMembers size="small" :members="partners" />
+      <VPTeamMembers size="small" members={partners} />
     </template>
   </VPTeamPageSection>
 </VPTeamPage>

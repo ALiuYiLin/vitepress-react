@@ -1,0 +1,281 @@
+---
+description: 在 VitePress React 版的 Markdown 文件中编写 React 组件与表达式,让静态内容获得交互能力。
+---
+
+# 在 Markdown 中使用 React ((#using-react-in-markdown))
+
+在本 React 版 VitePress(vitepress-react)中,需要组件/表达式能力的页面写成 **`.mdx`** 文件(本指南的页面均为 `.mdx`),由 **mdx 内核**编译:整个文件就是一个 React 模块,**`import` / `export` 与 JSX 可以直接书写**。正文里的**普通文本(不含 `{…}`)与 HTML 是字面量**;正文里的**单层 `{expr}` 一律是 JSX 表达式**(与 React 语义一致,等价于 Vue 版的 `{{ expr }}`)。不存在 Vue 版的 `{{ }}` 插值、指令或 `v-pre`,也不存在旧内核的 `<script>` 块、`::: react` 容器或「page-scope」概念——这些包装写法在 mdx 里会直接让编译失败,需要按下面的对照改写。
+
+要加入动态能力,流程只有两步:**在模块顶层 `import` / `export` 需要的绑定(组件、常量、数据),然后在正文写 `{expr}` 或 `<组件 />`**。
+
+::: tip 从旧内核迁移:三种包装怎么改
+- `<script>` / `<script setup>` / `<style>` 块整体删除——它们会让 mdx 编译失败;
+- 原 `<script>` 里的 `import` 语句移到文件顶层(frontmatter 之后);`export function` / `export const` 原样保留,仍是模块顶层导出,正文即可引用;
+- 原 `<script>` 里的 `useState` / `useEffect` 等 hook 调用必须**搬进组件函数体**,正文改放 `<组件 />`——页面不再有可供正文共享的「顶层状态」;
+- `::: react` 与收尾 `:::` 两行删掉,内部 JSX 直接作为正文,与相邻段落之间留空行。
+:::
+
+::: tip SSR 兼容性
+所有用法都要兼容 SSR。避免在组件顶层直接读写 `window` / `document`,浏览器专属逻辑请放进 `useEffect` 或客户端专属封装里。参见 [SSR 兼容性](./ssr-compat)。
+:::
+
+## 正文求值规则 ((#templating))
+
+Vue 版文档里的 `{{ }}` 在这里不存在——正文里**单层 `{…}` 一律按 JSX 表达式求值**:
+
+- 引用模块顶层绑定(import 的名字、export 的常量/函数):`{siteName}`、`{frontmatter.title}`、`{fmt(page.title)}`;
+- 纯字面量表达式:`{1 + 1}`、`{'hi'}`;
+- 任意 JS:`{items.length > 0 ? '有' : '无'}` 等(与 React 组件里写 `{…}` 完全一致)。
+
+想显示“看起来像模板”的字面 `{…}`,用 `\{` 转义(例如想显示 `{x}`,正文就写 `\{x\}`),或直接放进**行内代码**/**代码块**。代码块天然字面,无需转义。
+
+例如:
+
+**输入**
+
+```md
+{1 + 1}
+```
+
+**输出**
+
+```text
+2
+```
+
+`{统计}`、`{#foo}` 这类写法没有“字面兜底”:在 mdx 里它们会被当作 JSX 引用/表达式(分别报 ReferenceError 与编译错误)——这正是 React 语义,写错即报错。同理,不要指望写 `{{…}}` 双花括号“按字面输出”:它会被当作 JSX 表达式来解析。给元素加类/id 请用 attrs 语法 `((.class))` / `((#id))`(见 [md 页面 scoped 样式](./md-scoped-demo))。
+
+## import / export 与模块绑定 ((#module-bindings))
+
+每个 `.mdx` 页面都是一个模块。文件顶层(frontmatter 之后)可以直接写 `import` 与 `export`,这是正文之外唯一可以“放代码”的位置:
+
+- **`import`**:引入依赖与数据——组件文件、`@10coding/vitepress-react` 的运行时 API、data loader 的 `data` 具名导出等;
+- **`export const` / `export function`**:导出常量与组件,成为模块顶层绑定,正文 `{expr}` 与 JSX 均可引用;
+- **`frontmatter`**:内核会把本页 YAML frontmatter 自动导出为模块变量 `frontmatter`,正文可直接写 `{frontmatter.title}` 等,无需自己读取。
+
+一个完整的「页面源码」示例:
+
+````mdx
+---
+title: 我的页面
+---
+
+import ComponentInHeader from '../../components/ComponentInHeader.tsx'
+
+export const siteName = 'vitepress-react'
+
+export function Note() {
+  return <strong>这是 export 导出的组件</strong>
+}
+
+本页标题来自 frontmatter:{frontmatter.title}
+
+本站名:{siteName}
+
+<ComponentInHeader />
+<Note />
+````
+
+要点:
+
+- `import` 一般集中放在 frontmatter 之后、正文之前(mdx 允许它们出现在文档中部,但放到开头最清晰);相对路径以页面文件的位置为基准,示例是 `guide/` 下的页面指向 `docs/components/`;
+- 需要被正文引用的常量与组件**必须导出**(`export const` / `export function`)或 import 进来:正文 `{expr}` 只能引用模块顶层绑定,不要写不带 `export` 的裸顶层语句;
+- `frontmatter` 无需 import:frontmatter 里定义的任何字段(如 `title`)都能以 `{frontmatter.title}` 的形式在正文引用。
+
+## 组件与 JSX ((#components-and-jsx))
+
+新内核没有「page-scope」:一个页面只有两类代码形态——**模块顶层绑定**(见上)与**组件**。正文本身不能持有状态或调用 hook;想让静态内容获得交互,就把 UI 与状态封装成组件导出,再在正文放 `<组件 />`:
+
+````mdx
+---
+title: 交互示例
+---
+
+import { useState } from 'react'
+
+export function Counter() {
+  const [count, setCount] = useState(0)
+  return (
+    <button onClick={() => setCount((c) => c + 1)}>
+      count: {count}
+    </button>
+  )
+}
+
+export const Greeting = ({ name }) => <span>你好,{name}!</span>
+
+<Counter />
+<Greeting name="读者" />
+````
+
+把上面的源码保存为 `.mdx` 页面,正文就会渲染出一个可点击的按钮和一行问候。要点:
+
+- **hook 只能在组件函数体内调用**:`useState` / `useEffect` / `useData` 等都不能出现在文件顶层。旧内核「页面 `<script>` 顶层 `useState` + 正文 `{count}` 共享同一状态」的写法不存在了——把状态、交互与副作用连同使用它们的 JSX 一起搬进 `export function Xxx()`,正文引用改为 `<Xxx />`;
+- 组件标签名必须 **PascalCase**(React 依靠首字母大小写区分组件与原生元素),并且是模块顶层绑定(import 或 export 而来);
+- `export function` 与 `export const Xxx = (…) => …` 两种写法皆可;导出统一放在文档开头区域的正文之前。
+
+### 在正文直接写 JSX 行 ((#inline-jsx))
+
+正文里直接写 HTML/JSX 元素行和写 Markdown 一样自由,它们都按 JSX 编译:**块级元素行(如 `<ul>`、`<div>`)与前后段落之间留空行**;行内元素(如 `<b>加粗</b>`)则与文字在同一段。因为是 JSX,属性要按 React 写:`class` → `className`,`style` → 对象,事件用驼峰函数(`onClick`);`{expr}` 照常求值。含 Vue 指令(`:members`、`@click`、`<template #slot>`)的行不是合法 JSX,会编译报错。想展示字面代码请放进代码块。
+
+### 多行 JSX 与列表渲染 ((#multiline-jsx-and-lists))
+
+跨多行、含 JS 表达式的 JSX(例如列表 `map`)可以直接写在正文。旧内核需要用 `::: react` 容器包裹的内容,现在删掉 `::: react` 与收尾 `:::` 两行、把 JSX 直接作为正文即可,与相邻段落之间留空行:
+
+````mdx
+export const items = [
+  { id: 1, name: 'Alpha' },
+  { id: 2, name: 'Beta' },
+  { id: 3, name: 'Gamma' }
+]
+
+<ul>
+  {items.map((item) => (
+    <li key={item.id}>{item.name}</li>
+  ))}
+</ul>
+````
+
+上面会渲染成一个真正的 `<ul>` 列表:`items` 是 export 的模块顶层绑定,`{items.map(…)}` 按 JSX 表达式求值。`key` 是 React 列表渲染要求的属性,别忘了写上。
+
+### 在 Markdown 中导入并使用组件 ((#using-components))
+
+如果组件只被少数页面使用,可以在页面模块顶层显式 import(还能获得正确的代码分割):
+
+````mdx
+---
+title: Docs
+---
+
+import CustomComponent from '../../components/CustomComponent.tsx'
+
+# Docs
+
+This is a .mdx using a custom component
+
+<CustomComponent />
+````
+
+如果组件在绝大多数页面使用,可以在自定义主题/布局层统一包装与注入,参见[扩展默认主题](./extending-default-theme)。
+
+::: warning 重要
+自定义组件标签名必须 **PascalCase** 且是模块顶层绑定(通过 `import` 引入或 `export` 定义),否则无法被当作组件解析。
+:::
+
+默认主题也导出可直接用的组件(`VPBadge`、`VPTeamMembers`、`VPTeamPage` 等,统一从 `@10coding/vitepress-react/theme` 导入),import 后即可在正文使用:
+
+````mdx
+import { VPBadge } from '@10coding/vitepress-react/theme'
+
+<VPBadge type="tip" text="new" />
+````
+
+### 在标题中使用组件 ((#using-components-in-headers))
+
+可以在标题中放组件,但解析出的标题只取纯文本:
+
+| Markdown                                        | 解析出的标题 |
+| ----------------------------------------------- | ------------ |
+| `# 文档 <Badge type="info" text="new" />`       | `文档`       |
+| `# 文档 \`<Badge/>\``                           | `文档 <Badge/>` |
+
+`<code>` 里的内容不会被解析成组件。
+
+等价于 Vue 版 `docs/components/ComponentInHeader.vue` 的最小组件
+`docs/components/ComponentInHeader.tsx` 就放在 docs 里,import 后即可用:
+
+````mdx
+import ComponentInHeader from '../../components/ComponentInHeader.tsx'
+
+#### 把组件放进标题 <ComponentInHeader />
+````
+
+渲染出的标题会包含组件内容(⚡);大纲/侧边目录仍只取标题的纯文本,不含组件内容。
+
+## 访问页面数据:useData / useRoute ((#runtime-data-hooks))
+
+需要页面级数据时,`useData()`(返回 `site` / `page` / `frontmatter` / `params` 等)与 `useRoute()` 都是 **React hook**:只能在组件(自定义组件、主题组件、本页 export 的组件)的**函数体内**调用,不能出现在文件顶层——旧内核「在页面 `<script>` 顶层调用 hook、正文直接引用返回值」的写法不存在了。
+
+frontmatter 这类静态数据正文可直接用 `{frontmatter.xxx}`(见[模块绑定](#module-bindings));需要把数据交到组件逻辑里(如作为 `useEffect` 的依赖)或读取 `page` / `params` 等字段时,把读取封装成组件:
+
+````mdx
+import { useData } from '@10coding/vitepress-react'
+
+export function PageTitle() {
+  const { frontmatter } = useData()
+  return <h2>{frontmatter.title}</h2>
+}
+
+<PageTitle />
+````
+
+可用的字段与其余运行时 API(如 `useRoute`、`useRouter`)见[运行时 API](../reference/runtime-api#usedata);路由参数用法见[路由参数](./routing#accessing-params-in-page)。
+
+## 代码块与指令 ((#code-blocks))
+
+代码块天然是字面量,不需要 `v-pre` 包装:
+
+**输入**
+
+````md
+```text
+Hello {1 + 1}
+```
+````
+
+**输出**
+
+```text
+Hello {1 + 1}
+```
+
+Vue 指令(`v-if`、`v-pre`、`@click`、`:class` 等)不属于 React/mdx:JSX 里没有这些属性,把它们当作示例写进代码块即可,不要作为真实正文语法使用。
+
+## 样式与客户端专属内容 ((#styles-and-client-only))
+
+::: warning 页面级样式用外部 *.scoped.css 导入
+mdx 正文里不能写 `<style>` / `<style scoped>` 块(会让 mdx 编译失败),也没有“页面内嵌样式区”。想要 **Vue-like 的页面级 scoped 样式**时,把样式放进独立的 `*.scoped.css` 文件,在模块顶层 `import './foo.scoped.css'`。需要在站点配置开启 `themeConfig.markdownScopedCss: true` 并注册 `jsxScopedVitePlugin()`(本示例站点已开启)——编译后选择器带 `[data-v-{hash}]`,只作用于对应页面,用法与实时示例见 [md 页面 scoped 样式](./md-scoped-demo)。组件文件内部的局部样式仍用 CSS Modules 或内联样式(Vue SFC 的 `<style module>` 语义不提供)。
+:::
+
+VitePress [内置支持](https://cn.vite.dev/guide/features.html#css-pre-processors) CSS 预处理器(`.scss`、`.sass`、`.less`、`.styl`、`.stylus`),在组件文件(如 `Counter.tsx` 旁的 `Counter.module.scss`)中按 Vite 常规方式使用即可。
+
+### 客户端专属内容 ((#client-only-content))
+
+组件在 SSR 与浏览器都会渲染。需要“只在浏览器出现”的内容(读取 `window` / `document`、用 portal 挂到 `body`),推荐**自门控**的组件化写法:在组件里用 `useEffect` 标记已挂载,挂载前返回 `null`,浏览器专属逻辑只在挂载后执行:
+
+````mdx
+import { useEffect, useState } from 'react'
+import { createPortal } from 'react-dom'
+
+export function Toast() {
+  const [mounted, setMounted] = useState(false)
+  useEffect(() => setMounted(true), [])
+  if (!mounted) return null
+  return createPortal(<div className="toast">hello</div>, document.body)
+}
+
+<Toast />
+````
+
+服务端渲染时组件直接返回 `null`,不会触碰 `document`;水合后 `useEffect` 触发,portal 才挂到 `body`。也可以从 `@10coding/vitepress-react` import `<ClientOnly />` 包裹只在客户端渲染的子树(见[运行时 API](../reference/runtime-api#clientonly)):
+
+````mdx
+import { ClientOnly } from '@10coding/vitepress-react'
+
+<ClientOnly>
+  <Toast />
+</ClientOnly>
+````
+
+记住:所有客户端专属代码都要兼容 SSR——如果它在服务端抛错,站点构建会失败。
+
+文件版等价示例:Vue 版 `ModalDemo.vue`(按钮 + Teleport 弹窗)在 React 里
+的等价实现是 `docs/components/ModalDemo.tsx`——用 `createPortal` 挂到
+`body`(React 版的 Teleport),样式在 `ModalDemo.css`;弹层默认不渲染,
+SSR / 水合安全(Esc 或点遮罩关闭)。页面 import 后直接 `<ModalDemo />`:
+
+````mdx
+import ModalDemo from '../../components/ModalDemo.tsx'
+
+<ModalDemo />
+````

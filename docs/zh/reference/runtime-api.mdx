@@ -4,9 +4,9 @@ description: VitePress（React fork）运行时 API 参考，包括 hooks、辅�
 
 # 运行时 API ((#runtime-api))
 
-VitePress 提供若干内置 API 以访问站点/页面数据，并内置少量组件。它们统一从 `vitepress` 导入，用于自定义主题组件，也可以在 `.md` 页面内使用（在 `<script>` 里导入）。
+VitePress 提供若干内置 API 以访问站点/页面数据，并内置少量组件。它们统一从 `vitepress` 导入，用于自定义主题组件，也可以在 `.mdx` 页面中使用（import 到页面模块顶层，在组件里调用）。
 
-以 `use*` 开头的是 **React hooks**：只能在 React 组件体内或 md 页面的 `<script>`（编译进 `Page()` 作用域）里调用，不能在模块顶层执行。
+以 `use*` 开头的是 **React hooks**：只能在 React 组件体内调用（页面或自定义主题里定义的组件都行），不能在模块顶层执行。
 
 ## `useData` <Badge type="info" text="hook" />
 
@@ -57,16 +57,17 @@ export function SomeWidget() {
 }
 ```
 
-**在 md 页面中使用（page-scope）：**
+**在 mdx 页面中使用（hook 封装成组件）：**
 
-```md
-<script>
+```mdx
 import { useData } from '@10coding/vitepress-react'
 
-const { theme } = useData()
-</script>
+export function FooterCopyright() {
+  const { theme } = useData()
+  return <p>页脚版权：{theme.footer.copyright}</p>
+}
 
-页脚版权：{theme.footer.copyright}
+<FooterCopyright />
 ```
 
 ## `useRoute` <Badge type="info" text="hook" />
@@ -150,4 +151,4 @@ export function Demo() {
 
 ## frontmatter / 参数（在页面中读取） ((#data-access))
 
-Vue 版曾经提供的 `$frontmatter` / `$params` 模板全局与 `{{ }}` 插值在本 fork 不再可用。请在页面 `<script>` 的 page-scope 中通过 `useData()` 读取后，用正文 `{expr}` 引用——示例见 [frontmatter](../guide/frontmatter#accessing-frontmatter-data) 与[路由参数](../guide/routing#accessing-params-in-page)。
+Vue 版曾经提供的 `$frontmatter` / `$params` 模板全局与 `{{ }}` 插值在本 fork 不再可用。页面 frontmatter 由 mdx 内核自动导出为模块绑定 `frontmatter`，正文直接 `{frontmatter.xxx}` 引用；路由参数 `params` 通过 `useData()` 读取（hook 需封装成组件）——示例见 [frontmatter](../guide/frontmatter#accessing-frontmatter-data) 与[路由参数](../guide/routing#accessing-params-in-page)。
