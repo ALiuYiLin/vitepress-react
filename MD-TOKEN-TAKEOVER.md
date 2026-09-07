@@ -33,7 +33,7 @@ maskScriptBlocks(字符串) → maskJsxHtmlLines+Fragment(字符串) → md.rend
 | --- | --- | --- | --- |
 | A. `<script>`/`<style>` 块捕获 | block ruler(在 md-it 自带 html_block 匹配**之前**)捕获 `<script …>…</script>` 为**不透明块 token** | 根治 type-7 被块内 `</(script|pre|style|textarea)>` 提前截断;内容写 env(与 plugin-sfc 同形或接管其契约) | `maskScriptBlocks` / `restoreMaskedScripts`(字符串) |
 | B. Fragment 捕获 | inline ruler **高优先级**(backticks / emphasis / math_inline 之前) | `<>{…}</>` / `<>…</>` 整段捕获为不透明 inline token,内容原样 | `firstTagIndex`/`tagDepth`/`jsxRegionEnd` 里的 `<>` 分支 |
-| C. 标签/组件/html_block 接管判定 | core 链**末段**(attrs / anchor / container 之后),遍历 token | 对 html_block / html_inline token 与文本 token 中的独立标签行做“是否 React 接管”判定;Vue 特征(`v-*`、`:x`、`@x`、`{{ }}`)保持退回旧 HTML 路径 | `maskJsxHtmlLines`(字符串逐行) |
+| C. 标签/组件/html_block 接管判定 | core 链**末段**(attrs / anchor / container 之后),遍历 token | 对 html_block / html_inline token 与文本 token 中的独立标签行做“是否 React 接管”判定;含 Vue 指令特征(`v-*` / `:x` / `@x`——en 已移除,现仅作作者误贴 Vue 片段的兜底)的行退回旧 HTML 路径 | `maskJsxHtmlLines`(字符串逐行) |
 
 A/B/C 统一产出同一种 `vp_jsx` 语义:原文 push 进 `env.jsxStore`,token 换为 marker(行内 `@@VP_HTML_n@@` / 块级 `<div data-vp-jsx>`),由**自建 renderer rule** 输出——下游 `serializeHtmlToJsx`、`buildReactPageModule`、死链/pageData 流程**完全不改**。
 
@@ -74,7 +74,7 @@ renderer(vp_jsx / marker):输出 @@VP_HTML_n@@ 或 <div data-vp-jsx="n">(行号�
 
 ## 6. 一期 scope 与明确不做
 
-- **做**:A + B + C **同批**;`<>{expr}</>` 独立行/行内/多行、标签行、组件行、html_block、`: : : react` 的 token 化;三处边角单测;docs(zh+en)构建等价回归。
+- **做**:A + B + C **同批**;`<>{expr}</>` 独立行/行内/多行、标签行、组件行、html_block、`: : : react` 的 token 化;三处边角单测;docs(zh 单语)构建等价回归。
 - **不做**:AST 判定(V2 §7.4 已否决);V2 字面语义的任何改动;动态标题;新依赖(只用 markdown-it ruler);不改 serializeHtmlToJsx 的机器 HTML 适配(§4.4 分层保持)。
 - **开放问题(实施时实证)**:
   1. `md-it-mathjax3` 与 `md-it-attrs` 在 markdown.ts 的精确注册点、inline ruler 优先级数值;
@@ -99,9 +99,29 @@ renderer(vp_jsx / marker):输出 @@VP_HTML_n@@ 或 <div data-vp-jsx="n">(行号�
 
 - **Phase 0(本文)**:评审;§5 已定 A 同批。
 - **Phase 1**:小实验打点(markdown.ts 里顺序矩阵实证:inline ruler 优先级、math/attrs 注册点)→ 冻结顺序约束。
+
+> ### 顺序约束(实证 2026-09-07,临时 vitest 探针,产物已删)
+>
+> 实测 rule 顺序(renderer = `createMarkdownRenderer('.', { math: true })`):
+>
+> ```
+> inline: 0:text 1:linkify 2:newline 3:escape 4:math_inline 5:backticks
+>         6:strikethrough 7:emphasis 8:link 9:image … 13:html_inline 14:entity
+> block : 0:table 1:code(缩进) 2:snippet … 3-13:容器 … 14:fence 16:math_block
+>         21:html_block 23:heading 24:lheading 25:paragraph
+> core  : 0:normalize 1:block 3:inline 7:attrs 8:linkify … 12:text_join 13:anchor
+> ```
+>
+> 冻结的注册锚点:
+> - **B(Fragment)** → `md.inline.ruler.before('text', …)`(最前,先于 math_inline/backticks/emphasis/linkify)。探针证实:`<>**x**</>` 拆成 text/strong/text、`<>$y$</>` 里 `$y$` 变 math_inline、`` <>`code`</> `` 变 code_inline——**Fragment 内 md 语法会被拆 token,core 末段缝合不可行**,B 只能 inline 早期整段 opaque 捕获;纯表达式 `<>`{}`</>`(无 md 语法)是单 text token,为常见情形。
+> - **A(script/style)** → `md.block.ruler.before('html_block', …)`。`code`(1,缩进代码)与 `fence`(14)都先于 `html_block`(21),缩进代码/代码块内容天然不进入 A/C 视野(探针:`'    <Badge/>'` → `code_block`,` ```js <Counter/> ``` ` → `fence`)。
+> - **C(标签/组件/html 接管)** → `md.core.ruler.push(…)`(末尾,anchor(13) 之后)。attrs(7)先于 C 且已把 `{#custom-id}` 消费进 `heading_open.attrs`(探针:attrs `[["id","custom-id"],["tabindex","-1"]]`,children 无残留),与 C 无冲突。
+> - **token 形态(C 的输入)**:整行 `<div class="card"><pre>hello</pre></div>` → 单个 `html_block`(content 为原始整段);独立段 `<span class="hl">强调</span>` → children = `html_inline "<span class=hl>"` + `text "强调"` + `html_inline "</span>"`,且 **inline token 保留整段原始源串(content)**,接管判定可直接作用在整段原始源串上(原 hasVueishAttr 逻辑迁移到 token content;en 已移除,Vue 指令容错仅剩作者误贴兜底作用)。行内码/fence/缩进代码不会出现在这些 token 里 → 三处边角结构性消失。
+>
+> 附带发现:单元测试 `markdown.test.ts` 的 attrs 用例仍是旧 `((…))` 分隔符语法,与 V2(`{}`)冲突,需在清理批次一并改为 `{#id}`(repo `test:unit` 当前因缺 @vitejs/plugin-vue 跑不了,属存量问题)。
 - **Phase 2**:实现 A + B + C(同批)→ 现有 V2 单测(走整管线)必须保持全绿;新增三处边角单测(红 → 绿):
   1. 4 空格缩进代码内的 `<Badge/>`/`<>…</>` 按字面输出;
   2. 内容行“形似闭合 fence”(异长/异字符)后紧跟含 `<>` 的行不误扫;
   3. 正文字面 `<> 文字 </>`(内部无 `{`/`<`)按 md 转义输出,不接管。
 - **Phase 3**:清理退役 Pass(`maskScriptBlocks`/`restoreMaskedScripts`/`maskJsxHtmlLines` 与相关 lexer 精简、`markdownToReact.ts` 编排简化、注释与 placeholders 契约更新)。
-- **Phase 4**:typecheck(shared/client/node)+ prettier + `pnpm build` + `pnpm docs:build:only`(zh 活体示例 + en Vue 镜像原样通过)+ 抽查 using-react/md-react-rules 输出 → 提交。
+- **Phase 4**:typecheck(shared/client/node)+ prettier + `pnpm build` + `pnpm docs:build:only`(zh 单语全站,含 using-react/md-react-rules 活体示例)+ 抽查输出 → 提交。
