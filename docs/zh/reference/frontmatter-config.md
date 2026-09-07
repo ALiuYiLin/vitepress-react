@@ -3,7 +3,7 @@ outline: deep
 description: VitePress Markdown 页面所有可用 frontmatter 配置选项的参考。
 ---
 
-# frontmatter 配置 ((#frontmatter-config))
+# frontmatter 配置 {#frontmatter-config}
 
 frontmatter 支持基于页面的配置。在每个 markdown 文件中，可以使用 frontmatter 配置来覆盖站点级别或主题级别的配置选项。此外，还有一些配置选项只能在 frontmatter 中定义。
 
@@ -16,7 +16,7 @@ editLink: true
 ---
 ```
 
-在页面里访问 frontmatter：在 `<script>` 的 page-scope 中 `useData()` 读取、正文 `{expr}` 引用（示例见[指南 frontmatter](../guide/frontmatter#accessing-frontmatter-data)）。本 fork 没有 Vue 的 `$frontmatter` 全局与 `{{ }}` 插值。
+在页面里访问 frontmatter：在 `<script>` 的 page-scope 中 `useData()` 读取、正文 `<>{expr}</>` 引用（示例见[指南 frontmatter](../guide/frontmatter#accessing-frontmatter-data)）。本 fork 没有 Vue 的 `$frontmatter` 全局与 `{{ }}` 插值。
 
 ## title
 
@@ -79,7 +79,7 @@ type HeadConfig =
   | [string, Record<string, string>, string]
 ```
 
-## 仅默认主题 ((#default-theme-only))
+## 仅默认主题 {#default-theme-only}
 
 以下 frontmatter 选项仅在使用默认主题时适用。
 

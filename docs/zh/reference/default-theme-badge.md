@@ -2,11 +2,11 @@
 description: 使用 Badge 组件为 VitePress 文档的标题添加状态标签。
 ---
 
-# 徽标 ((#badge))
+# 徽标 {#badge}
 
 徽标可让你为标题添加状态。例如，指定部分的类型或支持的版本可能很有用。
 
-## 用法 ((#usage))
+## 用法 {#usage}
 
 可以使用全局组件 `Badge` 。
 
@@ -24,7 +24,7 @@ description: 使用 Badge 组件为 VitePress 文档的标题添加状态标签�
 ### Title <Badge type="warning" text="beta" />
 ### Title <Badge type="danger" text="caution" />
 
-## 自定义子节点 ((#custom-children))
+## 自定义子节点 {#custom-children}
 
 `<Badge>` 接受 `children`，这将显示在徽标中。
 
@@ -34,7 +34,7 @@ description: 使用 Badge 组件为 VitePress 文档的标题添加状态标签�
 
 ### Title <Badge type="info">custom element</Badge>
 
-## 自定义不同类型徽标的背景色 ((#customize-type-color))
+## 自定义不同类型徽标的背景色 {#customize-type-color}
 
 可以通过覆盖 css 来自定义不同类型 `<Badge />` 的样式。以下是默认值。
 

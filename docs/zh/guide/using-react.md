@@ -2,48 +2,49 @@
 description: 在 VitePress React 版的 Markdown 文件中编写 React 组件与表达式,让静态内容获得交互能力。
 ---
 
-# 在 Markdown 中使用 React ((#using-react-in-markdown))
+# 在 Markdown 中使用 React {#using-react-in-markdown}
 
-在本 React 版 VitePress(vitepress-react)中,每个 Markdown 文件都会被编译成静态 HTML,再经 JSX 序列化器生成页面组件。正文里的**普通文本(不含 `{…}`)与 HTML 是字面量**;正文里的**单层 `{expr}` 一律是 JSX 表达式**(与 React 语义一致,等价于 Vue 的 `{{ expr }}`)。不存在 Vue 版的 `{{ }}` 插值、指令或 `v-pre`。要加入动态能力,在正文直接写 `{expr}`,或用 `<script>` 块编写 React 组件/表达式。
+在本 React 版 VitePress(vitepress-react)中,每个 Markdown 文件都会被编译成静态 HTML,再经 JSX 序列化器生成页面组件。正文(含 `{…}`、`{{…}}`)与 HTML 一律是**字面量**,与标准 Markdown / 上游 VitePress 一致;不存在 Vue 版的 `{{ }}` 插值、指令或 `v-pre`,也不需要转义。要加入动态能力,必须**显式写成 JSX**:正文里用 Fragment `<>{expr}</>`、组件标签(`<Counter />`)或 `::: react` 容器,或用 `<script>` 块编写 React 组件。
 
 ::: tip SSR 兼容性
 所有用法都要兼容 SSR。避免在组件顶层直接读写 `window` / `document`,浏览器专属逻辑请放进 `useEffect` 或客户端专属封装里。参见 [SSR 兼容性](./ssr-compat)。
 :::
 
-## 正文求值规则 ((#templating))
+## 正文字面与 JSX 动态 {#templating}
 
-Vue 版文档里的 `{{ }}` 在这里不存在——正文**单层 `{…}` 一律按 JSX 表达式求值**:
+Vue 版文档里的 `{{ }}` 在这里不存在,正文也**不做 `{expr}` 求值**——正文里的花括号一律按字面输出:
 
-- 引用 `<script>` 里的绑定:`{count}`、`{fmt(page.title)}`;
-- 纯字面量表达式:`{1 + 1}`、`{'hi'}`;
-- 任意 JS:`{items.length > 0 ? '有' : '无'}` 等(与 React 组件里写 `{…}` 完全一致)。
+- `{count}`、`{{x}}`、`\{x\}`、CSS 片段 `.a { color: red }` 都是**字面文本**,分别原样显示 `{count}` / `{{x}}` / `{x}`,不报错、不需要转义;
+- 要显示动态内容,显式包成 JSX Fragment:**`<>{count}</>`**、**`<>{fmt(page.title)}</>`**、`<>{items.length > 0 ? '有' : '无'}</>`,可独立成行,也可嵌在句子中间;
+- 完整交互(带状态/事件)仍写组件标签 `<Counter />`(见下)。
 
-想显示“看起来像模板”的字面 `{…}`,用 `\{` 转义(如 `\{x\}` 显示 `{x}`)、放进**行内代码**、代码块,或写 `{{…}}` 双花括号(按字面输出)。代码块天然字面,无需转义。
+**输入 / 输出对比**
 
-例如:
-
-**输入**
+输入:
 
 ```md
-{1 + 1}
+{1 + 1}          ← 字面文本
+<>{1 + 1}</>     ← JSX 表达式
 ```
 
-**输出**
+输出:
 
-```text
-2
-```
+{1 + 1}          ← 字面文本
 
-`{统计}`、`{#foo}` 这类写法不再是“字面兜底”:它们会被当作 JS 引用/表达式(分别报 ReferenceError 与编译错误)——这正是 React 语义,写错即报错。给元素加类/id 请用 attrs 语法 `((.class))` / `((#id))`(见 [md 页面 scoped 样式](./md-scoped-demo))。
+<>{1 + 1}</>     ← JSX 表达式
 
-## `<script>` 块:组件与页面作用域 ((#script-and-style))
+字面 `{…}` 不再需要 `\{` 转义或 `{{…}}` 双写(双写也按字面输出);`\{` 退化为 Markdown 默认行为,显示 `{`,不承担语义。
+
+`{统计}`、`{#foo}`、`{.cls}` 这类写法就是**字面文本**,原样显示;给元素加类/id 用 attrs 语法 `{#id}` / `{.class}`(见 [md 页面 scoped 样式](./md-scoped-demo)),注意别把段落/标题**末尾**的字面 `{…}` 写在会被 attrs 消费的位置(同上游行为,见该页说明)。
+
+## `<script>` 块:组件与页面作用域 {#script-and-style}
 
 根级 `<script>` 块放在 frontmatter **之后**。块内容按两种位置编译:
 
 - **import 语句与具名导出(`export function/const`)** → 提升到模块顶层,可作为正文组件标签(`<Counter />`)使用;
-- **其余语句(含 `useState`/`useEffect` 与普通变量)** → 注入到页面组件 `Page()` 函数体内,和正文 `{…}` 表达式**共享同一作用域**。
+- **其余语句(含 `useState`/`useEffect` 与普通变量)** → 注入到页面组件 `Page()` 函数体内,和正文 JSX(`<>{…}</>`、`::: react`)共享同一作用域。
 
-因此正文里的 `{count}` 和你在 script 里声明的 `useState` 是同一份状态:
+因此 `<>{count}</>` 里引用的 `count` 和你在 script 里声明的 `useState` 是同一份状态:
 
 **输入**
 
@@ -68,11 +69,11 @@ export function Counter() {
 
 **说明**:`count` 随 `setCount`/`useEffect`/路由数据更新而**响应式重渲染**;它等价于把这段代码写进一个 React 组件函数再返回 JSX。
 
-### 在正文直接写 HTML/JSX 行 ((#inline-jsx))
+### 在正文直接写 HTML/JSX 行 {#inline-jsx}
 
-**独立成行、以 `<` 开头的 HTML 标签或 React 组件行**,会被整行占位、渲染后原样恢复成 JSX 交给 React/oxc 编译——不区分是否含 `={`。因此 `onClick={…}`、`{expr}`、组件引用(<Badge/> 等)都按 JSX 语义生效;同时意味着属性要按 JSX 写(`class` → `className`、`style` → 对象、事件用驼峰函数)。想展示字面代码请放进代码块。
+**独立成行、以 `<` 开头的 HTML 标签或 React 组件行**,会被整行占位、渲染后原样恢复成 JSX 交给 React/oxc 编译——不区分是否含 `={`。句子中间想要动态值,同样显式写成 Fragment 片段,如 `温度: <>{temp}°C</>`,片段前后的文字仍是普通 Markdown。要注意:**只有被 `<…>`/`<>…</>` 显式包住的内容按 JSX 求值**;正文其余位置的裸 `{…}` 都是字面文本。JSX 属性要按 JSX 写(`class` → `className`、`style` → 对象、事件用驼峰函数)。想展示字面代码请放进代码块。
 
-下面的计数就用到了 page-scope 的 `{count}` 显示与直接写的 JSX 按钮行:
+下面的计数就用到了 page-scope 的 `<>{count}</>` 显示与直接写的 JSX 按钮行:
 
 **实际渲染**
 
@@ -82,7 +83,7 @@ import { useState } from 'react'
 const [count, setCount] = useState(100)
 </script>
 
-当前计数: {count}
+当前计数: <>{count}</>
 
 <button onClick={() => setCount(count + 1)}>+1</button>
 
@@ -95,7 +96,7 @@ import { useState } from 'react'
 const [count, setCount] = useState(100)
 </script>
 
-当前计数: {count}
+当前计数: <>{count}</>
 
 <button onClick={() => setCount(count + 1)}>+1</button>
 ```
@@ -114,7 +115,7 @@ const [count, setCount] = useState(100)
 
 只要是"独立成行的标签行"都按上面的规则处理:普通 HTML 行(如 `<b>bold</b>`)、组件行(如 `<Badge type="tip" text="x" />`,自动从主题导入)同样由 React 接管;含 Vue 指令(`:members`、`@click`、`<template #slot>`)的行不属于 React 接管范围,仍按旧 HTML 路径处理并提示。
 
-### 在 Markdown 中导入并使用组件 ((#using-components))
+### 在 Markdown 中导入并使用组件 {#using-components}
 
 如果组件只被少数页面使用,可以在页面的 `<script>` 里显式导入(可正确代码分割):
 
@@ -138,7 +139,7 @@ This is a .md using a custom component
 
 默认主题也导出可直接用的组件(`VPBadge`、`VPTeamMembers`、`VPTeamPage` 等),甚至文档里裸写 `<Badge type="tip" text="new" />` 这类 Vue 全局注册标签,编译时会自动从 `vitepress/theme` 导入。
 
-### 在标题中使用组件 ((#using-components-in-headers))
+### 在标题中使用组件 {#using-components-in-headers}
 
 可以在标题中放组件,但解析出的标题只取纯文本:
 
@@ -148,6 +149,8 @@ This is a .md using a custom component
 | `# 文档 \`<Badge/>\``                           | `文档 <Badge/>` |
 
 `<code>` 里的内容不会被解析成组件。
+
+**标题里不支持 `<>{expr}</>` 动态**:anchor id、aria-label、大纲文本都在编译期由纯文本生成,标题内只放组件标签;需要动态值时,把 `<>{expr}</>` 写在标题下方的正文里。
 
 等价于 Vue 版 `docs/components/ComponentInHeader.vue` 的最小组件
 `docs/components/ComponentInHeader.tsx` 就放在 docs 里,import 后即可用:
@@ -170,7 +173,7 @@ import ComponentInHeader from '../../components/ComponentInHeader.tsx'
 
 上面标题里的 ⚡ 就是 `ComponentInHeader`;大纲标题只取纯文本,不含组件内容。
 
-## 代码块与指令 ((#code-blocks))
+## 代码块与指令 {#code-blocks}
 
 代码块天然是字面量,不需要 `v-pre` 包装:
 
@@ -190,7 +193,7 @@ Hello {1 + 1}
 
 Vue 指令(`v-if`、`v-pre`、`@click`、`:class` 等)不属于 React:序列化时会剔除或按字面处理并给出提示,请不要依赖。
 
-## 样式与客户端专属内容 ((#styles-and-client-only))
+## 样式与客户端专属内容 {#styles-and-client-only}
 
 ::: warning 根级 `<style>` 是全局的;页面级作用域有专门的 scoped 方案
 不带 `scoped` 的 `<style>` 仍是全局样式(运行时注入全站)。想要 **Vue-like

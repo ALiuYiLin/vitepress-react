@@ -2,7 +2,7 @@
 description: 配置 VitePress 默认主题的侧边栏导航，包括分组、可折叠部分和多侧边栏。
 ---
 
-# 侧边栏 ((#sidebar))
+# 侧边栏 {#sidebar}
 
 侧边栏是文档的主要导航块。可以在 [`themeConfig.sidebar`](./default-theme-config#sidebar) 中配置侧边栏菜单。
 
@@ -23,7 +23,7 @@ export default {
 }
 ```
 
-## 基本用法 ((#the-basics))
+## 基本用法 {#the-basics}
 
 侧边栏菜单的最简单形式是传入一个链接数组。第一级项目定义侧边栏的“部分”。它应该包含作为小标题的 `text` 和作为实际导航链接的 `items`。
 
@@ -97,7 +97,7 @@ export default {
 }
 ```
 
-## 多侧边栏 ((#multiple-sidebars))
+## 多侧边栏 {#multiple-sidebars}
 
 可能会根据页面路径显示不同的侧边栏。例如，如本站点所示，可能希望在文档中创建单独的侧边栏，例如“指南”页面和“配置参考”页面。
 
@@ -149,7 +149,7 @@ export default {
 }
 ```
 
-## 可折叠的侧边栏组 ((#collapsible-sidebar-groups))
+## 可折叠的侧边栏组 {#collapsible-sidebar-groups}
 
 通过向侧边栏组添加 `collapsed` 选项，它会显示一个切换按钮来隐藏/显示每个部分。
 
@@ -183,13 +183,13 @@ export default {
 }
 ```
 
-## 路径前缀 ((#path-prefix))
+## 路径前缀 {#path-prefix}
 
 当文档结构具有较深的目录，或者多个分组位于同一个子目录下时，可以使用 `base` 选项为该分组下的所有嵌套 `items` 拼接的一个路径前缀。
 
 这样可以避免为每个 `link` 重复书写相同的路径。`base` 选项既支持在多侧边栏配置中使用，也支持在嵌套的侧边栏分组中使用。
 
-### 在多侧边栏中使用 ((#in-multiple-sidebars))
+### 在多侧边栏中使用 {#in-multiple-sidebars}
 
 可以在多侧边栏配置的根部定义 `base`：
 
@@ -211,7 +211,7 @@ export default {
 }
 ```
 
-### 在嵌套分组中使用 ((#in-nested-groups))
+### 在嵌套分组中使用 {#in-nested-groups}
 
 也可以在嵌套的侧边栏分组内部使用 `base`，它将作用于该分组的直接子项：
 

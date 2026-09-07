@@ -33,6 +33,11 @@ export default defineConfig({
   lastUpdated: true,
   cleanUrls: true,
 
+  // en 侧是上游 Vue 文档镜像,个别页面引用了仅存在于 zh 的 React 指南页
+  // (./using-react);en 暂无 React 指南,属存量死链,先屏蔽以免阻塞构建。
+  // TODO:en 补齐 React 指南页后移除。
+  ignoreDeadLinks: [/using-react/],
+
   markdown: {
     math: true,
     codeTransformers: [

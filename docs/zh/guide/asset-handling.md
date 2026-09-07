@@ -2,9 +2,9 @@
 description: 了解如何在 VitePress 中引用和处理静态资源，如图片、媒体文件和字体。
 ---
 
-# 资源处理 ((#asset-handling))
+# 资源处理 {#asset-handling}
 
-## 引用静态资源 ((#referencing-static-assets))
+## 引用静态资源 {#referencing-static-assets}
 
 所有的 Markdown 文件在构建时都会经过 VitePress 的渲染管线（md → TSX 页面模块 → 静态 HTML），其中引用的静态资源由 [Vite](https://cn.vite.dev/guide/assets.html) 处理。可以**并且应该**使用相对路径来引用资源：
 
@@ -24,7 +24,7 @@ description: 了解如何在 VitePress 中引用和处理静态资源，如图�
 
 所有**静态**路径引用，包括绝对路径，都应基于你的工作目录的结构。
 
-## public 目录 ((#the-public-directory))
+## public 目录 {#the-public-directory}
 
 有时可能需要一些静态资源，但这些资源没有直接被 Markdown 或主题组件直接引用，或者你可能想以原始文件名提供某些文件，像 `robots.txt`，favicons 和 PWA 图标这样的文件。
 
@@ -34,7 +34,7 @@ description: 了解如何在 VitePress 中引用和处理静态资源，如图�
 
 请注意，应使用根绝对路径来引用放置在 `public` 中的文件——例如，`public/icon.png` 应始终在源代码中使用 `/icon.png` 引用。
 
-## 根 URL ((#base-url))
+## 根 URL {#base-url}
 
 如果站点没有部署在根 URL 上，则需要在 `.vitepress-react/config.js` 中设置 `base` 选项。例如，如果计划将站点部署到 `https://foo.github.io/bar/`，则 `base` 应设置为 `'/bar/'`(它应始终以斜杠开头和结尾)。
 

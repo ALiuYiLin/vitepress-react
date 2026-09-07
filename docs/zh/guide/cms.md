@@ -3,9 +3,9 @@ outline: deep
 description: 使用动态路由和数据加载器将 VitePress 连接到无头 CMS。
 ---
 
-# 连接到 CMS ((#connecting-to-a-cms))
+# 连接到 CMS {#connecting-to-a-cms}
 
-## 一般的工作流 ((#general-workflow))
+## 一般的工作流 {#general-workflow}
 
 将 VitePress 连接到 CMS 主要围绕[动态路由](./routing#dynamic-routes)展开。在继续阅读之前，请确保了解它的工作原理。
 
@@ -58,6 +58,6 @@ description: 使用动态路由和数据加载器将 VitePress 连接到无头 C
     <!-- @content -->
     ```
 
-## 整合指南 ((#integration-guides))
+## 整合指南 {#integration-guides}
 
 如果你已经写了一篇关于如何将 VitePress 与特定的 CMS 集成的指南，请点击下面的“在 GitHub 上编辑此页面”链接将它提交到这里！

@@ -3,7 +3,7 @@ outline: deep
 description: 将 VitePress 站点部署到 Netlify、Vercel、GitHub Pages 等主流平台。
 ---
 
-# 部署 VitePress 站点 ((#deploy-your-vitepress-site))
+# 部署 VitePress 站点 {#deploy-your-vitepress-site}
 
 以下指南基于一些前提：
 
@@ -20,7 +20,7 @@ description: 将 VitePress 站点部署到 Netlify、Vercel、GitHub Pages 等�
   }
   ```
 
-## 本地构建与测试 ((#build-and-test-locally))
+## 本地构建与测试 {#build-and-test-locally}
 
 1. 可以运行以下命令来构建文档：
 
@@ -48,13 +48,13 @@ description: 将 VitePress 站点部署到 Netlify、Vercel、GitHub Pages 等�
 
    现在 `docs:preview` 方法将会在 `http://localhost:8080` 启动服务。
 
-## 设定 public 根目录 ((#setting-a-public-base-path))
+## 设定 public 根目录 {#setting-a-public-base-path}
 
 默认情况下，我们假设站点将部署在域名 (`/`) 的根路径上。如果站点在子路径中提供服务，例如 `https://mywebsite.com/blog/`，则需要在 VitePress 配置中将 [`base`](../reference/site-config#base) 选项设置为 `'/blog/'`。
 
 **例**：如果你使用的是 GitHub（或 GitLab）页面并部署到 `user.github.io/repo/`，请将 `base` 设置为 `/repo/`。
 
-## HTTP 缓存标头 ((#http-cache-headers))
+## HTTP 缓存标头 {#http-cache-headers}
 
 如果可以控制生产服务器上的 HTTP 标头，则可以配置 `cache-control` 标头以在重复访问时获得更好的性能。
 
@@ -104,9 +104,9 @@ Cache-Control: max-age=31536000,immutable
 
 :::
 
-## 各平台部署指南 ((#platform-guides))
+## 各平台部署指南 {#platform-guides}
 
-### Netlify / Vercel / Cloudflare Pages / AWS Amplify / Render ((#generic))
+### Netlify / Vercel / Cloudflare Pages / AWS Amplify / Render {#generic}
 
 使用仪表板创建新项目并更改这些设置：
 

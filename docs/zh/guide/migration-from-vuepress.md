@@ -1,14 +1,14 @@
-# 从 VuePress 迁移 ((#migration-from-vuepress))
+# 从 VuePress 迁移 {#migration-from-vuepress}
 
-## 配置 ((#config))
+## 配置 {#config}
 
-### 侧边栏 ((#sidebar))
+### 侧边栏 {#sidebar}
 
 侧边栏不再从 frontmatter 中自动获取。你可以自行阅读 [`frontmatter`](https://github.com/ALiuYiLin/vitepress-react/issues/572#issuecomment-1170116225) 来动态填充侧边栏。[迁移工具](https://github.com/ALiuYiLin/vitepress-react/issues/96)将来可能会提供。
 
-## Markdown ((#markdown))
+## Markdown {#markdown}
 
-### 图片 ((#images))
+### 图片 {#images}
 
 与 VuePress 不同，在使用静态图片时，VitePress 会根据配置自动处理这些 [`base`](./asset-handling#base-url)。
 

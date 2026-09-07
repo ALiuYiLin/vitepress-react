@@ -2,13 +2,13 @@
 description: '在 Markdown 中使用 React 的完整规则:表达式、JSX 区域、::: react 容器、编译产物与真实渲染。'
 ---
 
-# 在 Markdown 中使用 React 的规则 ((#react-markdown-rules))
+# 在 Markdown 中使用 React 的规则 {#react-markdown-rules}
 
 本文是 [在 Markdown 中使用 React](./using-react) 的“规则手册”。先看速查表,再逐条看**代码示例 → 真实渲染 → 编译后的 TSX(示意)**。
 
 ::: tip 前置
 页面动态能力来自三个机制:
-1. `<script>` 里的 **page-scope 状态**(注入到 `Page()` 函数体,正文表达式与其共享);
+1. `<script>` 里的 **page-scope 状态**(注入到 `Page()` 函数体,正文 JSX(`<>{…}</>` 等)与其共享);
 2. `<script>` 具名导出的**组件**(`<Counter />`);
 3. 正文/容器中的 **JSX 区域**(原样恢复,由 React/oxc 编译)。
 :::
@@ -17,20 +17,22 @@ description: '在 Markdown 中使用 React 的完整规则:表达式、JSX 区�
 
 | 写法/位置 | 处理结果 |
 | --- | --- |
-| 普通正文文字 | 字符串字面量;正文里的 `{expr}` 一律按 **JSX 表达式**求值(React 语义) |
-| 正文 `{expr}` | 无论内容都求值:引用绑定(`{count}`、`{fmt(x)}`)、纯字面(`{1 + 1}`)、任何 JS —— 与 React 组件里写 JSX 一致;未定义引用/语法错误由 oxc/运行时报错 |
-| 字面花括号(想显示 `{x}` 本身) | `\{` 转义、行内代码 / 代码块、或 `{{…}}` 双花括号(原样输出) |
+| 普通正文(含 `{x}`、`{{x}}`、CSS 片段 `.a { … }`) | 字符串字面量:一律按**字面文本**原样显示,不求值、不报错 |
+| 正文 `<>{expr}</>`(Fragment) | **显式 JSX**:求值并渲染(引用 page-scope 绑定 `{count}`、纯字面 `{1 + 1}`、任意 JS);可独立成行或嵌在句子中间 |
+| 正文 `<Comp />` / `::: react` / 独立标签行 | React 接管:原样恢复成 JSX 编译(见 §3/§4) |
+| 字面花括号(想显示 `{x}` 本身) | **直接写即可**:`{x}` 就是字面文本;`\{` 退化为 md 默认显示 `{`,不再承担语义 |
 | 独立成行的 `<标签 …>` 块 | React 接管:整行(可跨行配平)占位 → 原样恢复成 JSX |
-| 正文行内的 `<b>`/`<Badge/>` | React 接管:同句片段占位 → 恢复成 JSX |
-| ATX 标题行内的标签(`## 标题 <Badge/>`) | **不接管**:markdown-it + anchor 生成干净 id 与大纲纯文本;已知组件名由序列化器还原 |
+| 正文行内的 `<b>`/`<Badge/>`/`<>{x}</>` | React 接管:同句片段占位 → 恢复成 JSX(片段前后文字仍是普通 md) |
+| ATX 标题行内的标签(`## 标题 <Badge/>`) | **不接管**:markdown-it + anchor 生成干净 id 与大纲纯文本;已知组件名由序列化器还原(标题内不支持 `<>{expr}</>` 动态) |
 | `::: react … :::` 容器 | 任意多行 JSX(含 `items.map(...)` 表达式),原样交给 React |
 | Vue 指令(`:members`/`@click`/`#slot`/`v-*`) | **不接管**,退回旧 HTML→JSX 路径(丢弃并提示) |
 | 代码 fence / 行内代码 | 字面量,永不求值/接管 |
 | `<script>` | import/具名导出 → 模块顶层;其余(useState 等)→ `Page()` 体 |
+| attrs 加类/id | `{#id}` / `{.class}`(分隔符已恢复花括号,与上游一致) |
 
 **React 接管意味着属性按 JSX 写**:`class` → `className`,`style` → 对象,事件 → 驼峰函数(`onClick`)。写错即作者语法错误,oxc 报错并带 md 行号注释。
 
-## 1. page-scope 状态 + 正文表达式
+## 1. page-scope 状态 + 正文 Fragment
 
 ### 代码(写在 md 中)
 
@@ -41,7 +43,7 @@ import { useState } from 'react'
 const [count, setCount] = useState(10)
 </script>
 
-当前计数: {count}
+当前计数: <>{count}</>
 
 <button onClick={() => setCount(count + 1)}>+1</button>
 ````
@@ -59,7 +61,7 @@ const items = [
 ]
 </script>
 
-当前计数: {count}
+当前计数: <>{count}</>
 
 <button onClick={() => setCount(count + 1)}>+1</button>
 
@@ -80,7 +82,7 @@ export default function Page() {
 
   return (
     <div className="vp-doc">
-      <p>{/* JSX md:… */}当前计数: {count}</p>
+      <p>{/* JSX md:… */}当前计数: <>{count}</></p>
       <p>
         <button onClick={() => setCount(count + 1)}>+1</button>
       </p>
@@ -89,30 +91,40 @@ export default function Page() {
 }
 ```
 
-要点:`const [count, setCount] = useState(10)` 注入 **Page() 函数体**,正文 `{count}`、`onClick` 引用的是同一份闭包状态 → 点击按钮即响应式重渲染。
+要点:`const [count, setCount] = useState(10)` 注入 **Page() 函数体**,正文 `<>{count}</>`、`onClick` 引用的是同一份闭包状态 → 点击按钮即响应式重渲染。
 
-## 2. 正文 `{expr}` 一律求值
+## 2. 正文 `<>{expr}</>` 显式求值;裸 `{…}` 一律字面
 
-- **一律求值**:正文里每对 `{…}` 都是 JSX 表达式——引用 page-scope/module 绑定(`{count}`、`{fmt(x)}`)、纯字面(`{1 + 1}`、`{'hi'}`)或任意 JS 都行;与 React 组件内写 `{…}` 完全一致;
-- **展示字面花括号**:`\{` 转义(如 `\{x\}` 显示 `{x}`)、放进代码块/行内代码,或写 `{{…}}` 双花括号(按字面输出);
-- **写错即报错**(与 JSX 一致):`{统计}` 引用未定义变量 → 运行时 ReferenceError;`{#foo}` 这类残留 attrs 语法 → 编译错,改回 `((#foo))`。
+- **裸 `{…}` 是字面文本**:正文里 `{count}`、`{1 + 1}`、`{{…}}`、CSS 片段 `.a { color: red }` 都按原样显示,不求值、不报错,也不需要转义;
+- **要动态值就显式包 Fragment**:`<>{count}</>`、`<>{fmt(x)}</>`、`<>{items.length > 0 ? '有' : '无'}</>`——引用 page-scope/module 绑定或任意 JS,与 React 组件内写 JSX 一致;
+- **attrs 恢复花括号**:给元素加类/id 用 `{#id}` / `{.class}`;留意别把段落/标题**末尾**的字面 `{…}` 写在会被 attrs 消费的位置(与上游 VitePress 行为一致)。
 
 **示例与真实渲染**
 
 ```md
-1 + 1 = {1 + 1}, 计数 = {count}
+1 + 1 = <>{1 + 1}</>,计数 = <>{count}</>
+
+字面 {x} 与 {{双写}} 都原样显示
 ```
 
-1 + 1 = {1 + 1},计数 = {count}
+1 + 1 = <>{1 + 1}</>,计数 = <>{count}</>
+
+字面 {x} 与 {{双写}} 都原样显示
 
 编译后(示意):该段文本会输出成
 
 ```tsx
-<p>{'1 + 1 = '}{1 + 1}{', 计数 = '}{count}</p>
+<p>
+  {'1 + 1 = '}
+  <>{1 + 1}</>
+  {', 计数 = '}
+  <>{count}</>
+</p>
+<p>{'字面 {x} 与 {{双写}} 都原样显示'}</p>
 ```
 
 ::: tip 想展示字面花括号?
-用 `\{` 转义(如 `\{x\}` 显示 `{x}`),放进行内代码 / 代码块,或写 `{{…}}` 双花括号按字面输出。正文里任何单独出现的 `{…}` 都会被当作 JSX 表达式求值。
+直接写 `{x}` 即可——正文的 `{…}` 本来就是字面文本,不需要转义或双写;`\{` 退化为 Markdown 默认行为(显示 `{`)。唯一的注意点是**段落/标题末尾**的 `{…}` 可能被 attrs 当作 `{#id}`/`{.cls}` 消费(同上游),必要时调整措辞或把字面 `{…}` 放到句子中间。
 :::
 
 ## 3. 独立标签行 / 行内标签(React 接管)

@@ -2,7 +2,7 @@
 description: 配置 VitePress 默认主题的主页布局，包括 hero 区域、功能特性和自定义内容。
 ---
 
-# 主页 ((#home-page))
+# 主页 {#home-page}
 
 VitePress 默认主题提供了一个首页布局，也可以在[此站点首页](../)看到。可以通过 [frontmatter](./frontmatter-config) 指定 `layout: home` 在任何页面上使用它
 
@@ -14,7 +14,7 @@ layout: home
 
 但是，仅做这个配置不会有太大作用。可以通过设置其他选项 (例如 `hero` 和 `features`) 向主页添加几个不同的预设。
 
-## Hero 部分 ((#hero-section))
+## Hero 部分 {#hero-section}
 
 Hero 部分位于主页顶部。以下是配置 Hero 的方法。
 
@@ -82,7 +82,7 @@ interface HeroAction {
 }
 ```
 
-### 自定义 name 的颜色 ((#customizing-the-name-color))
+### 自定义 name 的颜色 {#customizing-the-name-color}
 
 VitePress 通过 (`--vp-c-brand-1`) 设置 `name` 的颜色。但是，可以通过覆盖 `--vp-home-hero-name-color` 变量来自定义此颜色。
 
@@ -101,7 +101,7 @@ VitePress 通过 (`--vp-c-brand-1`) 设置 `name` 的颜色。但是，可以通
 }
 ```
 
-## Features 部分 ((#features-section))
+## Features 部分 {#features-section}
 
 在 Features 部分，可以在 Hero 部分之后列出任意数量的 Feature。可以在 frontmatter 中配置  `features`。
 
@@ -171,7 +171,7 @@ type FeatureIcon =
     }
 ```
 
-## Markdown 内容 ((#markdown-content))
+## Markdown 内容 {#markdown-content}
 
 可以在 frontmatter 的分隔符 `---` 下方为站点主页添加额外的 Markdown 内容。
 

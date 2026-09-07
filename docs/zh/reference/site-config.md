@@ -3,13 +3,13 @@ outline: deep
 description: VitePress 站点配置选项的完整参考，包括应用级设置、主题和构建选项。
 ---
 
-# 站点配置 ((#site-config))
+# 站点配置 {#site-config}
 
 站点配置可以定义站点的全局设置。应用配置选项适用于每个 VitePress 站点，无论它使用什么主题。例如根目录或站点的标题。
 
-## 概览 ((#overview))
+## 概览 {#overview}
 
-### 配置解析 ((#config-resolution))
+### 配置解析 {#config-resolution}
 
 配置文件总是从 `<root>/.vitepress-react/config.[ext]` 解析，其中 `<root>` 是 VitePress [项目根目录](../guide/routing#root-and-source-directory)，`[ext]` 是支持的文件扩展名之一。开箱即用地支持 TypeScript。支持的扩展名包括 `.js`、`.ts`、`.mjs` 和 `.mts`。
 
@@ -81,7 +81,7 @@ export default defineConfig({
 
 :::
 
-### 配置智能提示 ((#config-intellisense))
+### 配置智能提示 {#config-intellisense}
 
 使用 `defineConfig` 辅助函数将为配置选项提供 TypeScript 支持的智能提示。假设 IDE 支持它，那么在 JavaScript 和 TypeScript 中都将触发智能提示。
 
@@ -93,7 +93,7 @@ export default defineConfig({
 })
 ```
 
-### 主题类型提示 ((#typed-theme-config))
+### 主题类型提示 {#typed-theme-config}
 
 默认情况下，`defineConfig` 辅助函数期望默认主题的主题配置数据类型为：
 
@@ -130,7 +130,7 @@ export default defineConfigWithTheme<ThemeConfig>({
 
   可以使用 VitePress 配置中的 [markdown](#markdown) 选项配置底层的 [Markdown-It](https://github.com/markdown-it/markdown-it) 实例。
 
-## 站点元数据 ((#site-metadata))
+## 站点元数据 {#site-metadata}
 
 ### title
 
@@ -214,7 +214,7 @@ type HeadConfig =
   | [string, Record<string, string>, string]
 ```
 
-#### 示例：添加一个图标 ((#example-adding-a-favicon))
+#### 示例：添加一个图标 {#example-adding-a-favicon}
 
 ```ts
 export default {
@@ -226,7 +226,7 @@ export default {
 */
 ```
 
-#### 示例：添加谷歌字体 ((#example-adding-google-fonts))
+#### 示例：添加谷歌字体 {#example-adding-google-fonts}
 
 ```ts
 export default {
@@ -253,7 +253,7 @@ export default {
 */
 ```
 
-#### 示例：添加一个 serviceWorker ((#example-registering-a-service-worker))
+#### 示例：添加一个 serviceWorker {#example-registering-a-service-worker}
 
 ```ts
 export default {
@@ -281,7 +281,7 @@ export default {
 */
 ```
 
-#### 示例：使用谷歌分析 ((#example-using-google-analytics))
+#### 示例：使用谷歌分析 {#example-using-google-analytics}
 
 ```ts
 export default {
@@ -340,7 +340,7 @@ export default {
 }
 ```
 
-## 路由 ((#routing))
+## 路由 {#routing}
 
 ### cleanUrls
 
@@ -367,7 +367,7 @@ export default {
 }
 ```
 
-## 构建 ((#build))
+## 构建 {#build}
 
 ### srcDir
 
@@ -475,7 +475,7 @@ export default {
 
 设置为 `true` 时，生产应用程序将在 [MPA 模式](../guide/mpa-mode)下构建。MPA 模式默认提供 零 JavaScript 支持，代价是禁用客户端导航，并且需要明确选择加入才能进行交互。
 
-## 主题 ((#theming))
+## 主题 {#theming}
 
 ### appearance
 
@@ -501,7 +501,7 @@ export default {
 
 使用默认主题时，启用此选项将显示每个页面的最后更新时间。可以通过 [`themeConfig.lastUpdated.text`](./default-theme-config#lastupdated) 选项自定义文本。
 
-## 自定义 ((#customization))
+## 自定义 {#customization}
 
 ### markdown
 
@@ -535,7 +535,7 @@ export default {
 
 上游 VitePress 的 `vue` 选项(@vitejs/plugin-vue)在本 React fork 中不存在：TSX/JSX 与 React 相关转换由构建内置处理(oxc + automatic JSX runtime)，无需额外配置插件。
 
-## 构建钩子 ((#build-hooks))
+## 构建钩子 {#build-hooks}
 
 VitePress 构建钩子允许向站点添加新功能和行为：
 
@@ -632,7 +632,7 @@ export default {
 }
 ```
 
-#### 示例：添加 canonical URL `<link>` ((#example-adding-a-canonical-url-link))
+#### 示例：添加 canonical URL `<link>` {#example-adding-a-canonical-url-link}
 
 ```ts
 export default {
