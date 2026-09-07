@@ -7,6 +7,7 @@ import { createRouter, type Router } from './router'
 import { Content } from './components/Content'
 import { syncHead } from './composables/head'
 import { setupCopyButtons } from './composables/copyCode'
+import { setupCodeGroupTabs } from './composables/codeGroup'
 import { setupLinkPrefetch } from './composables/preFetch'
 import { inBrowser, pathToFile } from './utils'
 import type { PageData } from '../shared'
@@ -53,6 +54,12 @@ export function VitePressApp() {
   useEffect(() => {
     if (!inBrowser) return
     return setupCopyButtons()
+  }, [])
+
+  // code-group 面板切换:同上,change 委托一次(见 composables/codeGroup.ts)
+  useEffect(() => {
+    if (!inBrowser) return
+    return setupCodeGroupTabs()
   }, [])
 
   const Layout = Theme.Layout
