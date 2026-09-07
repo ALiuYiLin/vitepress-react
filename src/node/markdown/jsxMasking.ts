@@ -1,32 +1,26 @@
-// 正文掩码 Pass 与还原(自 markdownToReact.ts 拆分)。
+// 正文 JSX 区域掩码 Pass 与还原(自 markdownToReact.ts 拆分)。
 //
-// 这些 Pass 都在「markdown-it 渲染之前/之后」对源文本做词法级改写,产物
-// 仍是合法文本(占位串不会进入 <p>、不污染 heading anchor 等):
+// V2 契约(见根目录 MD-DYNAMIC-SYNTAX-V2.md):正文裸 {…} 一律字面文本,
+// 唯一的动态入口是作者**显式写的 JSX**(<>{expr}</> / 组件标签 / ::: react)。
+// 这里只剩两类"渲染前文本改写"(都在 markdown-it 之前,产物仍是合法文本):
 //   - maskScriptBlocks → 渲染前:<script> 块(fence 感知)替换为 3 行占位;
 //    渲染后 restoreMaskedScripts 把 plugin-sfc 提取的 contentStripped 还原;
-//   - maskJsxHtmlLines → 渲染前:React 接管区(::: react / 整行标签 / 行内片段)
-//    整段替换为 @@VP_HTML_n@@ 或 <div data-vp-jsx> 块级哨兵;
-//   - maskJsxExpressions → 渲染前:正文 {expr} → @@VP_EXPR_n@@(React 语义,
-//    与 Vue 的 {{ expr }} 对齐);
-//   - restoreHeaderExpressions → 渲染后:把 env.headers 标题里的占位还原为
-//    `{code}` / ''(大纲要纯文本)。
-//
+//   - maskJsxHtmlLines → 渲染前:JSX 接管区(::: react / 整行标签 / 行内片段,
+//    含 <>{expr}</> Fragment)整段替换为 @@VP_HTML_n@@ 或 <div data-vp-jsx>。
+// <style> 块内容不参与任何掩码,由 plugin-sfc 从 html_block 直接提取。
 // 占位格式的写入/读取契约集中在 placeholders.ts;词法工具在 jsxLexer.ts。
 
 import {
-  computeMathRanges,
-  findMatchingBrace,
+  VOID_HTML_TAGS,
   firstTagIndex,
   hasVueishAttr,
   tagDepth
 } from './jsxLexer'
 import {
-  exprToken,
   htmlToken,
   jsxBlockPlaceholder,
   SCRIPT_BLOCK_KEY_RE,
   scriptBlockKey,
-  VP_TOKEN_GLOBAL_RE,
   type PlaceholderStore
 } from './placeholders'
 
@@ -120,11 +114,87 @@ export function restoreMaskedScripts(
 }
 
 // ============================================================
-// JSX 区域采集:目标是「所有 HTML/组件标签都由 React 接管」
+// JSX 区域采集:目标是「所有 HTML/组件/<> Fragment 标签都由 React 接管」
 // ============================================================
 
 /**
- * JSX 区域采集 —— 目标是"所有 HTML/组件标签都由 React 接管":
+ * 从一段"以标签开头"的文本中,返回平衡 JSX 区域结束后的下标(不含行尾
+ * 残余文本)。镜像 tagDepth 的扫描规则:引号/注释跳过、{…} 里的标签也
+ * 计数;自闭合/void 开标签与匹配的闭合标签使深度回到 0 时即返回。
+ * 扫描到文本末尾仍不平衡 → -1。
+ */
+function jsxRegionEnd(text: string): number {
+  let depth = 0
+  let i = 0
+  let inQuote: string | null = null
+  while (i < text.length) {
+    const c = text[i]
+    if (inQuote) {
+      if (c === '\\') i += 2
+      else {
+        if (c === inQuote) inQuote = null
+        i++
+      }
+      continue
+    }
+    if (c === '"' || c === "'" || c === '`') {
+      inQuote = c
+      i++
+      continue
+    }
+    if (c === '<' && text.startsWith('<!--', i)) {
+      const end = text.indexOf('-->', i)
+      if (end === -1) return -1
+      i = end + 3
+      if (depth === 0) return i
+      continue
+    }
+    // Fragment 开标签 <>:空标签名,直接 +1
+    if (c === '<' && text[i + 1] === '>') {
+      depth++
+      i += 2
+      continue
+    }
+    if (c === '<' && text[i + 1] === '/') {
+      depth--
+      i += 2
+      while (i < text.length && text[i] !== '>') i++
+      i++
+      if (depth === 0) return i
+      continue
+    }
+    if (c === '<' && /[A-Za-z]/.test(text[i + 1] ?? '')) {
+      let j = i + 1
+      while (j < text.length && /[A-Za-z0-9-]/.test(text[j])) j++
+      const name = text.slice(i + 1, j).toLowerCase()
+      let inQ: string | null = null
+      let end = j
+      for (; end < text.length; end++) {
+        const ch = text[end]
+        if (inQ) {
+          if (ch === inQ) inQ = null
+          continue
+        }
+        if (ch === '"' || ch === "'") {
+          inQ = ch
+          continue
+        }
+        if (ch === '>') break
+      }
+      const isSelfClose = text.slice(j, end + 1).endsWith('/>')
+      if (!isSelfClose && !VOID_HTML_TAGS.has(name)) depth++
+      i = Math.min(end + 1, text.length)
+      // 自闭合/void 开标签(深度本就 0)或闭合标签使深度回到 0 → 区域结束
+      if (depth === 0) return i
+      continue
+    }
+    i++
+  }
+  return -1
+}
+
+/**
+ * JSX 区域采集 —— 目标是"所有 HTML/组件/<> Fragment 标签都由 React 接管":
  * ① 显式容器 `::: react … :::`(任意内容、可跨行、含 JS 表达式);
  * ② 自动:独立成行、以 '<' 开头的标签块(可跨行直到标签配平);
  * ③ 自动:正文行内的标签片段(同一行配平)也整体占位。
@@ -229,6 +299,15 @@ export function maskJsxHtmlLines(src: string, store: PlaceholderStore): string {
       continue
     }
 
+    // 关闭标签起头(如独立的 `</details>`)不是"JSX 区域起点"——没有可配平
+    // 的开标签,占位只会制造错位;交给 markdown-it html 路径原样处理
+    // (上游 Vue 原样 HTML 文档页也能编译)。
+    if (rest.startsWith('</')) {
+      out.push(line)
+      i++
+      continue
+    }
+
     // Vue 指令属性(:members/@click/v-if/#slot)不属于 React 接管 → 退回旧路径
     if (hasVueishAttr(rest)) {
       out.push(line)
@@ -256,6 +335,23 @@ export function maskJsxHtmlLines(src: string, store: PlaceholderStore): string {
 
     if (ok) {
       const raw = scan.join('\n')
+      // 单行即平衡、且平衡区域后还有行尾文本:只接管标签区域本身,行尾
+      // 纯文本交回 markdown(仍是 md 文本:后续 {…}/强调等不会被误当 JSX),
+      // 如 `<>{x}</> 后文` → 接管 `<>…</>`,后文走 md。
+      if (i === j) {
+        const regionEnd = jsxRegionEnd(rest)
+        if (regionEnd > 0 && regionEnd < rest.length) {
+          const tailText = rest.slice(regionEnd)
+          // 尾巴里还有 `<`(同一行后跟另一段标签/片段)时整行接管更稳——
+          // 标签链在 JSX 里是连续节点,拆开再扫描会漏掉第二段。
+          if (!tailText.includes('<')) {
+            const head = rest.slice(0, regionEnd)
+            out.push(prefix + emit(head, i + 1) + tailText)
+            i = j + 1
+            continue
+          }
+        }
+      }
       out.push(
         prefix === '' ? emit(raw, i + 1, true) : prefix + emit(raw, i + 1)
       )
@@ -274,195 +370,4 @@ export function maskJsxHtmlLines(src: string, store: PlaceholderStore): string {
     i++
   }
   return out.join('\n')
-}
-
-// ============================================================
-// JSX 表达式内联:正文 {expr} 一律按 JSX 表达式处理(React 语义,与 Vue 的
-// {{ expr }} 对齐)。表达式在渲染前替换为 @@VP_EXPR_n@@ 占位(不进入
-// markdown-it),序列化阶段还原成真实 JSX 表达式,与 Page 组件共享作用域
-// (可配合 hooks 响应式更新)。
-// ============================================================
-
-/**
- * fence/行内码/围栏感知地处理正文里的 {…}:按 React 语义,正文 {expr} 一律
- * 当作 JSX 表达式求值(与 Vue 的 {{ expr }} 对齐;attrs 已改用 `((…))`
- * 分隔,不再占用花括号)。以下情况保持字面文本、不参与求值:
- * - `\{` 转义(作者想显示字面花括号);
- * - `{}` 空容器与 `{{…}}` 嵌套双花括号(语义不明,原样输出,交给文本序列化);
- * - fence / 行内码 / 数学 $…$ / <style> 块 / frontmatter / <<< snippet 指令内的
- *   {…}(非正文)。
- */
-export function maskJsxExpressions(
-  src: string,
-  store: PlaceholderStore
-): string {
-  let out = ''
-  let i = 0
-  let fence = false
-  let fenceChar = ''
-  let inBacktick = false
-  let inFrontmatter = src.startsWith('---')
-  // <style>…</style> 原始块内(CSS 的 {…} 不是正文表达式,整块跳过掩码,
-  // 内容原样交给 plugin-sfc 提取为 sfcBlocks.styles)
-  let inStyleBlock = false
-  // 数学 $…$ 保护区间(行级成对扫描),随字符游标推进
-  const mathRanges = computeMathRanges(src)
-  let rangeIdx = 0
-
-  while (i < src.length) {
-    const c = src[i]
-    const rest = src.slice(i)
-
-    // 行首的代码片段导入指令(<<< @/path{lines} …):整行原样保留,
-    // 其 {…} 是 snippet 插件选项,不能进入表达式/字面掩码
-    if ((i === 0 || src[i - 1] === '\n') && /^[ \t]*<<<[ \t]+/.test(rest)) {
-      const eol = rest.indexOf('\n')
-      const seg = eol === -1 ? rest : rest.slice(0, eol + 1)
-      out += seg
-      i += seg.length
-      continue
-    }
-
-    if (inFrontmatter) {
-      const nl = rest.indexOf('\n')
-      const seg = nl === -1 ? rest : rest.slice(0, nl + 1)
-      out += seg
-      i += seg.length
-      if (nl !== -1 && rest.slice(0, nl).trim() === '---') inFrontmatter = false
-      continue
-    }
-
-    // fence 外的 <style …> 开标签 → 进入整块跳过(fence 内的 <style 只是示例)
-    if (
-      !inStyleBlock &&
-      !fence &&
-      !inBacktick &&
-      (i === 0 || src[i - 1] === '\n')
-    ) {
-      const eol = rest.indexOf('\n')
-      const firstLine = eol === -1 ? rest : rest.slice(0, eol)
-      if (
-        /^[ \t]*<style\b/.test(firstLine) &&
-        !/^[ \t]*<style\b[^>]*\/\s*>/.test(firstLine)
-      ) {
-        inStyleBlock = true
-      }
-    }
-    if (inStyleBlock) {
-      const eol = rest.indexOf('\n')
-      const line = eol === -1 ? rest : rest.slice(0, eol + 1)
-      out += line
-      i += line.length
-      if (/<\/style\s*>/.test(line)) inStyleBlock = false
-      continue
-    }
-
-    // 代码围栏:整行 `` ` ```` `` 或 ~~~
-    if (c === '`' || c === '~') {
-      const m = /^(\s{0,3})(`{3,}|~{3,})/.exec(rest)
-      if (m && !fence) {
-        const eol = rest.indexOf('\n')
-        const line = eol === -1 ? rest : rest.slice(0, eol + 1)
-        out += line
-        i += line.length
-        fence = true
-        fenceChar = m[2][0]
-        continue
-      }
-      if (fence && fenceChar === c) {
-        // 只检查当前行(不是整段余文),等长/超长的同字符围栏即可闭合
-        const eol = rest.indexOf('\n')
-        const lineText = eol === -1 ? rest : rest.slice(0, eol)
-        const closeRe = new RegExp(
-          `^\\s{0,3}${fenceChar === '`' ? '`{3,}' : '~{3,}'}\\s*$`
-        )
-        if (closeRe.test(lineText)) {
-          const line = eol === -1 ? rest : rest.slice(0, eol + 1)
-          out += line
-          i += line.length
-          fence = false
-          continue
-        }
-      }
-    }
-    if (fence) {
-      out += c
-      i++
-      continue
-    }
-
-    if (c === '`') {
-      inBacktick = !inBacktick
-      out += c
-      i++
-      continue
-    }
-    if (inBacktick) {
-      out += c
-      i++
-      continue
-    }
-
-    // 数学 $…$ / $$…$$:LaTeX 的 {…} 是分组语法,不是 JSX 表达式。
-    // 保护区间由 computeMathRanges 预扫(行内成对 $),命中则整段原样复制,
-    // 避免正文里不成对的单 $(价格 $1600、表格示例等)把状态机带偏
-    if (rangeIdx < mathRanges.length && i >= mathRanges[rangeIdx][0]) {
-      if (i < mathRanges[rangeIdx][1]) {
-        out += c
-        i++
-        continue
-      }
-      rangeIdx++
-    }
-
-    if (c === '{') {
-      // \{ 转义的字面花括号留给 markdown-it 去反斜杠,不参与表达式求值
-      if (i > 0 && src[i - 1] === '\\') {
-        out += c
-        i++
-        continue
-      }
-      // {{…}} 双花括号(嵌套)按字面输出:第二个及以后的 { 不参与掩码
-      if (i > 0 && src[i - 1] === '{') {
-        out += c
-        i++
-        continue
-      }
-      const end = findMatchingBrace(src, i)
-      if (end > i) {
-        const raw = src.slice(i + 1, end)
-        const inner = raw.trim()
-        // 空 {} 与嵌套 {{…}} 语义不明,按字面保留(序列化时包进字符串)
-        if (inner && !inner.startsWith('{')) {
-          const token = exprToken(store.length)
-          store.push({ expr: inner })
-          out += token
-          i = end + 1
-          continue
-        }
-      }
-    }
-    out += c
-    i++
-  }
-  return out
-}
-
-/** 还原 env.headers 标题里的占位:表达式→`{code}`、HTML→'' */
-export function restoreHeaderExpressions(
-  headers: any[],
-  store: PlaceholderStore
-): void {
-  const fix = (s: any): any =>
-    typeof s === 'string'
-      ? s.replace(VP_TOKEN_GLOBAL_RE, (_, kind, n) =>
-          kind === 'EXPR' ? `{${store[Number(n)]?.expr ?? ''}}` : ''
-        )
-      : s
-  const walk = (h: any) => {
-    if (!h || typeof h !== 'object') return
-    if (typeof h.title === 'string') h.title = fix(h.title)
-    if (Array.isArray(h.children)) h.children.forEach(walk)
-  }
-  headers.forEach(walk)
 }

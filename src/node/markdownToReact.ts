@@ -2,12 +2,16 @@
 //
 // 职责:单次编译的流程控制 —— 取站点分辨率快照与编译缓存 → 参数剥离 →
 // 依次调用 markdown/jsxMasking 的掩码 Pass → markdown-it renderAsync →
-// 渲染后处理(header 还原 / 死链校验 / pageData 组装 / script 还原)→
+// 渲染后处理(死链校验 / pageData 组装 / script 还原)→
 // markdown/buildReactPageModule 的模块组装 → 写缓存并返回。
 //
+// V2 契约(见根目录 MD-DYNAMIC-SYNTAX-V2.md):正文裸 {…} 一律字面文本,
+// 不再有表达式掩码 Pass;动态内容 = 作者显式写的 JSX(<>{expr}</> /
+// 组件标签 / ::: react),由 maskJsxHtmlLines 在 md 前占位、序列化时还原。
+//
 // 各阶段的实现已拆分到(本目录均相对于 src/node):
-//   markdown/jsxMasking.ts      掩码 Pass 与还原(script/JSX 行/{expr})
-//   markdown/jsxLexer.ts        词法工具(fence/引号/括号/标签配平)
+//   markdown/jsxMasking.ts      掩码 Pass 与还原(script/JSX 区域)
+//   markdown/jsxLexer.ts        词法工具(fence/引号/标签配平)
 //   markdown/placeholders.ts    占位符写入/读取契约
 //   markdown/serializeHtmlToJsx.ts HTML → JSX 编译期序列化
 //   markdown/buildReactPageModule.ts 页面模块(TSX)组装
@@ -27,10 +31,8 @@ import {
   type MarkdownOptions
 } from './markdown/markdown'
 import {
-  maskJsxExpressions,
   maskJsxHtmlLines,
   maskScriptBlocks,
-  restoreHeaderExpressions,
   restoreMaskedScripts,
   type MaskedScriptBlock
 } from './markdown/jsxMasking'
@@ -122,10 +124,10 @@ export async function createMarkdownToReactRenderFn(
     const maskedScripts: MaskedScriptBlock[] = []
     src = maskScriptBlocks(src, maskedScripts)
 
-    // ★阶段1.5(D2):JSX 整行 HTML(含 ={)→ 占位;正文 {expr} → 表达式占位
-    const exprStore: PlaceholderStore = []
-    src = maskJsxHtmlLines(src, exprStore)
-    src = maskJsxExpressions(src, exprStore)
+    // ★阶段1.5(V2):JSX 区域接管(::: react / 整行标签 / 行内片段,
+    // 含 <>{expr}</> Fragment)→ @@VP_HTML_n@@ / <div data-vp-jsx> 占位
+    const jsxStore: PlaceholderStore = []
+    src = maskJsxHtmlLines(src, jsxStore)
 
     const localeIndex = getLocaleForPath(siteConfig?.site, relativePath)
 
@@ -159,7 +161,6 @@ export async function createMarkdownToReactRenderFn(
       sfcBlocks,
       title = ''
     } = env
-    restoreHeaderExpressions(headers as any[], exprStore)
     src = env.src ?? src
     const contentLineOffset = computeContentLineOffset(src, content)
 
@@ -222,7 +223,7 @@ export async function createMarkdownToReactRenderFn(
       html,
       sfcBlocks,
       pageData,
-      exprStore,
+      jsxStore,
       scopedCssEnabled
     )
 

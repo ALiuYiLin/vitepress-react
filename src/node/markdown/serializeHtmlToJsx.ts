@@ -1,5 +1,5 @@
 import { VOID_HTML_TAGS as VOID_TAGS } from './jsxLexer'
-import { DATA_VP_JSX_ATTR, VP_TOKEN_GLOBAL_RE } from './placeholders'
+import { DATA_VP_JSX_ATTR, VP_HTML_TOKEN_GLOBAL_RE } from './placeholders'
 
 // React md 正文序列化:把 markdown-it 渲染出的静态 HTML 在编译期转成
 // JSX 源码(页面模块以 automatic JSX runtime 由 oxc 编译)。
@@ -7,17 +7,16 @@ import { DATA_VP_JSX_ATTR, VP_TOKEN_GLOBAL_RE } from './placeholders'
 // 结构移植自蓝本 ActView(C:\code\vitepress) markdownToActView.ts 的
 // serializeHtmlToJsx / parseOpenTag / decodeEntities,并在此之上补齐 React
 // 语义差异(蓝本面向 ActView,属性原样透传;React 需要):
-//   - class→className、for→htmlFor、tabindex→tabIndex 等属性映射;
+//   - class→className、for→htmlFor、tabindex→tabIndex 等属性映射
+//     (仅作用于 markdown-it / md 插件生成的机器 HTML,§4.4 V2 决策);
 //   - style="..." 字符串 → style={{ ... }} 对象字面量;
-//   - 布尔属性(disabled/checked/…)按 JSX 裸属性输出。
-// 语义要点(与蓝本一致):
+//   - 布尔属性(disabled/checked/…)按 JSX 裸属性输出(default* 例外)。
+// 语义要点:
 //   - 大写开头标签命中「script 块导出名集合」→ 组件引用(属性透传);
 //     未命中 → 渲染为转义文本 + 警告(避免 JSX 编译期 ReferenceError);
-//   - 正文文本一律输出为 {"字符串字面量"} 表达式 —— {…} 是否求值由
-//     markdownToReact 的 maskJsxExpressions 先行决定:命中 @@VP_EXPR_n@@
-//     的段还原为真实 JSX 表达式(React 语义:正文 {expr} 即表达式),
-//     未命中的字面花括号在字符串内显示(迁移 D1:动态内容用 script 块
-//     导出组件或正文 {expr})。
+//   - 正文文本一律输出为 {"字符串字面量"} —— V2 契约下正文裸 {…} 是
+//     字面文本、不求值;只有 @@VP_HTML_n@@ / data-vp-jsx 占位还原作者
+//     显式写的 JSX(含 <>{expr}</> Fragment,见 maskJsxHtmlLines)。
 //   - 顶层固定 <div className="vp-doc"> 包裹(与上游 Vue 版 template 一致)。
 
 interface JsxNode {
@@ -480,7 +479,7 @@ export function decodeEntities(str: string): string {
 export function serializeHtmlToJsx(
   html: string,
   componentNames: ReadonlySet<string> = new Set(),
-  expressions: Record<string, { expr?: string; html?: string }> = {},
+  expressions: Record<string, { html?: string }> = {},
   indent = '  '
 ): { code: string; warnings: string[] } {
   const root: JsxNode = { tag: '', attrs: [], children: [] }
@@ -565,26 +564,25 @@ export function serializeHtmlToJsx(
 
   /**
    * 把一段已解码文本渲染成 JSX:
-   * - @@VP_EXPR_n@@ → 表达式 `{code}`(与 Page 作用域共享);
-   * - @@VP_HTML_n@@ → 原样恢复作者写的 JSX 标签代码(整行占位,见
-   *   markdownToReact 的 maskJsxHtmlLines),其余为字符串字面量段。
+   * - @@VP_HTML_n@@ → 原样恢复作者写的 JSX 标签代码(整行/行内占位,见
+   *   markdownToReact 的 maskJsxHtmlLines;含 <>{expr}</> Fragment);
+   * - 其余一律包成 {"字符串字面量"} —— V2 契约下正文裸 {…} 是字面文本,
+   *   不做表达式求值。
    */
-  const VP_EXPR_RE = VP_TOKEN_GLOBAL_RE
-  const textWithExpr = (decoded: string): string => {
-    if (!decoded.includes('@@VP_')) return `{${JSON.stringify(decoded)}}`
-    VP_EXPR_RE.lastIndex = 0
+  const VP_HTML_RE = VP_HTML_TOKEN_GLOBAL_RE
+  const textWithHtml = (decoded: string): string => {
+    if (!decoded.includes('@@VP_HTML_')) return `{${JSON.stringify(decoded)}}`
+    VP_HTML_RE.lastIndex = 0
     const parts: string[] = []
     let last = 0
     let m: RegExpExecArray | null
-    let hasExpr = false
-    while ((m = VP_EXPR_RE.exec(decoded))) {
-      hasExpr = true
+    let hasToken = false
+    while ((m = VP_HTML_RE.exec(decoded))) {
+      hasToken = true
       const pre = decoded.slice(last, m.index)
       if (pre) parts.push(`{${JSON.stringify(pre)}}`)
-      const entry = expressions[`${Number(m[2])}`]
-      if (m[1] === 'EXPR' && entry?.expr != null) {
-        parts.push(`{${entry.expr}}`)
-      } else if (m[1] === 'HTML' && entry?.html != null) {
+      const entry = expressions[`${Number(m[1])}`]
+      if (entry?.html != null) {
         parts.push(entry.html)
       } else {
         parts.push(`{${JSON.stringify(m[0])}}`)
@@ -593,17 +591,17 @@ export function serializeHtmlToJsx(
     }
     const tail = decoded.slice(last)
     if (tail) parts.push(`{${JSON.stringify(tail)}}`)
-    if (!hasExpr) return `{${JSON.stringify(decoded)}}`
+    if (!hasToken) return `{${JSON.stringify(decoded)}}`
     return parts.join('')
   }
 
-  // 文本一律输出为 {"字符串字面量"} / 表达式段:正文的 {…} 语义由
-  // markdownToReact 的 maskJsxExpressions 决定(一律为 JSX 表达式);
-  // 字面花括号需在源 md 里用 \{ 转义,或写入行内码 / 代码块。
+  // 文本一律输出为 {"字符串字面量"} / @@VP_HTML 占位还原段:正文的 {…}
+  // 是字面文本(V2),不会被求值;动态内容由作者显式写成 JSX(<>{expr}</>),
+  // 在 md 渲染前被 maskJsxHtmlLines 换成占位、到这里原样恢复。
   const renderText = (raw: string, pad: string): string => {
     const decoded = decodeEntities(raw)
     if (!decoded) return ''
-    return `${pad}${textWithExpr(decoded)}`
+    return `${pad}${textWithHtml(decoded)}`
   }
   const renderChildren = (children: (JsxNode | string)[], depth: number) => {
     for (const child of children) {
@@ -744,7 +742,7 @@ export function serializeHtmlToJsx(
       if (decoded.trim() === '') {
         lines.push(`${pad}<${tag}${attrStr} />`)
       } else {
-        lines.push(`${pad}<${tag}${attrStr}>${textWithExpr(decoded)}</${tag}>`)
+        lines.push(`${pad}<${tag}${attrStr}>${textWithHtml(decoded)}</${tag}>`)
       }
       return
     }

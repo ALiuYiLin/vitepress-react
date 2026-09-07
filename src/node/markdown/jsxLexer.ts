@@ -1,45 +1,8 @@
 // 词法级文本工具集(自 markdownToReact.ts 拆分,纯函数、无副作用)。
-// 服务对象:markdown/jsxMasking.ts 的 fence/引号/括号/标签配平扫描,
-// 以及正文 {expr} / JSX 整行接管区域的边界判定。
-
-/**
- * 词法级括号配对:找 src 里 openIndex('{') 的匹配 '}'(跳过引号/模板串/注释)
- */
-export function findMatchingBrace(src: string, openIndex: number): number {
-  let depth = 0
-  let i = openIndex
-  while (i < src.length) {
-    const ch = src[i]
-    if (ch === "'" || ch === '"' || ch === '`') {
-      const q = ch
-      i++
-      while (i < src.length) {
-        if (src[i] === '\\') i += 2
-        else if (src[i] === q) break
-        else i++
-      }
-      i++
-      continue
-    }
-    if (ch === '/' && src[i + 1] === '/') {
-      while (i < src.length && src[i] !== '\n') i++
-      continue
-    }
-    if (ch === '/' && src[i + 1] === '*') {
-      i += 2
-      while (i < src.length && !(src[i] === '*' && src[i + 1] === '/')) i++
-      i += 2
-      continue
-    }
-    if (ch === '{') depth++
-    else if (ch === '}') {
-      depth--
-      if (depth === 0) return i
-    }
-    i++
-  }
-  return -1
-}
+// 服务对象:markdown/jsxMasking.ts 的 fence/引号/标签配平扫描(JSX 区域接管)。
+// V2 契约(见根目录 MD-DYNAMIC-SYNTAX-V2.md)下正文裸 {…} 一律字面,不再需要
+// 括号配对/数学区间等表达式工具;tagDepth/firstTagIndex 需识别 Fragment
+// 空标签名(`<>` / `</>`),以便 `<>{expr}</>` 被当作 JSX 区域接管。
 
 /** void 元素(自闭合,不增加标签深度) */
 export const VOID_HTML_TAGS = new Set([
@@ -60,9 +23,9 @@ export const VOID_HTML_TAGS = new Set([
 ])
 
 /**
- * 计算一段文本里"标签深度":<tag>+1、</tag>-1;跳过引号/注释;
- * `{…}`(JSX 表达式)里的 <tag/> 也按标签计数,可被完整成对抵消。
- * 返回最终深度(>0 表示还有未闭合的标签)。
+ * 计算一段文本里"标签深度":<tag>+1、</tag>-1、Fragment <>+1、</>-1;
+ * 跳过引号/注释;`{…}`(JSX 表达式)里的 <tag/> 也按标签计数,可被完整
+ * 成对抵消。返回最终深度(>0 表示还有未闭合的标签)。
  */
 export function tagDepth(text: string): number {
   let depth = 0
@@ -89,7 +52,14 @@ export function tagDepth(text: string): number {
       i = end + 3
       continue
     }
+    // Fragment 开标签 <>:空标签名,直接 +1
+    if (c === '<' && text[i + 1] === '>') {
+      depth++
+      i += 2
+      continue
+    }
     if (c === '<' && text[i + 1] === '/') {
+      // 闭合标签 </tag> / </> 一律 -1
       depth--
       i += 2
       while (i < text.length && text[i] !== '>') i++
@@ -127,7 +97,8 @@ export function tagDepth(text: string): number {
 }
 
 /**
- * 定位一行文本里第一个"真标签"的 '<' 下标;行内码(反引号)内跳过;找不到返回 -1
+ * 定位一行文本里第一个"真标签/JSX 起头"的 '<' 下标;行内码(反引号)内跳过;
+ * 找不到返回 -1。识别 `<tag`、`</tag` 与 Fragment 开标签 `<>`。
  */
 export function firstTagIndex(line: string): number {
   let inCode = false
@@ -150,6 +121,8 @@ export function firstTagIndex(line: string): number {
       continue
     }
     if (inCode) continue
+    // Fragment 开标签 <>:空标签名
+    if (ch === '<' && line[i + 1] === '>') return i
     if (ch === '<' && /[A-Za-z]/.test(line[i + 1] ?? '')) return i
     if (
       ch === '<' &&
@@ -163,9 +136,13 @@ export function firstTagIndex(line: string): number {
 }
 
 /**
- * 该文本是否含 Vue 指令属性(:members/@click/v-if/#slot 等)。
- * 有则不属于"React 接管"区域,交由旧 HTML→JSX 路径处理(丢弃/提示),
- * 避免把 Vue 语法当 JSX 交给 oxc 报错。引号内与 {…} 表达式内不计。
+ * 该文本是否带 Vue 特征(不属于 React 接管区域):
+ *   - 指令属性 `:members` / `@click` / `#slot`;
+ *   - `v-*` 指令属性(`v-if`/`v-for`/`v-pre`/…);
+ *   - Vue 插值文本 `{{ … }}`(排除 JSX 的 `={{` 对象字面量)。
+ * 有则交由旧 HTML→JSX 路径处理(属性丢弃并提示、文本按字面转义),避免把
+ * Vue 语法当 JSX 交给 oxc 报错(上游 Vue 原样 HTML 文档页可原样编译)。
+ * 引号内与 `{…}` 表达式内不计(JSX 行不受影响)。
  */
 export function hasVueishAttr(text: string): boolean {
   let inQuote: string | null = null
@@ -182,6 +159,10 @@ export function hasVueishAttr(text: string): boolean {
       continue
     }
     if (c === '{') {
+      // `{{` 且前一字符不是 '='(JSX 的 `={{` 是对象字面量)→ Vue 插值文本
+      if (text[i + 1] === '{' && (i === 0 || text[i - 1] !== '=')) {
+        return true
+      }
       brace++
       continue
     }
@@ -198,35 +179,8 @@ export function hasVueishAttr(text: string): boolean {
       if (/\s/.test(prev) && /[A-Za-z_]/.test(text[i + 1] ?? '')) return true
     }
   }
+  // v-* 指令属性(剥掉引号内的取值后再看属性名)
+  const attrScan = text.replace(/"([^"\\]|\\.)*"|'([^'\\]|\\.)*'/g, '')
+  if (/[\s/]v-[\w:.-]+(?=[\s=/>]|$)/.test(attrScan)) return true
   return false
-}
-
-/**
- * 预扫数学保护区间:同一行内按 $ 出现顺序两两配对($…$ / $$…$$),
- * 每对的首个 $ 到第二个 $ 结束为保护区间({…} 分组不被当 JSX 表达式)。
- * 不成对的单个 $(价格、表格示例等)不产生保护——与 markdown-it-mathjax3
- * 的成对匹配语义一致,也不会把状态残留到后续行。
- */
-export function computeMathRanges(src: string): [number, number][] {
-  const ranges: [number, number][] = []
-  for (let lineStart = 0; lineStart <= src.length;) {
-    // 当前行 [lineStart, lineEnd)
-    const nl = src.indexOf('\n', lineStart)
-    const lineEnd = nl === -1 ? src.length : nl
-    // 收集本行 $ 连续段(含起止)
-    const runs: number[] = []
-    for (let k = lineStart; k < lineEnd; k++) {
-      if (src[k] !== '$') continue
-      const s = k
-      while (k + 1 < lineEnd && src[k + 1] === '$') k++
-      runs.push(s, k + 1) // [start, end)
-    }
-    // 顺序两两配对:第 1 个 $ 起 → 第 2 个 $ 止(每对 2 个 run = 4 元素)
-    for (let r = 0; r + 3 < runs.length; r += 4) {
-      ranges.push([runs[r], runs[r + 3]])
-    }
-    if (nl === -1) break
-    lineStart = nl + 1
-  }
-  return ranges
 }

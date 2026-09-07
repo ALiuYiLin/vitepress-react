@@ -469,9 +469,8 @@ export async function createMarkdownRenderer(
         'blockEnd',
         'tasklist'
       ],
-      // `((` `))` 而非 `{` `}`:花括号留给正文 {expr}(JSX 表达式)
-      left: '((',
-      right: '))',
+      // 分隔符用 @mdit/plugin-attrs 默认的 `{` `}`(V2 契约:正文 {…} 是
+      // 字面文本,不再与表达式求值冲突 —— 见 MD-DYNAMIC-SYNTAX-V2.md §2.3)
       ...normalizePluginOptions(options.attrs)
     })
   }

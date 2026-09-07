@@ -148,14 +148,15 @@ function styleBlockLang(tagOpen: string): string | undefined {
  *   [<style> 块:客户端运行时注入 style 标签(SSR 不注入)]
  *   export default function Page() {
  *     // ---- <script> page scope (component body) ----
- *     <script 里其余语句:可含 useState 等 hooks,与正文 {expr} 共享作用域>
+ *     <script 里其余语句:可含 useState 等 hooks,与正文 JSX(<>{expr}</> 等)共享作用域>
  *     return ( <div className="vp-doc">…JSX…</div> )
  *   }
  *
- * 正文动态能力契约(D2):正文 `{expr}` 一律为 JSX 表达式(React 语义,与
- * Vue 的 {{ expr }} 对齐),由序列化器还原成真实表达式(与 Page 同一作用域,
- * 可响应 hooks 更新);字面花括号需 `\{` 转义或写进行内码/代码块。需要
- * 完整交互时仍用 <script> 定义的组件标签。
+ * 正文动态能力契约(V2,见根目录 MD-DYNAMIC-SYNTAX-V2.md):正文裸 `{…}`
+ * 一律字面文本;动态内容由作者**显式写成 JSX**(`<>{expr}</>` Fragment /
+ * 组件标签 / ::: react),在 md 渲染前被 maskJsxHtmlLines 换成 @@VP_HTML
+ * 占位,序列化时原样恢复 —— 与 Page 函数体共享作用域(可响应 hooks 更新)。
+ * 需要完整交互时仍用 <script> 定义的组件标签。
  *
  * 样式(themeConfig.markdownScopedCss 开启时,见 plugin.ts 的 jsx-scoped 管线):
  *  - <style scoped> 块:嵌入 vp-doc 根的 `<style scoped>{StringLiteral}</style>`,
@@ -282,11 +283,10 @@ export function createReactPageSrc(
     )
   }
 
-  // 正文 → JSX(组件标签解析为标识符引用;@@VP_EXPR/HTML_n@@ 还原)
-  const exprMap: Record<string, { expr?: string; html?: string }> = {}
+  // 正文 → JSX(组件标签解析为标识符引用;@@VP_HTML_n@@ 占位还原为作者 JSX)
+  const exprMap: Record<string, { html?: string }> = {}
   expressions.forEach((e, i) => {
-    if (e.expr != null) exprMap[`${i}`] = { expr: e.expr }
-    else if (e.html != null) exprMap[`${i}`] = { html: e.html }
+    if (e.html != null) exprMap[`${i}`] = { html: e.html }
   })
   const body = serializeHtmlToJsx(html, componentNames, exprMap)
   if (body.warnings.length) {

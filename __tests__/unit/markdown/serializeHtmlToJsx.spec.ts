@@ -25,16 +25,42 @@ describe('serializeHtmlToJsx', () => {
   })
 
   it('turns style strings into style objects (camelCased keys)', () => {
-    const code = round('<p style="color:red;background-color:#fff;font-size:12px">t</p>')
+    const code = round(
+      '<p style="color:red;background-color:#fff;font-size:12px">t</p>'
+    )
     expect(code).toContain('style={{ "color": "red"')
     expect(code).toContain('"backgroundColor": "#fff"')
     expect(code).toContain('"fontSize": "12px"')
   })
 
-  it('emits boolean attributes bare', () => {
+  it('emits boolean attributes bare and maps checked to defaultChecked', () => {
     const code = round('<input disabled checked>')
-    expect(code).toContain('<input disabled checked')
+    // disabled → 裸属性;checked → 非受控 defaultChecked(静态 HTML 无 onChange;
+    // 存量行为,见 MD-DYNAMIC-SYNTAX-V2.md §4.5)
+    expect(code).toContain('<input disabled defaultChecked')
     expect(code).not.toContain('disabled="')
+    expect(code).not.toContain('checked="')
+  })
+
+  it('restores @@VP_HTML_ placeholders verbatim (incl. <> fragment)', () => {
+    const { code, warnings } = serializeHtmlToJsx(
+      '<p>a @@VP_HTML_0@@ b</p>',
+      new Set(),
+      { '0': { html: '<>{1 + 1}</>' } }
+    )
+    expect(code).toContain('{"a "}')
+    expect(code).toContain('<>')
+    expect(code).toContain('{1 + 1}')
+    expect(code).toContain('</>')
+    expect(code).toContain('{" b"}')
+    expect(code).not.toContain('@@VP_')
+    expect(warnings).toEqual([])
+  })
+
+  it('renders literal braces as string content, never as expressions', () => {
+    const code = round('<p>{x} 与 {{y}} 都是字面量</p>')
+    expect(code).toContain('"{x} 与 {{y}} 都是字面量"')
+    expect(code).not.toContain('@@VP_')
   })
 
   it('self-closes void tags', () => {
