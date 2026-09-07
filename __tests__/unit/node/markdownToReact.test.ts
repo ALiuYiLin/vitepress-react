@@ -151,8 +151,9 @@ describe('node/markdownToReact (V2 literal-braces contract)', () => {
     )
     expect(code).toContain('id="custom-anchor"')
     expect(code).toContain('className="cls"')
-    expect(code).not.toContain('((.')
-    expect(code).not.toContain('((#')
+    // attrs 标记已被消费,不会以字面文本泄漏进正文
+    expect(code).not.toContain('{#custom-anchor}')
+    expect(code).not.toContain('{.cls}')
   })
 
   test('fence & inline code keep {…} literal', async () => {
