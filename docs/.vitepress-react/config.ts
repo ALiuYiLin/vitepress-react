@@ -11,32 +11,42 @@ import {
 } from 'vitepress-plugin-group-icons'
 import llmstxt from 'vitepress-plugin-llms'
 
-import { markdown as zhMarkdown } from '../zh/config.ts'
+// 单语站点(en 文档已移除,只保留 zh):复用 zh 的导航/侧栏/界面文案,
+// 但把配置里的 /zh/ 前缀路径改写为根路径(zh/*.md 经 rewrites 挂到 '/')。
+import zhConfig, { markdown as zhMarkdown } from '../zh/config.ts'
 
 const prod = !!process.env.NETLIFY
 const siteUrl = 'https://vitepress.dev'
 
 const ogImage = new URL('/vitepress-og.jpg', siteUrl).href
 
-const localeToOgLocaleMap: Record<string, string> = {
-  root: 'en_US',
-  zh: 'zh_CN'
+/** 把对象里的 /zh/ 路径前缀改写为根路径(纯字符串替换,配置无函数字段) */
+function toRootPaths<T>(value: T): T {
+  if (typeof value === 'string') return (value.includes('/zh/') ? value.replaceAll('/zh/', '/') : value) as T
+  if (Array.isArray(value)) return value.map(toRootPaths) as T
+  if (value && typeof value === 'object') {
+    const out: Record<string, unknown> = {}
+    for (const [k, v] of Object.entries(value as Record<string, unknown>)) {
+      out[k] = toRootPaths(v)
+    }
+    return out as T
+  }
+  return value
 }
 
+const zhTheme = toRootPaths(zhConfig.themeConfig)
+
 export default defineConfig({
-  title: 'VitePress',
-
-  rewrites: {
-    'en/:rest*': ':rest*'
-  },
-
+  title: 'VitePress-React',
+  description: zhConfig.description,
+  lang: 'zh-Hans',
   lastUpdated: true,
   cleanUrls: true,
 
-  // en 侧是上游 Vue 文档镜像,个别页面引用了仅存在于 zh 的 React 指南页
-  // (./using-react);en 暂无 React 指南,属存量死链,先屏蔽以免阻塞构建。
-  // TODO:en 补齐 React 指南页后移除。
-  ignoreDeadLinks: [/using-react/],
+  // 文件在 docs/zh/ 下,路由去掉 zh/ 前缀挂在根路径
+  rewrites: {
+    'zh/:rest*': ':rest*'
+  },
 
   markdown: {
     math: true,
@@ -51,6 +61,8 @@ export default defineConfig({
         }
       }
     ],
+    // zh 的容器标题/复制按钮文案
+    ...zhMarkdown,
     config(md) {
       md.use(groupIconMdPlugin)
     }
@@ -72,16 +84,20 @@ export default defineConfig({
   ],
 
   themeConfig: {
+    ...zhTheme,
+    // 注:nav/sidebar 实际由 docs/zh/config.ts(按目录附加配置)合并生效,
+    // 此处展开仅提供 logo/socialLinks/search/carbonAds/scopedCss 等基座字段。
+
     logo: { src: '/vitepress-logo-mini.svg', width: 24, height: 24 },
 
     socialLinks: [
       { icon: 'github', link: 'https://github.com/ALiuYiLin/vitepress-react' }
     ],
 
-    // 本地搜索(离线,minisearch 索引由 vitepress 构建期生成);
-    // 各 locale 的界面文案经 themeConfig.search.options.translations 覆盖
+    // zh 配置只覆盖了界面文案;provider 由根配置指定(本地搜索,离线)
     search: {
-      provider: 'local'
+      provider: 'local',
+      options: zhTheme.search?.options
     },
 
     carbonAds: { code: 'CEBDT27Y', placement: 'vuejsorg' },
@@ -89,11 +105,6 @@ export default defineConfig({
     // md 页 <style scoped> / *.scoped.* 导入 → Vue-like 页面级 scoped 样式
     // (需下方 vite.plugins 里的 jsxScopedVitePlugin 提供虚拟 css resolve/load)
     markdownScopedCss: true
-  },
-
-  locales: {
-    root: { label: 'English', lang: 'en-US', dir: 'ltr' },
-    zh: { label: '简体中文', lang: 'zh-Hans', dir: 'ltr', markdown: zhMarkdown }
   },
 
   vite: {
@@ -108,7 +119,7 @@ export default defineConfig({
           firebase: 'logos:firebase'
         }
       }),
-      prod && llmstxt({ workDir: 'en', ignoreFiles: ['index.md'] })
+      prod && llmstxt({ workDir: 'zh', ignoreFiles: ['index.md'] })
     ]
   },
 
@@ -118,22 +129,19 @@ export default defineConfig({
     const site = resolveSiteDataByRoute(ctx.siteConfig.site, pageData.relativePath)
     const title = pageData.title ? `${pageData.title} | VitePress` : site.title
     const description = pageData.description || site.description
-    const locale = localeToOgLocaleMap[site.localeIndex || 'root']
 
     ;((pageData.frontmatter.head ??= []) as HeadConfig[]).push(
       ['meta', { property: 'og:url', content: url }],
       ['meta', { property: 'og:title', content: title }],
       ['meta', { property: 'og:description', content: description }],
-      ['meta', { property: 'og:type', content: 'website' }],
-      ['meta', { property: 'og:locale', content: locale }],
+      ['meta', { property: 'og:locale', content: 'zh_CN' }],
       ['meta', { property: 'og:site_name', content: 'VitePress' }],
       ['meta', { property: 'og:image', content: ogImage }],
       ['meta', { property: 'og:image:secure_url', content: ogImage }],
       ['meta', { property: 'og:image:type', content: 'image/jpeg' }],
       ['meta', { property: 'og:image:width', content: '1280' }],
       ['meta', { property: 'og:image:height', content: '640' }],
-      ['meta', { property: 'og:image:alt', content: 'VitePress' }],
-      ['link', { rel: 'canonical', href: url }]
+      ['meta', { property: 'og:image:alt', content: 'VitePress' }]
     )
   } : undefined
 })

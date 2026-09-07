@@ -56,8 +56,9 @@ export default defineAdditionalConfig({
     },
 
     sidebar: {
-      '/zh/guide/': { base: '/zh/guide/', items: sidebarGuide() },
-      '/zh/reference/': { base: '/zh/reference/', items: sidebarReference() }
+      // en 已移除、单语 zh 站点:路径去掉 /zh/ 前缀(zh/*.md 经 rewrites 挂根)
+      '/guide/': { base: '/guide/', items: sidebarGuide() },
+      '/reference/': { base: '/reference/', items: sidebarReference() }
     },
 
     editLink: {
@@ -105,13 +106,13 @@ function nav(): DefaultTheme.NavItem[] {
   return [
     {
       text: '指南',
-      link: '/zh/guide/what-is-vitepress',
-      activeMatch: '/zh/guide/'
+      link: '/guide/what-is-vitepress',
+      activeMatch: '/guide/'
     },
     {
       text: '参考',
-      link: '/zh/reference/site-config',
-      activeMatch: '/zh/reference/'
+      link: '/reference/site-config',
+      activeMatch: '/reference/'
     },
     {
       text: version,
@@ -173,7 +174,7 @@ function sidebarGuide(): DefaultTheme.SidebarItem[] {
         { text: 'sitemap 生成', link: 'sitemap-generation' }
       ]
     },
-    { text: '配置和 API 参考', base: '/zh/reference/', link: 'site-config' }
+    { text: '配置和 API 参考', base: '/reference/', link: 'site-config' }
   ]
 }
 
@@ -188,7 +189,7 @@ function sidebarReference(): DefaultTheme.SidebarItem[] {
         { text: 'CLI', link: 'cli' },
         {
           text: '默认主题',
-          base: '/zh/reference/default-theme-',
+          base: '/reference/default-theme-',
           items: [
             { text: '概览', link: 'config' },
             { text: '导航栏', link: 'nav' },
