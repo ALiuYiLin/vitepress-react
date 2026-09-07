@@ -1,3 +1,6 @@
+import { VOID_HTML_TAGS as VOID_TAGS } from './jsxLexer'
+import { DATA_VP_JSX_ATTR, VP_TOKEN_GLOBAL_RE } from './placeholders'
+
 // React md 正文序列化:把 markdown-it 渲染出的静态 HTML 在编译期转成
 // JSX 源码(页面模块以 automatic JSX runtime 由 oxc 编译)。
 //
@@ -22,24 +25,6 @@ interface JsxNode {
   attrs: [string, string | boolean][]
   children: (JsxNode | string)[]
 }
-
-/** 自闭合 void 元素 */
-const VOID_TAGS = new Set([
-  'area',
-  'base',
-  'br',
-  'col',
-  'embed',
-  'hr',
-  'img',
-  'input',
-  'link',
-  'meta',
-  'param',
-  'source',
-  'track',
-  'wbr'
-])
 
 /** 具名组件导出名的判定(首字母大写 + 标识符字符) */
 const COMPONENT_TAG_RE = /^[A-Z][A-Za-z0-9_$]*$/
@@ -81,9 +66,12 @@ export function extractComponentNames(code: string): Set<string> {
 function parseOpenTag(
   html: string,
   start: number
-):
-  | { tag: string; attrs: [string, string | boolean][]; selfClosing: boolean; next: number }
-  | null {
+): {
+  tag: string
+  attrs: [string, string | boolean][]
+  selfClosing: boolean
+  next: number
+} | null {
   const len = html.length
   let i = start + 1
   let j = i
@@ -492,10 +480,7 @@ export function decodeEntities(str: string): string {
 export function serializeHtmlToJsx(
   html: string,
   componentNames: ReadonlySet<string> = new Set(),
-  expressions: Record<
-    string,
-    { expr?: string; html?: string }
-  > = {},
+  expressions: Record<string, { expr?: string; html?: string }> = {},
   indent = '  '
 ): { code: string; warnings: string[] } {
   const root: JsxNode = { tag: '', attrs: [], children: [] }
@@ -584,7 +569,7 @@ export function serializeHtmlToJsx(
    * - @@VP_HTML_n@@ → 原样恢复作者写的 JSX 标签代码(整行占位,见
    *   markdownToReact 的 maskJsxHtmlLines),其余为字符串字面量段。
    */
-  const VP_EXPR_RE = /@@VP_(EXPR|HTML)_(\d+)@@/g
+  const VP_EXPR_RE = VP_TOKEN_GLOBAL_RE
   const textWithExpr = (decoded: string): string => {
     if (!decoded.includes('@@VP_')) return `{${JSON.stringify(decoded)}}`
     VP_EXPR_RE.lastIndex = 0
@@ -637,7 +622,7 @@ export function serializeHtmlToJsx(
     // 块级 JSX 占位(<div data-vp-jsx="n">):还原为原始 JSX(不进 <p>)
     if (node.tag.toLowerCase() === 'div') {
       const sentinel = node.attrs.find(
-        ([k]) => k.toLowerCase() === 'data-vp-jsx'
+        ([k]) => k.toLowerCase() === DATA_VP_JSX_ATTR
       )
       if (sentinel) {
         const raw = expressions[`${String(sentinel[1])}`]?.html
