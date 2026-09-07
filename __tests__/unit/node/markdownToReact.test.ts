@@ -9,8 +9,8 @@ import { disposeMdItInstance } from '../../../src/node/markdown/markdown'
 import { createMarkdownToReactRenderFn } from '../../../src/node/markdownToReact'
 
 // V2 契约(见根目录 MD-DYNAMIC-SYNTAX-V2.md):正文裸 {…} 一律字面文本;
-// 动态内容必须显式写成 JSX(<>{expr}</> / 组件标签),由 maskJsxHtmlLines
-// 在 md 前占位、序列化时原样还原。
+// 动态内容必须显式写成 JSX(<>{expr}</> / 组件标签),由 md 内 token 级规则
+// (jsxTokenRules,见 MD-TOKEN-TAKEOVER.md)占位、序列化时原样还原。
 
 async function renderReact(src: string, markdownOptions: object = {}) {
   const root = await mkdtemp(join(tmpdir(), 'vpr-mdr-'))
@@ -169,5 +169,45 @@ describe('node/markdownToReact (V2 literal-braces contract)', () => {
     // inline code 花括号字面;fence 内容(经 shiki 拆 token)不透出表达式
     expect(code).toContain('"{not-expr}"')
     expect(code).not.toContain('@@VP_')
+  })
+
+  test('4-space indented code containing tags stays literal code', async () => {
+    const code = await renderReact(
+      [fm(), '    <Badge />', '    <>frag</>'].join('\n')
+    )
+    // token 层:fence/缩进代码(cod e_block)先于一切,内容不会进入接管判定
+    expect(code).not.toContain('@@VP_')
+    expect(code).not.toContain('data-vp-jsx')
+    expect(code).toContain('Badge')
+    expect(code).toContain('frag')
+  })
+
+  test('longer fence close is respected (3-backtick content line)', async () => {
+    const code = await renderReact(
+      [
+        fm(),
+        '````js',
+        '```',
+        "const s = '<Badge/>'",
+        '````',
+        '',
+        'after: <>{1 + 1}</>'
+      ].join('\n')
+    )
+    // 4 反引号开 fence 内 3 反引号行不算闭合;之后正文 Fragment 正常接管
+    expect(code).not.toContain('@@VP_')
+    expect(code).not.toContain('data-vp-jsx')
+    expect(code).toContain('const s =')
+    expect(code).toContain('{1 + 1}')
+  })
+
+  test('literal <> … </> prose without JSX interior is not taken over', async () => {
+    const code = await renderReact(
+      [fm(), '使用 <> 作为字面文字, 再用 </> 收尾'].join('\n')
+    )
+    // 无 { / < 内部 → 不接管,按 md 文本字面输出(不出现占位/求值)
+    expect(code).not.toContain('@@VP_')
+    expect(code).not.toContain('data-vp-jsx')
+    expect(code).toContain('字面文字')
   })
 })

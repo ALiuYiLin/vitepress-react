@@ -19,9 +19,10 @@ export interface MarkdownCompileResult {
    * automatic JSX runtime 编译成可执行 JS)。
    *
    * M1 管线(迁移 D1/D2,结构平移自蓝本 ActView markdownToActView.ts):
-   *   maskScriptBlocks(占位) → markdown-it render(plugin-sfc 提取 script)
-   *   → HTML→JSX 编译期序列化 → 模块组装(script 块顶层提升 + 组件引用)。
-   * 正文 {{ }} / {expr} 一律字面文本;动态内容用 script 块导出的组件。
+   *   markdown-it render(token 级 A/B/C 规则:script 入 env.sfcBlocks、
+   *   JSX 区域占位)→ HTML→JSX 编译期序列化 → 模块组装(script 块顶层
+   *   提升 + 组件引用)。正文 {{ }} / {expr} 一律字面文本;动态内容用
+   *   script 块导出的组件与显式 <>{expr}</>。
    */
   reactSrc: string
   pageData: PageData

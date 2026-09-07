@@ -1,18 +1,19 @@
 // md → React 页面模块管线(M1)的编排层。
 //
 // 职责:单次编译的流程控制 —— 取站点分辨率快照与编译缓存 → 参数剥离 →
-// 依次调用 markdown/jsxMasking 的掩码 Pass → markdown-it renderAsync →
-// 渲染后处理(死链校验 / pageData 组装 / script 还原)→
+// markdown-it renderAsync(token 级 A/B/C 规则在 md 内完成 JSX 区域占位)→
+// 渲染后处理(死链校验 / pageData 组装)→
 // markdown/buildReactPageModule 的模块组装 → 写缓存并返回。
 //
 // V2 契约(见根目录 MD-DYNAMIC-SYNTAX-V2.md):正文裸 {…} 一律字面文本,
 // 不再有表达式掩码 Pass;动态内容 = 作者显式写的 JSX(<>{expr}</> /
-// 组件标签 / ::: react),由 maskJsxHtmlLines 在 md 前占位、序列化时还原。
+// 组件标签 / ::: react),由 markdown/jsxTokenRules 的 A/B/C token 规则
+// (见 MD-TOKEN-TAKEOVER.md)在 md 内占位、序列化时还原。
 //
 // 各阶段的实现已拆分到(本目录均相对于 src/node):
-//   markdown/jsxMasking.ts      掩码 Pass 与还原(script/JSX 区域)
-//   markdown/jsxLexer.ts        词法工具(fence/引号/标签配平)
-//   markdown/placeholders.ts    占位符写入/读取契约
+//   markdown/jsxTokenRules.ts    token 级接管规则(A script/B Fragment/C 判定)
+//   markdown/jsxLexer.ts         词法工具(标签配平/Vue 特征)
+//   markdown/placeholders.ts     占位符写入/读取契约
 //   markdown/serializeHtmlToJsx.ts HTML → JSX 编译期序列化
 //   markdown/buildReactPageModule.ts 页面模块(TSX)组装
 //   markdown/deadLinks.ts       死链校验
@@ -30,12 +31,6 @@ import {
   mergeMarkdownLocales,
   type MarkdownOptions
 } from './markdown/markdown'
-import {
-  maskJsxHtmlLines,
-  maskScriptBlocks,
-  restoreMaskedScripts,
-  type MaskedScriptBlock
-} from './markdown/jsxMasking'
 import {
   computeContentLineOffset,
   collectDeadLinks
@@ -117,17 +112,12 @@ export async function createMarkdownToReactRenderFn(
       }
     )
 
-    // ★阶段1(M1):<script> 块(fence 感知)替换为占位——markdown-it 的
-    // html_block type 7 会被块内任意 `</(script|pre|style|textarea)>` 提前
-    // 截断;占位后由 @mdit-vue/plugin-sfc 提取,渲染结束再还原原始内容。
-    // <script client>(MPA 专属)不 mask,让它按正文元素处理。
-    const maskedScripts: MaskedScriptBlock[] = []
-    src = maskScriptBlocks(src, maskedScripts)
-
-    // ★阶段1.5(V2):JSX 区域接管(::: react / 整行标签 / 行内片段,
-    // 含 <>{expr}</> Fragment)→ @@VP_HTML_n@@ / <div data-vp-jsx> 占位
+    // ★阶段1(M1+Token 接管):<script> 块由 markdown-it 内 A 规则(块级)
+    // 捕获进 env.sfcBlocks(不再有字符串预掩码,也不受 html_block type-7
+    // 截断影响);JSX 区域(::: react / 整行标签 / <>{expr}</> Fragment)
+    // 由 B/C 规则占位、collect 时写入 jsxStore —— 这里只准备 store 并放进 env,
+    // 渲染出的 html 里即含 @@VP_HTML_n@@ / <div data-vp-jsx> 占位。
     const jsxStore: PlaceholderStore = []
-    src = maskJsxHtmlLines(src, jsxStore)
 
     const localeIndex = getLocaleForPath(siteConfig?.site, relativePath)
 
@@ -140,7 +130,8 @@ export async function createMarkdownToReactRenderFn(
       relativizeUrls: true,
       includes: [],
       realPath: fileOrig,
-      localeIndex
+      localeIndex,
+      jsxStore
     }
     let html: string
     try {
@@ -205,15 +196,9 @@ export async function createMarkdownToReactRenderFn(
       }
     }
 
-    // ★阶段4/5(M1):还原占位 script → 组装 React 页面模块
-    // (script 块提升模块顶层 + 正文 HTML→JSX 序列化 + __pageData)
-    restoreMaskedScripts(
-      [
-        ...(sfcBlocks?.scripts ?? []),
-        ...(sfcBlocks?.scriptSetup ? [sfcBlocks.scriptSetup] : [])
-      ],
-      maskedScripts
-    )
+    // ★阶段4/5(M1):组装 React 页面模块
+    // (script 块已由 A 规则写入 env.sfcBlocks → 提升模块顶层 + 正文
+    // HTML→JSX 序列化 + __pageData)
     // themeConfig.markdownScopedCss:md 页 <style scoped> / *.scoped.* 导入走
     // jsx-scoped 管线(plugin.ts 在 oxc 前做 transform),为 false 时保持旧全局注入
     const scopedCssEnabled = Boolean(

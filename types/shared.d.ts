@@ -571,6 +571,11 @@ export interface MarkdownEnv {
    */
   sfcBlocks?: MarkdownSfcBlocks
   /**
+   * JSX 区域接管 store(token 级规则 A/B/C 写入,序列化器按 @@VP_HTML_n@@ /
+   * data-vp-jsx 占位还原)。结构同 PlaceholderStore:{ html: string }[]。
+   */
+  jsxStore?: { html: string }[]
+  /**
    * The title extracted by `@mdit-vue/plugin-title`.
    */
   title?: string

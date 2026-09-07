@@ -1,7 +1,15 @@
 # JSX 区域识别下沉 markdown-it 设计决策(Token 级接管)
 
-> 状态:草稿(供决策讨论,未实施)
+> 状态:**Phase 2 已实施并验收**(A/B/C token 规则落地;单测 26/26、tsc、`pnpm build`、docs:build:only zh 单语全绿),待评审/后续 Phase 3+
 > 日期:2026-09-07 · 分支:`refactor/md`
+> 实施记录(2026-09-07,与决策差异如实标注):
+>   - A 范围:**仅 `<script>` 块**(block 规则 before html_block,不依赖 type-7 截断,直接写 env.sfcBlocks);`<style>` 维持 @mdit-vue/plugin-sfc 的 html_block 路径(样式体几乎不含 type-1 截断符,不受影响);
+>   - B 拆两处:inline 最前(`before('text')`)整段 opaque 捕获 **+** 新增块级遮蔽(`before('paragraph')`)处理"多行 Fragment 内含段落打断行(如独立 `<p>` 行 → html_block)"的 case —— 实证发现仅 inline 捕获对此不可行;
+>   - C 在 `core.ruler.push`(anchor 后):html_block 整体接管、**纯 HTML 段落**(children 仅 html_inline/标签内文本/<> Fragment)splice 为块占位、标题内 Fragment 按字面文本不接管;
+>   - `::: react` 由块规则在 paragraph 前整体占位;html 注释起头(`<!--`)不接管(机器路径处理);
+>   - 字符串预扫 Pass 全部退役(jsxMasking.ts 删除;markdownToReact 不再 import);占位/marker/store 契约与下游序列化、模块组装零改动;
+>   - 测试:V2 契约 23 条保持全绿 + 新增 3 条边角(4 空格缩进代码含标签、4 反引号 fence 内 3 反引号行不提前闭合、正文字面 `<> 文字 </>` 不接管)= 26/26;
+>   - 遗留:单元测试 markdown.test.ts 的 attrs 用例仍是旧 `((…))` 语法(与 V2 `{}` 冲突)待随测试基建一起修(见上 P1 记录)。
 > 依据代码:V2 落地后的字符串预扫 Pass(`markdown/jsxMasking.ts` 的 `maskScriptBlocks` / `maskJsxHtmlLines` + `jsxRegionEnd` 行尾切分)与决策 [`MD-DYNAMIC-SYNTAX-V2.md`](./MD-DYNAMIC-SYNTAX-V2.md) §4.3/§7.4(Phase-3 token 化候选)
 > 触发问题:配平启发式的三处边角 —— ① fence 闭合未校验“同字符 + 长度 ≥ 开 fence”,内容行形似闭合会提前退出、后续 `<>` 被误扫;② 4 空格缩进代码块内的 `<Tag/>`/`<>` 会被当行内接管(hijack);③ 正文把 `<>…</>` 当字面文字写且同段配平会被误当 JSX(中间字面 `{x}` 会被求值)。根因:**在 markdown-it 之前用字符串重实现了一遍 CommonMark 边界**(fence/缩进代码/行内码/实体/段落切分)。建议把“哪些文本是 React 接管区”的识别下沉到 markdown-it **内部、块级结构确定之后**执行。
 

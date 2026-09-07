@@ -154,8 +154,9 @@ function styleBlockLang(tagOpen: string): string | undefined {
  *
  * 正文动态能力契约(V2,见根目录 MD-DYNAMIC-SYNTAX-V2.md):正文裸 `{…}`
  * 一律字面文本;动态内容由作者**显式写成 JSX**(`<>{expr}</>` Fragment /
- * 组件标签 / ::: react),在 md 渲染前被 maskJsxHtmlLines 换成 @@VP_HTML
- * 占位,序列化时原样恢复 —— 与 Page 函数体共享作用域(可响应 hooks 更新)。
+ * 组件标签 / ::: react),由 markdown/jsxTokenRules 的 token 级规则在 md 内
+ * 占位(env.jsxStore → @@VP_HTML / data-vp-jsx),序列化时原样恢复 —— 与
+ * Page 函数体共享作用域(可响应 hooks 更新)。
  * 需要完整交互时仍用 <script> 定义的组件标签。
  *
  * 样式(themeConfig.markdownScopedCss 开启时,见 plugin.ts 的 jsx-scoped 管线):

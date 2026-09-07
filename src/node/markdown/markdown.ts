@@ -53,6 +53,7 @@ import {
 } from './plugins/containers'
 import { eagerFrontmatterInterpolationPlugin } from './plugins/eagerFrontmatterInterpolation'
 import { highlight as createHighlighter } from './plugins/highlight'
+import { applyJsxTokenRules } from './jsxTokenRules'
 import { imagePlugin, type Options as ImageOptions } from './plugins/image'
 import {
   includePlugin,
@@ -590,6 +591,10 @@ export async function createMarkdownRenderer(
   if (options.config) {
     await options.config(md)
   }
+
+  // Token 级 JSX 区域规则(A script 块 / B Fragment / C 接管判定):
+  // 在用户 config 之后注册,collect(core.push)保证排在全链最后(anchor 后)。
+  applyJsxTokenRules(md)
 
   return md
 }

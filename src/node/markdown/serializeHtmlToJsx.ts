@@ -16,7 +16,7 @@ import { DATA_VP_JSX_ATTR, VP_HTML_TOKEN_GLOBAL_RE } from './placeholders'
 //     未命中 → 渲染为转义文本 + 警告(避免 JSX 编译期 ReferenceError);
 //   - 正文文本一律输出为 {"字符串字面量"} —— V2 契约下正文裸 {…} 是
 //     字面文本、不求值;只有 @@VP_HTML_n@@ / data-vp-jsx 占位还原作者
-//     显式写的 JSX(含 <>{expr}</> Fragment,见 maskJsxHtmlLines)。
+//     显式写的 JSX(含 <>{expr}</> Fragment,占位来自 jsxTokenRules)。
 //   - 顶层固定 <div className="vp-doc"> 包裹(与上游 Vue 版 template 一致)。
 
 interface JsxNode {
@@ -564,8 +564,8 @@ export function serializeHtmlToJsx(
 
   /**
    * 把一段已解码文本渲染成 JSX:
-   * - @@VP_HTML_n@@ → 原样恢复作者写的 JSX 标签代码(整行/行内占位,见
-   *   markdownToReact 的 maskJsxHtmlLines;含 <>{expr}</> Fragment);
+   * - @@VP_HTML_n@@ → 原样恢复作者写的 JSX 标签代码(整行/行内占位,占位
+   *   来自 markdown/jsxTokenRules 的 token 级规则;含 <>{expr}</> Fragment);
    * - 其余一律包成 {"字符串字面量"} —— V2 契约下正文裸 {…} 是字面文本,
    *   不做表达式求值。
    */
@@ -597,7 +597,7 @@ export function serializeHtmlToJsx(
 
   // 文本一律输出为 {"字符串字面量"} / @@VP_HTML 占位还原段:正文的 {…}
   // 是字面文本(V2),不会被求值;动态内容由作者显式写成 JSX(<>{expr}</>),
-  // 在 md 渲染前被 maskJsxHtmlLines 换成占位、到这里原样恢复。
+  // 由 jsxTokenRules 占位、到这里原样恢复。
   const renderText = (raw: string, pad: string): string => {
     const decoded = decodeEntities(raw)
     if (!decoded) return ''
