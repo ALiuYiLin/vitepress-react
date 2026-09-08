@@ -115,7 +115,7 @@ interface ContentData {
 }
 ```
 
-默认情况下只提供 `url` 和 `frontmatter`。这是因为加载的数据将作为 JSON 内联在客户端 bundle 中，我们需要谨慎考虑其大小。下面的例子展示了如何使用数据构建最小的博客索引页面（多行 JSX + 表达式需用 `::: react` 容器，见[规则手册](./md-react-rules)）：
+默认情况下只提供 `url` 和 `frontmatter`。这是因为加载的数据将作为 JSON 内联在客户端 bundle 中，我们需要谨慎考虑其大小。下面的例子展示了如何使用数据构建最小的博客索引页面（多行 JSX + 表达式需用 `::: react` 容器，见[在 Markdown 中使用 React](./using-react#react-container)）：
 
 ```md
 <script>
