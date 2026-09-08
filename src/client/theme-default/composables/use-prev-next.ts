@@ -1,6 +1,10 @@
 import { useData, useRoute } from '@10coding/vitepress-react'
 
-import { flattenSidebarItems, normalizePath, sidebarGroupsFor } from '../theme-utils'
+import {
+  flattenSidebarItems,
+  normalizePath,
+  sidebarGroupsFor
+} from '../theme-utils'
 
 type PrevNextEntry = {
   text?: string
@@ -22,19 +26,23 @@ export function usePrevNext(): { prev?: PrevNextEntry; next?: PrevNextEntry } {
   const { theme, frontmatter } = useData()
   const route = useRoute()
 
-  const cfg = theme as { sidebar?: unknown; docFooter?: { prev?: unknown; next?: unknown } }
+  const cfg = theme as {
+    sidebar?: unknown
+    docFooter?: { prev?: unknown; next?: unknown }
+  }
   const fm = frontmatter as { prev?: FmEntry; next?: FmEntry }
 
   const current = normalizePath(route.path)
-  const flat = flattenSidebarItems(sidebarGroupsFor(cfg.sidebar as never, route.path))
+  const flat = flattenSidebarItems(
+    sidebarGroupsFor(cfg.sidebar as never, route.path)
+  )
   const idx = flat.findIndex((l) => normalizePath(l.link) === current)
   if (idx < 0) return {}
 
   function resolve(dir: 'prev' | 'next'): PrevNextEntry | undefined {
     const f = dir === 'prev' ? fm.prev : fm.next
     const df = dir === 'prev' ? cfg.docFooter?.prev : cfg.docFooter?.next
-    const hide =
-      (df === false && f == null) || f === false
+    const hide = (df === false && f == null) || f === false
     if (hide) return undefined
 
     const cand = flat[idx + (dir === 'prev' ? -1 : 1)]

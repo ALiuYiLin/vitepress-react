@@ -24,7 +24,8 @@ export function useLayout() {
   const groups = sidebarGroupsFor(sidebarConfig, route.path)
   const hasSidebarEnabled = fm.sidebar !== false && cfg.sidebar !== false
   const hasSidebar = hasSidebarEnabled && groups.length > 0
-  const headers = ((page as { headers?: VpHeader[] })?.headers ?? []) as VpHeader[]
+  const headers = ((page as { headers?: VpHeader[] })?.headers ??
+    []) as VpHeader[]
   const hasAside =
     (fm.aside ?? cfg.aside ?? true) !== false && headers.length > 0
   const leftAside = fm.aside === 'left'

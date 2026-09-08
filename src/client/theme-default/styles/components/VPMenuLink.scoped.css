@@ -8,7 +8,9 @@
   color: var(--vp-c-text-1);
   text-align: left;
   white-space: nowrap;
-  transition: background-color 0.25s, color 0.25s;
+  transition:
+    background-color 0.25s,
+    color 0.25s;
 }
 
 .link:hover {

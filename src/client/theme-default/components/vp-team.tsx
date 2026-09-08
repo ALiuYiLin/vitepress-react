@@ -14,7 +14,13 @@ export function VPTeamMembersItem({ member }: { member: VpTeamMember }) {
   return (
     <div className="member">
       {member.avatar && (
-        <img className="avatar" src={member.avatar} alt="" width={96} height={96} />
+        <img
+          className="avatar"
+          src={member.avatar}
+          alt=""
+          width={96}
+          height={96}
+        />
       )}
       <div className="memberBody">
         <h3 className="name">{member.name}</h3>
@@ -28,7 +34,13 @@ export function VPTeamMembersItem({ member }: { member: VpTeamMember }) {
         {member.links?.length ? (
           <div className="links">
             {member.links.map((l, i) => (
-              <a key={i} className="link" href={l.link} target="_blank" rel="noreferrer">
+              <a
+                key={i}
+                className="link"
+                href={l.link}
+                target="_blank"
+                rel="noreferrer"
+              >
                 {l.icon ?? l.link}
               </a>
             ))}

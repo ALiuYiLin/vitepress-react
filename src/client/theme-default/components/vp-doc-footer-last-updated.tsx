@@ -8,13 +8,15 @@ export function VPDocFooterLastUpdated() {
   const { site, page, theme, lang } = useData()
   const show = (site as { lastUpdated?: boolean })?.lastUpdated
   const ts = (page as { lastUpdated?: number })?.lastUpdated
-  const lastUpdatedCfg = (theme as {
-    lastUpdated?: {
-      text?: string
-      formatOptions?: Intl.DateTimeFormatOptions
-      forceLocale?: boolean
+  const lastUpdatedCfg = (
+    theme as {
+      lastUpdated?: {
+        text?: string
+        formatOptions?: Intl.DateTimeFormatOptions
+        forceLocale?: boolean
+      }
     }
-  })?.lastUpdated
+  )?.lastUpdated
 
   const [datetime, setDatetime] = useState('')
 
@@ -24,7 +26,7 @@ export function VPDocFooterLastUpdated() {
     if (Number.isNaN(date.getTime())) return
     const useLang = lastUpdatedCfg?.forceLocale
       ? (lang ?? undefined)
-      : (navigator.language || undefined)
+      : navigator.language || undefined
     const fmt = lastUpdatedCfg?.formatOptions ?? {
       dateStyle: 'medium',
       timeStyle: 'medium'

@@ -2,7 +2,8 @@ import { useNavItemLink } from '../composables/use-nav'
 import type { VpNavItem } from '../theme-utils'
 import '../styles/components/VPMenuLink.scoped.css'
 
-const cx = (...c: (string | false | undefined | null)[]) => c.filter(Boolean).join(' ')
+const cx = (...c: (string | false | undefined | null)[]) =>
+  c.filter(Boolean).join(' ')
 
 export interface VPMenuLinkProps {
   item: VpNavItem

@@ -2,7 +2,8 @@ import { useData } from '@10coding/vitepress-react'
 
 import { useNavOverflow } from '../composables/use-nav-overflow'
 import { VPSocialLinks, type VpSocialLink } from './vp-social-links'
-const cx = (...c: (string | false | undefined | null)[]) => c.filter(Boolean).join(' ')
+const cx = (...c: (string | false | undefined | null)[]) =>
+  c.filter(Boolean).join(' ')
 
 /**
  * 顶栏/屏幕社交链接(对应 Vue VPNavSocialLinks.vue):

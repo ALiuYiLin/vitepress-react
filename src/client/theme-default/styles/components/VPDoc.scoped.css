@@ -66,7 +66,10 @@
 .asideContainer {
   position: fixed;
   top: 0;
-  padding-top: calc(var(--vp-nav-height) + var(--vp-layout-top-height, 0px) + var(--vp-doc-top-height, 0px) + 3rem);
+  padding-top: calc(
+    var(--vp-nav-height) + var(--vp-layout-top-height, 0px) +
+      var(--vp-doc-top-height, 0px) + 3rem
+  );
   width: 14rem;
   height: 100vh;
   overflow-x: hidden;
@@ -90,7 +93,9 @@
 .asideContent {
   display: flex;
   flex-direction: column;
-  min-height: calc(100vh - (var(--vp-nav-height) + var(--vp-layout-top-height, 0px) + 3rem));
+  min-height: calc(
+    100vh - (var(--vp-nav-height) + var(--vp-layout-top-height, 0px) + 3rem)
+  );
   padding-bottom: 2rem;
 }
 
@@ -129,4 +134,3 @@
 }
 .leftAside {
 }
-

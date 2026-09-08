@@ -2,7 +2,8 @@ import * as React from 'react'
 
 import '../styles/components/VPButton.scoped.css'
 
-const cx = (...c: (string | false | undefined | null)[]) => c.filter(Boolean).join(' ')
+const cx = (...c: (string | false | undefined | null)[]) =>
+  c.filter(Boolean).join(' ')
 
 const EXTERNAL_URL_RE = /^(https?:|mailto:|tel:|\/\/)/
 

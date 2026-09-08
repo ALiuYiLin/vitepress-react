@@ -196,7 +196,11 @@ export interface UserConfig<
     | 'dark'
     | 'force-dark'
     | 'force-auto'
-    | { storageKey?: string; disableTransition?: boolean; initialValue?: 'dark' }
+    | {
+        storageKey?: string
+        disableTransition?: boolean
+        initialValue?: 'dark'
+      }
   /**
    * Show the timestamp of each page's last git commit.
    * @default false

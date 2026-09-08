@@ -1,7 +1,11 @@
 import { useCallback, useEffect, useState } from 'react'
 import { useRoute } from '@10coding/vitepress-react'
 
-import { flattenSidebarItems, normalizePath, type VpSidebarItem } from '../theme-utils'
+import {
+  flattenSidebarItems,
+  normalizePath,
+  type VpSidebarItem
+} from '../theme-utils'
 
 /** 侧栏抽屉开合(桌面 sticky / 移动抽屉);函数稳定以便做 watcher */
 export function useSidebarControl() {

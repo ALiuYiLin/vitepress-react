@@ -24,7 +24,9 @@ export function setupLinkPrefetch(
     if (url.pathname === window.location.pathname) return
     // 只预取同源 HTML 路径的页面;资源类链接(.png/.pdf/…)跳过
     const path = url.pathname
-    if (/\.(css|js|json|png|jpe?g|gif|svg|webp|ico|pdf|zip|woff2?)$/i.test(path)) {
+    if (
+      /\.(css|js|json|png|jpe?g|gif|svg|webp|ico|pdf|zip|woff2?)$/i.test(path)
+    ) {
       return
     }
     void load(path)

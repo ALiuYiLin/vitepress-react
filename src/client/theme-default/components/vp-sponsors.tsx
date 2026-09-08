@@ -25,7 +25,13 @@ export function VPSponsorsGrid({
   return (
     <div className="grid" data-vp-grid={gridCols[size] ?? 4}>
       {sponsors.map((sp, i) => (
-        <a key={i} className="item" href={sp.link} target="_blank" rel="noreferrer">
+        <a
+          key={i}
+          className="item"
+          href={sp.link}
+          target="_blank"
+          rel="noreferrer"
+        >
           {sp.img ? (
             <img className="logo" src={sp.img} alt={sp.name ?? ''} />
           ) : (

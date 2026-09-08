@@ -204,7 +204,9 @@ export async function scaffold({
       targetPath = targetPath.replace(/\.js$/, '.mjs')
     }
     if (useTs) {
-      targetPath = targetPath.replace(/\.(m?)js$/, '.$1ts').replace(/\.jsx$/, '.tsx')
+      targetPath = targetPath
+        .replace(/\.(m?)js$/, '.$1ts')
+        .replace(/\.jsx$/, '.tsx')
     }
     if (file.endsWith('.md')) {
       targetPath = path.resolve(resolvedSrcDir, file)

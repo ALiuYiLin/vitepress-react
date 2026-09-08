@@ -1,6 +1,7 @@
 import '../styles/components/VPBackdrop.scoped.css'
 
-const cx = (...c: (string | false | undefined | null)[]) => c.filter(Boolean).join(' ')
+const cx = (...c: (string | false | undefined | null)[]) =>
+  c.filter(Boolean).join(' ')
 
 export type VPBackdropProps = {
   show: boolean

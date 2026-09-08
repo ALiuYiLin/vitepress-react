@@ -108,9 +108,7 @@ export async function createVitePressPlugin(
     cleanUrls
   } = siteConfig
 
-  let markdownToReact: Awaited<
-    ReturnType<typeof createMarkdownToReactRenderFn>
-  >
+  let markdownToReact: Awaited<ReturnType<typeof createMarkdownToReactRenderFn>>
 
   let siteData = site
   let allDeadLinks: MarkdownCompileResult['deadLinks'] = []
@@ -167,7 +165,11 @@ export async function createVitePressPlugin(
             'react/jsx-runtime',
             'react/jsx-dev-runtime'
           ],
-          exclude: ['@docsearch/js', '@docsearch/sidepanel-js', '@10coding/vitepress-react']
+          exclude: [
+            '@docsearch/js',
+            '@docsearch/sidepanel-js',
+            '@10coding/vitepress-react'
+          ]
         },
         server: {
           fs: {
@@ -239,15 +241,15 @@ export async function createVitePressPlugin(
           // transform .md files into a React page module (TSX), then compile
           // it to JS with oxc so the browser/dev-server just sees a
           // regular JS module (mirrors upstream's md→vueSrc + plugin-vue flow)
-          const { reactSrc, deadLinks, includes, pageData } = await markdownToReact(
-            code,
-            cleanId
-          ).catch((e: { includes?: string[] }) => {
-            // watch the files the failed render did reach, so that creating
-            // a missing snippet or include recovers the page
-            watchIncludes(e.includes)
-            throw e
-          })
+          const { reactSrc, deadLinks, includes, pageData } =
+            await markdownToReact(code, cleanId).catch(
+              (e: { includes?: string[] }) => {
+                // watch the files the failed render did reach, so that creating
+                // a missing snippet or include recovers the page
+                watchIncludes(e.includes)
+                throw e
+              }
+            )
           if (pageMetaMap) {
             pageMetaMap[pageData.relativePath] = {
               lastUpdated: pageData.lastUpdated

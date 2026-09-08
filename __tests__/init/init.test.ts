@@ -5,7 +5,11 @@ import { fileURLToPath, URL } from 'node:url'
 import getPort from 'get-port'
 import { nanoid } from 'nanoid'
 import { chromium } from 'playwright-chromium'
-import { createServer, scaffold, ScaffoldThemeType } from '@10coding/vitepress-react'
+import {
+  createServer,
+  scaffold,
+  ScaffoldThemeType
+} from '@10coding/vitepress-react'
 
 const tempDir = fileURLToPath(new URL('./.temp', import.meta.url))
 const getTempRoot = () => path.join(tempDir, nanoid())

@@ -24,7 +24,12 @@ export type NavOverflowApi = {
 const NOOP = () => {}
 
 export const NavOverflowContext = createContext<NavOverflowApi>({
-  state: { appearance: true, translations: true, socialLinks: true, visibleItemCount: Infinity },
+  state: {
+    appearance: true,
+    translations: true,
+    socialLinks: true,
+    visibleItemCount: Infinity
+  },
   setContainerEl: NOOP,
   setMenuEl: NOOP,
   setItemEl: NOOP,
@@ -37,6 +42,8 @@ export function useNavOverflow() {
 }
 
 /** 占位:与 Vue provideNavOverflow({ itemsKey }) 同签名,默认不折叠 */
-export function provideNavOverflow(_options: { itemsKey: () => string }): NavOverflowApi {
+export function provideNavOverflow(_options: {
+  itemsKey: () => string
+}): NavOverflowApi {
   return useNavOverflow()
 }

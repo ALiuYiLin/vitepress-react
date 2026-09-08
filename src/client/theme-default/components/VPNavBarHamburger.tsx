@@ -2,7 +2,8 @@ import { useEffect, useRef } from 'react'
 import { useData } from '@10coding/vitepress-react'
 
 import { setScreenTriggerEl } from '../composables/use-nav'
-const cx = (...c: (string | false | undefined | null)[]) => c.filter(Boolean).join(' ')
+const cx = (...c: (string | false | undefined | null)[]) =>
+  c.filter(Boolean).join(' ')
 
 /**
  * 汉堡按钮(对应 Vue VPNavBarHamburger.vue):三条杠 ↔ × 动画切换。

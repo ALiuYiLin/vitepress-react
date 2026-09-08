@@ -26,15 +26,17 @@ export function getHeaders(range?: number): VpHeader[] {
 }
 
 /** 按 range 过滤并构建树 */
-export function resolveHeaders(headers: VpHeader[], range?: number): VpHeader[] {
-  const filtered = range
-    ? headers.filter((h) => h.level <= range)
-    : headers
+export function resolveHeaders(
+  headers: VpHeader[],
+  range?: number
+): VpHeader[] {
+  const filtered = range ? headers.filter((h) => h.level <= range) : headers
   const tree: VpHeader[] = []
   const stack: { node: VpHeader; level: number }[] = []
   for (const h of filtered) {
     const node: VpHeader = { ...h, children: [] }
-    while (stack.length && stack[stack.length - 1]!.level >= h.level) stack.pop()
+    while (stack.length && stack[stack.length - 1]!.level >= h.level)
+      stack.pop()
     const parent = stack[stack.length - 1]?.node
     if (parent) parent.children.push(node)
     else tree.push(node)
@@ -98,7 +100,15 @@ export function useActiveAnchor(
               Number.parseFloat(getComputedStyle(el).scrollMarginTop) || 0
           }
         })
-        .filter((x): x is { link: HTMLAnchorElement; top: number; scrollMarginTop: number } => x != null)
+        .filter(
+          (
+            x
+          ): x is {
+            link: HTMLAnchorElement
+            top: number
+            scrollMarginTop: number
+          } => x != null
+        )
         .sort((x, y) => x.top - y.top)
 
       if (!measured.length) {
@@ -116,7 +126,11 @@ export function useActiveAnchor(
         return
       }
       if (scrollY + innerHeight - offsetHeight >= 0) {
-        activate(hashToId(measured[measured.length - 1]!.link.getAttribute('href') ?? ''))
+        activate(
+          hashToId(
+            measured[measured.length - 1]!.link.getAttribute('href') ?? ''
+          )
+        )
         return
       }
 
@@ -183,4 +197,3 @@ function getAbsoluteTop(element: HTMLElement): number {
   }
   return top
 }
-

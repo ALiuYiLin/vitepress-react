@@ -25,9 +25,7 @@ export function setupCopyButtons(): () => void {
     const target = e.target as Element | null
     const btn = target?.closest?.('button.copy') as HTMLButtonElement | null
     if (!btn) return
-    const wrapper = btn.closest(
-      'div[class*="language-"]'
-    ) as HTMLElement | null
+    const wrapper = btn.closest('div[class*="language-"]') as HTMLElement | null
     const code = wrapper?.querySelector('pre code')
     if (!code) return
     e.preventDefault()

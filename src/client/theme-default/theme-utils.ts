@@ -103,7 +103,11 @@ function addBase(items: VpSidebarItem[], _base?: string): VpSidebarItem[] {
   return items.map((_item) => {
     const item = { ..._item } as VpSidebarItem & { base?: string }
     const base = item.base || _base
-    if (base && item.link && !/^(?:https?:|mailto:|tel:|\/\/)/.test(item.link)) {
+    if (
+      base &&
+      item.link &&
+      !/^(?:https?:|mailto:|tel:|\/\/)/.test(item.link)
+    ) {
       item.link = base + item.link.replace(/^\//, base.endsWith('/') ? '' : '/')
     }
     if (item.items) {
@@ -145,7 +149,12 @@ export function sidebarGroupsFor(
 export function flattenSidebarItems(
   groups: VpSidebarGroup[]
 ): { text?: string; link: string; target?: string; rel?: string }[] {
-  const result: { text?: string; link: string; target?: string; rel?: string }[] = []
+  const result: {
+    text?: string
+    link: string
+    target?: string
+    rel?: string
+  }[] = []
   const walk = (items: VpSidebarItem[]) => {
     for (const item of items) {
       const link = item.link
@@ -153,7 +162,12 @@ export function flattenSidebarItems(
       if (link) {
         const normalized = normalizePath(link)
         if (result.every((r) => normalizePath(r.link) !== normalized)) {
-          result.push({ text, link: normalized, target: item.target, rel: item.rel })
+          result.push({
+            text,
+            link: normalized,
+            target: item.target,
+            rel: item.rel
+          })
         }
       }
       if (item.items?.length) walk(item.items)

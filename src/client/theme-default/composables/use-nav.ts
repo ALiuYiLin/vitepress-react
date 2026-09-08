@@ -99,6 +99,7 @@ export function useNavItemLink(item: VpNavItem) {
   const isCurrentLink = normalized === current
   const isActiveLink = item.activeMatch
     ? new RegExp(item.activeMatch.replace('$', '\\$')).test(route.path)
-    : (normalized !== '/' && current.startsWith(normalized + '/')) || isCurrentLink
+    : (normalized !== '/' && current.startsWith(normalized + '/')) ||
+      isCurrentLink
   return { href: link, isActiveLink, isCurrentLink }
 }

@@ -6,16 +6,19 @@ import { useLangs } from './composables/use-langs'
 export function NotFound() {
   const { theme } = useData()
   const { currentLang } = useLangs()
-  const nf = (theme as {
-    notFound?: {
-      code?: string
-      title?: string
-      quote?: string
-      link?: string
-      linkLabel?: string
-      linkText?: string
-    }
-  })?.notFound ?? {}
+  const nf =
+    (
+      theme as {
+        notFound?: {
+          code?: string
+          title?: string
+          quote?: string
+          link?: string
+          linkLabel?: string
+          linkText?: string
+        }
+      }
+    )?.notFound ?? {}
 
   const home = withBase(nf.link ?? currentLang.link)
 

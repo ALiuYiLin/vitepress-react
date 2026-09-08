@@ -5,10 +5,16 @@
   font-weight: 600;
   white-space: nowrap;
   text-decoration: none;
-  transition: color 0.25s, border-color 0.25s, background-color 0.25s;
+  transition:
+    color 0.25s,
+    border-color 0.25s,
+    background-color 0.25s;
 }
 .VPButton:active {
-  transition: color 0.1s, border-color 0.1s, background-color 0.1s;
+  transition:
+    color 0.1s,
+    border-color 0.1s,
+    background-color 0.1s;
 }
 
 .VPButton.medium {
@@ -71,4 +77,3 @@
   color: var(--vp-button-sponsor-active-text);
   background-color: var(--vp-button-sponsor-active-bg);
 }
-

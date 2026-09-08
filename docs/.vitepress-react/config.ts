@@ -22,7 +22,8 @@ const ogImage = new URL('/vitepress-og.jpg', siteUrl).href
 
 /** 把对象里的 /zh/ 路径前缀改写为根路径(纯字符串替换,配置无函数字段) */
 function toRootPaths<T>(value: T): T {
-  if (typeof value === 'string') return (value.includes('/zh/') ? value.replaceAll('/zh/', '/') : value) as T
+  if (typeof value === 'string')
+    return (value.includes('/zh/') ? value.replaceAll('/zh/', '/') : value) as T
   if (Array.isArray(value)) return value.map(toRootPaths) as T
   if (value && typeof value === 'object') {
     const out: Record<string, unknown> = {}

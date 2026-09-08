@@ -134,17 +134,11 @@ function clientAssets(): Rolldown.Plugin {
 // css 文件里的 `:global(...)` 规则(后代元素不属于本组件 scope,例如渲染在
 // 子组件里或由 innerHTML 注入的 svg)会被拆到产物的“全局段”:局部段经
 // transformScopedCss 追加 [data-v-{hash}],全局段保持原选择器不追加。
-const COMPONENTS_DIR = path.join(
-  ROOT,
-  'src/client/theme-default/components'
-)
+const COMPONENTS_DIR = path.join(ROOT, 'src/client/theme-default/components')
 
 function unwrapGlobal(selector: string): string {
   // :global(…) 内部允许一层括号(如 :not(.dark));展开后去掉包装
-  return selector.replaceAll(
-    /:global\(\s*((?:[^()]|\([^()]*\))*?)\s*\)/g,
-    '$1'
-  )
+  return selector.replaceAll(/:global\(\s*((?:[^()]|\([^()]*\))*?)\s*\)/g, '$1')
 }
 function hasGlobal(selector: string): boolean {
   return selector.includes(':global(')
@@ -156,20 +150,23 @@ function partitionGlobalCss(css: string): { local: string; global: string } {
   const globalRoot = postcss.root()
   for (const node of root.nodes) {
     if (node.type === 'rule' && hasGlobal(node.selector)) {
-      globalRoot.append(
-        node.clone({ selector: unwrapGlobal(node.selector) })
-      )
+      globalRoot.append(node.clone({ selector: unwrapGlobal(node.selector) }))
     } else if (node.type === 'atrule' && node.nodes) {
       const children = node.nodes.filter((n) => n.type === 'rule')
-      const globalChildren = children.filter(
-        (n) => hasGlobal((n as { selector?: string }).selector ?? '')
+      const globalChildren = children.filter((n) =>
+        hasGlobal((n as { selector?: string }).selector ?? '')
       )
-      if (globalChildren.length > 0 && globalChildren.length === children.length) {
+      if (
+        globalChildren.length > 0 &&
+        globalChildren.length === children.length
+      ) {
         const copy = node.clone({ nodes: [] })
         for (const n of globalChildren) {
           copy.append(
             n.clone({
-              selector: unwrapGlobal((n as { selector?: string }).selector ?? '')
+              selector: unwrapGlobal(
+                (n as { selector?: string }).selector ?? ''
+              )
             })
           )
         }
@@ -756,11 +753,7 @@ function withStableOutputs(config: UserConfig): UserConfig {
 }
 
 const client: UserConfig = {
-  entry: [
-    'src/client/**/*.ts',
-    'src/client/**/*.tsx',
-    '!src/client/**/*.d.ts'
-  ],
+  entry: ['src/client/**/*.ts', 'src/client/**/*.tsx', '!src/client/**/*.d.ts'],
   outDir: 'dist/client',
   platform: 'neutral',
   unbundle: true,

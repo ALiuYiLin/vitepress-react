@@ -216,7 +216,11 @@ export interface SiteData<ThemeConfig = any> {
     | 'dark'
     | 'force-dark'
     | 'force-auto'
-    | { storageKey?: string; disableTransition?: boolean; initialValue?: 'dark' }
+    | {
+        storageKey?: string
+        disableTransition?: boolean
+        initialValue?: 'dark'
+      }
   /**
    * The config of the active theme.
    */

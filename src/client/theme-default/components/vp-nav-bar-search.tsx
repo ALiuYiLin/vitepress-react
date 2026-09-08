@@ -5,7 +5,8 @@ import { useData } from '@10coding/vitepress-react'
 import { LocalSearchDialog, resolveLocalSearchText } from './local-search'
 import '../styles/components/vp-nav-bar-search.scoped.css'
 
-const cx = (...c: (string | false | undefined | null)[]) => c.filter(Boolean).join(' ')
+const cx = (...c: (string | false | undefined | null)[]) =>
+  c.filter(Boolean).join(' ')
 
 function isEditingContent(e: KeyboardEvent): boolean {
   const el = e.target as HTMLElement | null
@@ -36,8 +37,7 @@ export function VPNavBarSearch({ className }: { className?: string }) {
   const provider = (theme as { search?: unknown; algolia?: unknown }).search
   const isAlgolia =
     ((provider as { provider?: string } | undefined)?.provider ?? 'local') ===
-    'algolia' ||
-    !!(theme as { algolia?: unknown }).algolia
+      'algolia' || !!(theme as { algolia?: unknown }).algolia
   const text = resolveLocalSearchText(theme, lang, localeIndex ?? '')
 
   // 全局快捷键(本地搜索):Ctrl/Cmd+K、`/`;mac 检测供键帽文案

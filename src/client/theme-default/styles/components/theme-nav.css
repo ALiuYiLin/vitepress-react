@@ -55,7 +55,10 @@
 .VPNavBarHamburger.active:hover .middle,
 .VPNavBarHamburger.active:hover .bottom {
   background-color: var(--vp-c-text-2);
-  transition: top 0.25s, background-color 0.25s, transform 0.25s;
+  transition:
+    top 0.25s,
+    background-color 0.25s,
+    transform 0.25s;
 }
 
 .VPNavBarHamburger .top,
@@ -65,7 +68,10 @@
   width: 1rem;
   height: 0.125rem;
   background-color: var(--vp-c-text-1);
-  transition: top 0.25s, background-color 0.5s, transform 0.25s;
+  transition:
+    top 0.25s,
+    background-color 0.5s,
+    transform 0.25s;
 }
 
 .VPNavBarHamburger .top {
@@ -433,7 +439,9 @@
   border-bottom: 1px solid var(--vp-c-divider);
   padding: 0.75rem 0 0.6875rem;
   line-height: 1.7142857;
-  transition: border-color 0.25s, color 0.25s;
+  transition:
+    border-color 0.25s,
+    color 0.25s;
 }
 /* === VPNavSocialLinks === */
 /* 对应 Vue VPNavSocialLinks.vue <style scoped> */
@@ -479,7 +487,8 @@
   bottom: 0;
   /*rtl:ignore*/
   left: 0;
-  padding: calc(var(--vp-nav-height) + var(--vp-layout-top-height, 0px) + 1px) 2rem 0;
+  padding: calc(var(--vp-nav-height) + var(--vp-layout-top-height, 0px) + 1px)
+    2rem 0;
   width: 100%;
   background-color: var(--vp-nav-screen-bg-color);
   overflow-y: auto;
@@ -643,4 +652,3 @@
   font-size: 0.875rem;
   font-weight: 600;
 }
-

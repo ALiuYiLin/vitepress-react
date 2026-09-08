@@ -14,10 +14,7 @@ export type VPIconProps = {
 export function VPIcon({ icon }: VPIconProps) {
   if (typeof icon === 'object') {
     return (
-      <span
-        className="VPIcon"
-        dangerouslySetInnerHTML={{ __html: icon.svg }}
-      />
+      <span className="VPIcon" dangerouslySetInnerHTML={{ __html: icon.svg }} />
     )
   }
 

@@ -20,7 +20,8 @@ import { useData, useRouter, withBase } from '@10coding/vitepress-react'
 
 import '../styles/components/vp-local-search.scoped.css'
 
-const cx = (...c: (string | false | undefined | null)[]) => c.filter(Boolean).join(' ')
+const cx = (...c: (string | false | undefined | null)[]) =>
+  c.filter(Boolean).join(' ')
 
 // ---------------------------------------------------------------------------
 // 翻译(与 types/local-search.d.ts 对齐;缺省按 lang 提供 zh/en 兜底)
@@ -95,7 +96,10 @@ function mergeTranslations(
 ): { button: ButtonText; modal: ModalText } {
   const base = defaultTranslations(lang)
   const patch = (a: FooterText, b?: FooterText): FooterText => ({ ...a, ...b })
-  const apply = (acc: { button: ButtonText; modal: ModalText }, o?: RawTranslations) => {
+  const apply = (
+    acc: { button: ButtonText; modal: ModalText },
+    o?: RawTranslations
+  ) => {
     if (!o) return acc
     acc.button = { ...acc.button, ...o.button }
     acc.modal = { ...acc.modal, ...o.modal }
@@ -124,8 +128,10 @@ export function resolveLocalSearchText(
   }
   const rootOptions = search.options ?? {}
   const localeOptions =
-    (rootOptions.locales as Record<string, { translations?: RawTranslations }> |
-      undefined)?.[localeIndex] ?? {}
+    (
+      rootOptions.locales as
+        Record<string, { translations?: RawTranslations }> | undefined
+    )?.[localeIndex] ?? {}
   const merged = mergeTranslations(
     lang,
     rootOptions.translations,
@@ -152,7 +158,9 @@ function decodeHtmlEntities(str: string): string {
     .replace(/&#39;/g, "'")
     .replace(/&amp;/g, '&')
     .replace(/&#(\d+);/g, (_, n) => String.fromCodePoint(Number(n)))
-    .replace(/&#x([0-9a-f]+);/gi, (_, n) => String.fromCodePoint(parseInt(n, 16)))
+    .replace(/&#x([0-9a-f]+);/gi, (_, n) =>
+      String.fromCodePoint(parseInt(n, 16))
+    )
 }
 
 function escapeRe(str: string): string {
@@ -160,10 +168,7 @@ function escapeRe(str: string): string {
 }
 
 function highlightParts(text: string, query: string): ReactNode[] {
-  const tokens = query
-    .trim()
-    .split(/\s+/)
-    .filter(Boolean)
+  const tokens = query.trim().split(/\s+/).filter(Boolean)
   if (tokens.length === 0 || !text) return [text]
   const re = new RegExp(`(${tokens.map((t) => escapeRe(t)).join('|')})`, 'gi')
   const parts = text.split(re)
@@ -215,8 +220,9 @@ export function LocalSearchDialog({
   const rootOptions = (search.options ?? {}) as Record<string, unknown>
   const localeKey = localeIndex ?? ''
   const localeOptions =
-    ((rootOptions.locales as Record<string, Record<string, unknown>> | undefined) ??
-      {})[localeKey] ?? {}
+    ((rootOptions.locales as
+      Record<string, Record<string, unknown>> | undefined) ?? {})[localeKey] ??
+    {}
   const mergedOptions = { ...rootOptions, ...localeOptions }
   const translations = mergeTranslations(
     lang,
@@ -224,8 +230,7 @@ export function LocalSearchDialog({
     (localeOptions.translations as RawTranslations | undefined) ?? undefined,
     search.translations as RawTranslations | undefined
   )
-  const disableQueryPersistence =
-    mergedOptions.disableQueryPersistence === true
+  const disableQueryPersistence = mergedOptions.disableQueryPersistence === true
 
   const [query, setQuery] = useState('')
   const [index, setIndex] = useState<MiniSearch | null>(null)
@@ -424,7 +429,7 @@ export function LocalSearchDialog({
           />
           <div className={'actions'}>
             <span
-              className={cx('spinner', (!loaded && !loadError) && 'active')}
+              className={cx('spinner', !loaded && !loadError && 'active')}
               role={!loaded && !loadError ? 'status' : undefined}
               aria-live="polite"
             />
@@ -494,7 +499,10 @@ export function LocalSearchDialog({
                         {mainTitle && (
                           <span className={cx('title', 'titleMain')}>
                             <span className={'titleText'}>
-                              {highlightParts(decodeHtmlEntities(mainTitle), query)}
+                              {highlightParts(
+                                decodeHtmlEntities(mainTitle),
+                                query
+                              )}
                             </span>
                           </span>
                         )}
@@ -519,9 +527,7 @@ export function LocalSearchDialog({
 
         <div className={'shortcuts'}>
           <span>
-            <kbd
-              aria-label={translations.modal.footer?.navigateUpKeyAriaLabel}
-            >
+            <kbd aria-label={translations.modal.footer?.navigateUpKeyAriaLabel}>
               <span className={cx('vpi-arrow-up', 'navigateIcon')} />
             </kbd>
             <kbd
@@ -550,4 +556,3 @@ export function LocalSearchDialog({
 
   return createPortal(modal, document.body)
 }
-

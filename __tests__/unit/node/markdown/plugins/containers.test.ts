@@ -186,8 +186,9 @@ describe('node/markdown/plugins/containers', () => {
   })
 
   test('supports quoted and bare attr values on the fence line', async () => {
-    expect(await render('::: tip Custom ((data-a="b c" data-d=e))\ncontent\n:::'))
-      .toMatchInlineSnapshot(`
+    expect(
+      await render('::: tip Custom ((data-a="b c" data-d=e))\ncontent\n:::')
+    ).toMatchInlineSnapshot(`
         "<div data-a="b c" data-d="e" class="tip custom-block"><p class="custom-block-title">Custom</p>
         <p>content</p>
         </div>
