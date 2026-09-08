@@ -29,6 +29,31 @@ export { VPTeamPageSection } from './components/VPTeamPageSection'
 
 export { Layout, NotFound }
 
+// 主题扩展机制(机制 A Layout 具名插槽 / 机制 B 内部组件注册表)
+export {
+  useThemeComponent,
+  ThemeComponentsContext,
+  THEME_COMPONENT_NAMES
+} from './composables/use-theme-component'
+export type {
+  ThemeComponentName,
+  ThemeComponents
+} from './composables/use-theme-component'
+export {
+  LAYOUT_SLOT_NAMES,
+  LayoutSlotsContext,
+  renderLayoutSlot,
+  resolveLayoutSlots,
+  useLayoutSlot
+} from './layout-slots'
+export type {
+  LayoutSlotName,
+  LayoutSlotContent,
+  LayoutSlots,
+  LayoutProps,
+  LayoutSlotContext
+} from './layout-slots'
+
 const theme = {
   Layout,
   NotFound

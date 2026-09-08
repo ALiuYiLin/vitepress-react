@@ -1,9 +1,14 @@
 import { useData } from '@10coding/vitepress-react'
 
+import { useThemeComponent } from '../composables/use-theme-component'
 import { useNavOverflow } from '../composables/use-nav-overflow'
-import { VPNavMenuGroup, type VpNavMenuGroupItem } from './VPNavMenuGroup'
-import { VPNavMenuLink } from './VPNavMenuLink'
-const cx = (...c: (string | false | undefined | null)[]) => c.filter(Boolean).join(' ')
+import {
+  VPNavMenuGroup as VPNavMenuGroupDefault,
+  type VpNavMenuGroupItem
+} from './VPNavMenuGroup'
+import { VPNavMenuLink as VPNavMenuLinkDefault } from './VPNavMenuLink'
+const cx = (...c: (string | false | undefined | null)[]) =>
+  c.filter(Boolean).join(' ')
 
 /**
  * 导航菜单列表(对应 Vue VPNavMenu.vue):
@@ -23,6 +28,12 @@ export function VPNavMenu({
   const nav = t.nav
   const overflow = screen ? null : useNavOverflow()
   const visibleCount = overflow ? overflow.state.visibleItemCount : Infinity
+
+  const VPNavMenuLink = useThemeComponent('VPNavMenuLink', VPNavMenuLinkDefault)
+  const VPNavMenuGroup = useThemeComponent(
+    'VPNavMenuGroup',
+    VPNavMenuGroupDefault
+  )
 
   if (!nav) return null
 

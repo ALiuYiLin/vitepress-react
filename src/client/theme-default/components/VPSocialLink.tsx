@@ -1,5 +1,6 @@
+import { useThemeComponent } from '../composables/use-theme-component'
 import '../styles/components/VPSocialLink.scoped.css'
-import { VPIcon } from './VPIcon'
+import { VPIcon as VPIconDefault } from './VPIcon'
 
 const EXTERNAL = /^(https?:|mailto:|tel:)/
 
@@ -20,9 +21,12 @@ export function VPSocialLink({
   target,
   me
 }: VPSocialLinkProps) {
+  const VPIcon = useThemeComponent('VPIcon', VPIconDefault)
   const external = EXTERNAL.test(link)
   const qualified =
-    typeof icon === 'string' && !icon.includes(':') ? `simple-icons:${icon}` : icon
+    typeof icon === 'string' && !icon.includes(':')
+      ? `simple-icons:${icon}`
+      : icon
   return (
     <a
       className={cx('link', 'VPSocialLink no-icon')}
@@ -36,4 +40,5 @@ export function VPSocialLink({
   )
 }
 
-const cx = (...c: (string | false | undefined | null)[]) => c.filter(Boolean).join(' ')
+const cx = (...c: (string | false | undefined | null)[]) =>
+  c.filter(Boolean).join(' ')

@@ -91,11 +91,17 @@ export default {
 本 fork 是 React，**没有 Vue 的 `app.component` 全局注册机制**（`EnhanceAppContext` 里的 `registerComponent` 为未来预留，当前不会渲染到 md 页面）。可用方案：
 
 1. **页面级导入**（推荐）：在用到该组件的每个 md 页面的 `<script>` 顶层 `import`，正文用大写标签（见[在 Markdown 中使用 React](./using-react#using-components)）。默认主题导出的组件（`VPBadge`、`VPTeamMembers`、`VPTeamPage` 等）也按此导入，或在 markdown 里直接用 `@10coding/vitepress-react/theme` 自动导入的标签名。
-2. **Layout 注入**：若组件需要出现在“每个页面”的固定位置（例如全站横幅），把它放进你的自定义 Layout 里（见下一节）。
+2. **Layout 插槽**：若组件需要出现在“每个页面”的固定位置（例如全站横幅、大纲上方卡片），用下一节的 Layout 具名插槽。
+3. **内部组件覆盖**：想替换默认主题某个内部组件（如 `VPNavBar`）本身，用[内部组件覆盖](#overriding-internal-components)的 `Theme.components` 注册表。
 
-## 用 Layout 包装注入内容 {#layout-slots}
+## Layout 具名插槽 {#layout-slots}
 
-Vue 默认主题的 `<Layout/>` 提供了具名插槽；React fork 的 `Layout` 不接受插槽 props。等价的做法是**用自己的 Layout 包装默认 `Layout`**，在它前后渲染自定义内容，或按 `useData()` 条件渲染：
+Vue 默认主题的 `<Layout/>` 提供具名插槽（如 `<template #aside-outline-before>`）；React fork 用等价的**具名 props**（统一 camelCase）挂在 `DefaultTheme.Layout` 上，支持两种值形态：
+
+- `ReactNode`：静态节点（等价于 Vue 的模板内容）；
+- `(ctx) => ReactNode`：渲染函数（插槽可带参数；当前各挂载点无额外数据，`ctx` 为空对象，后续扩展时调用处不变）。
+
+接线方式：在自定义主题的 `Layout` 里包一层默认 `Layout`，把插槽作为 props 传入：
 
 ```ts [.vitepress-react/theme/index.ts]
 import Theme from '@10coding/vitepress-react/theme'
@@ -108,50 +114,72 @@ export default {
 ```
 
 ```tsx [.vitepress-react/theme/MyLayout.tsx]
-import { useData } from '@10coding/vitepress-react'
 import { Layout } from '@10coding/vitepress-react/theme'
 
-/** 站点全局横幅：所有页面顶部显示 */
-export function SiteBanner() {
-  return <div className="site-banner">New release!</div>
+/** 大纲上方注入的内容(等价 Vue 的 #aside-outline-before) */
+function MyOutlineTop() {
+  return <div className="outline-tip">My custom sidebar top content</div>
 }
 
 export function MyLayout() {
-  const { frontmatter } = useData()
   return (
-    <>
-      <SiteBanner />
-      {frontmatter.layout === 'home' ? <HomeExtra /> : null}
-      <Layout />
-    </>
+    <Layout
+      asideOutlineBefore={<MyOutlineTop />}
+      navBarContentAfter={() => <a href="https://github.com">GitHub</a>}
+    />
   )
 }
 ```
 
-- 需要在某一类页面“局部”注入时，用 `useData()` 的 `page`/`frontmatter`/`layout` 分支即可；
-- 基于页面的不同区域（如 sidebar 前、outline 前）做精确注入，请 fork 默认主题源码后把对应区域抽成你的 Layout 内容——上游的具名插槽清单不再适用。
+也支持把多个插槽放进 `slots` 表（直传 prop 与 `slots` 同名时，直传 prop 优先）：
 
-## 使用视图过渡 API
+```tsx
+<Layout slots={{ docFooterBefore: <ShareButtons />, layoutBottom: <FooterNote /> }} />
+```
 
-### 关于外观切换 {#on-appearance-toggle}
+**插槽挂载点（全部可选，未提供时渲染零变化）**：
 
-可以扩展默认主题以在切换颜色模式时提供自定义过渡动画。
+| React prop（camelCase） | Vue 插槽名 | 挂载位置 |
+| --- | --- | --- |
+| `layoutTop` / `layoutBottom` | `layout-top` / `layout-bottom` | `.Layout` 根首/末（全站最外层） |
+| `navBarTitleBefore` / `navBarTitleAfter` | `nav-bar-title-before` / `nav-bar-title-after` | 顶栏站点标题链接前后 |
+| `navBarContentBefore` / `navBarContentAfter` | `nav-bar-content-before` / `nav-bar-content-after` | 顶栏 content-body 前后 |
+| `navScreenContentBefore` / `navScreenContentAfter` | `nav-screen-content-before` / `nav-screen-content-after` | 移动端全屏导航容器前后 |
+| `sidebarNavBefore` / `sidebarNavAfter` | `sidebar-nav-before` / `sidebar-nav-after` | 侧栏 `<nav>` 前后 |
+| `docBefore` / `docAfter` | `doc-before` / `doc-after` | 文档正文 `.doc` 根首/末 |
+| `docTop` / `docBottom` | `doc-top` / `doc-bottom` | 正文 `.content-container` 首/末 |
+| `docFooterBefore` | `doc-footer-before` | 文档页脚（`<VPDocFooter/>`）前 |
+| `asideTop` / `asideBottom` | `aside-top` / `aside-bottom` | 右侧栏根首/末 |
+| `asideOutlineBefore` / `asideOutlineAfter` | `aside-outline-before` / `aside-outline-after` | 右侧栏大纲前后 |
+| `asideAdsBefore` / `asideAdsAfter` | `aside-ads-before` / `aside-ads-after` | 右侧栏广告区前后（仅在 `themeConfig.carbonAds` 存在时渲染） |
 
-::: warning 示例已随 React 迁移移除
-原示例是 **Vue 默认主题** 的演示（`docs/components/AppearanceToggleTransition.vue`，用 Vue 的 `provide/inject` 包装 `DefaultTheme.Layout` 配合 View Transitions API）已随 React 迁移移除。React fork 暂不提供等价示例；可参考[在 Markdown 中使用 React](./using-react)。
-:::
-
-更多视图过渡细节见 [Chrome 文档](https://developer.chrome.com/docs/web-platform/view-transitions/)。
-
-### 路由切换时 {#on-route-change}
-
-即将到来。
+- 插槽内容渲染在**默认主题既有 DOM 容器内部**（如 `asideOutlineBefore` 与大纲同处 `.asideContent` 滚动区），不套新外壳、不破坏布局；需要留白时由自定义节点自带 class/margin。
+- 需要按页面条件注入（如只对 `layout: 'home'` 显示）时，在自定义 `Layout` 里用 `useData()` 的 `frontmatter` 分支后再把插槽传给 `<Layout …/>`。
+- 插槽注入点是固定的；想替换某个内部组件本身，用下一节的**内部组件覆盖**。
 
 ## 重写内部组件 {#overriding-internal-components}
 
-Vue 版可以用 Vite alias 替换 `VPNavBar.vue` 等内部组件；**React fork 的默认主题以编译产物发布，暂不支持“按内部组件名覆盖”**。如需调整主题内部结构，推荐：
+Vue 版用 Vite alias 替换 `VPNavBar.vue` 等内部组件；React fork 以编译产物发布、内部都是相对路径 import，alias 无法稳定命中，因此提供等价的**主题级组件注册表** `Theme.components`——把“按内部组件名覆盖”移到渲染期解析：
 
-- 用自定义 Layout 包装并自行实现对应区域（见上节）；
-- 或直接 fork/复制主题源码并按需修改后，在站点里以本地主题目录方式使用。
+```ts [.vitepress-react/theme/index.ts]
+import Theme from '@10coding/vitepress-react/theme'
+import { MyNavBar } from './MyNavBar.tsx'
 
-> 内部组件属于实现细节，即便上游也可能在小版本中改名；请优先使用公开的配置项与 Layout 包装。
+export default {
+  extends: Theme,
+  components: {
+    VPNavBar: MyNavBar, // 替换整个顶栏;其余内部组件保持默认
+    VPSidebarItem: MySidebarItem // 叶子组件同样可覆盖
+  }
+}
+```
+
+要点：
+
+- **注册表开放到叶子**：`components` 的 key 覆盖默认主题内部组合树的全部 `VP*` 组件（`VPNav`/`VPNavBar`/`VPNavMenuLink`/`VPSidebarItem`/`VPIcon` 等，完整名单见导出的 `THEME_COMPONENT_NAMES`）。内部组合组件渲染子组件前经 `useThemeComponent(name, fallback)` 解析：命中注册表用你的实现，否则用默认——不传 `components` 时渲染与打包零变化。
+- **与 `extends` 叠加**：`components` 按 key 合并（子主题只覆盖自己列出的名字，`extends` 链上其它覆盖保留）。
+- **替换组件的 props 契约**：覆盖的组件必须接受默认内部组件被调用时的同名 props（半公开契约，与 Vue 上游内部组件同性质）；需要数据时用 `useData`/`useLayout` 等公开 hook 即可。
+- **不在覆盖范围**：markdown 自动注入的 `VPBadge`/`VPTeam*` 走静态 import，不受注册表影响；想换掉它们请直接在 md 页面的 `<script>` 里导入你自己的组件（见[在 Markdown 中使用 React](./using-react#using-components)）。
+- **取舍顺序**：只想加一块内容用上一节插槽；想替换某个内部组件的行为/结构用注册表；想改变整体骨架（如去掉侧栏自己排）则自定义/自绘 `Layout`（见[自定义主题](./custom-theme#composing-with-the-default-layout)）。
+
+> 内部组件仍是实现细节，即便上游也可能在小版本中改名或调整 props；覆盖层数越深，升级成本越高。请优先使用公开配置项 → Layout 插槽 → 注册表覆盖 → 自绘 Layout 的优先级顺序。

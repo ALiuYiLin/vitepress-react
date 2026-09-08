@@ -1,5 +1,6 @@
-import { VPLink } from './VPLink'
-import { VPImage, type ThemeableImage } from './VPImage'
+import { useThemeComponent } from '../composables/use-theme-component'
+import { VPLink as VPLinkDefault } from './VPLink'
+import { VPImage as VPImageDefault, type ThemeableImage } from './VPImage'
 import type { VpFeatureIcon } from './VPFeatures'
 
 /**
@@ -23,6 +24,8 @@ export function VPFeature({
   rel?: string
   target?: string
 }) {
+  const VPLink = useThemeComponent('VPLink', VPLinkDefault)
+  const VPImage = useThemeComponent('VPImage', VPImageDefault)
   const iconObj = typeof icon === 'object' && icon !== null ? icon : undefined
   const isImageIcon = Boolean(
     iconObj && ('src' in iconObj || 'light' in iconObj || 'dark' in iconObj)
@@ -72,7 +75,10 @@ export function VPFeature({
             ))}
           </ul>
         ) : details ? (
-          <p className="details" dangerouslySetInnerHTML={{ __html: details }} />
+          <p
+            className="details"
+            dangerouslySetInnerHTML={{ __html: details }}
+          />
         ) : null}
 
         {linkText ? (

@@ -1,10 +1,11 @@
 import { useEffect, type ReactNode } from 'react'
 import { inBrowser, useData } from '@10coding/vitepress-react'
 
+import { useThemeComponent } from '../composables/use-theme-component'
 import { NavContext } from '../nav-context'
 import { useNav } from '../composables/use-nav'
-import { VPNavBar } from './VPNavBar'
-import { VPNavScreen } from './VPNavScreen'
+import { VPNavBar as VPNavBarDefault } from './VPNavBar'
+import { VPNavScreen as VPNavScreenDefault } from './VPNavScreen'
 /**
  * 导航(对应 Vue VPNav.vue):顶栏 + 移动端全屏导航,
  * 拥有屏幕开合状态,并向子树提供 closeScreen。
@@ -24,6 +25,10 @@ export function VPNav({
   const { frontmatter } = useData()
   const fm = frontmatter as { navbar?: boolean }
   const hasNavbar = fm.navbar !== false
+
+  // 内部子组件:可被 Theme.components 覆盖(默认兜底)
+  const VPNavBar = useThemeComponent('VPNavBar', VPNavBarDefault)
+  const VPNavScreen = useThemeComponent('VPNavScreen', VPNavScreenDefault)
 
   // frontmatter.navbar:false → 隐藏导航(html.hide-nav 供 CSS 调整)
   useEffect(() => {

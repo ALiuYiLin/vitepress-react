@@ -1,11 +1,13 @@
 import { useEffect, useState } from 'react'
 import { useData } from '@10coding/vitepress-react'
 
+import { useThemeComponent } from '../composables/use-theme-component'
 import { useLayout } from '../composables/use-layout'
-import { VPLocalNavOutlineDropdown } from './VPLocalNavOutlineDropdown'
+import { VPLocalNavOutlineDropdown as VPLocalNavOutlineDropdownDefault } from './VPLocalNavOutlineDropdown'
 import '../styles/components/VPLocalNav.scoped.css'
 
-const cx = (...c: (string | false | undefined | null)[]) => c.filter(Boolean).join(' ')
+const cx = (...c: (string | false | undefined | null)[]) =>
+  c.filter(Boolean).join(' ')
 
 /**
  * 本地导航条(对应 Vue VPLocalNav.vue):侧栏菜单按钮 + 本页大纲下拉;
@@ -22,7 +24,10 @@ export function VPLocalNav({
   inert?: boolean
 }) {
   const { theme } = useData()
-  const themeCfg = theme as { sidebarMenuLabel?: string; outline?: { label?: string } }
+  const themeCfg = theme as {
+    sidebarMenuLabel?: string
+    outline?: { label?: string }
+  }
   const { isHome, hasSidebar, headers, hasLocalNav } = useLayout()
   const [navHeight, setNavHeight] = useState(0)
   const [isScrolled, setIsScrolled] = useState(false)
@@ -43,6 +48,11 @@ export function VPLocalNav({
     window.addEventListener('scroll', update, { passive: true })
     return () => window.removeEventListener('scroll', update)
   }, [navHeight])
+
+  const VPLocalNavOutlineDropdown = useThemeComponent(
+    'VPLocalNavOutlineDropdown',
+    VPLocalNavOutlineDropdownDefault
+  )
 
   if (isHome || (!hasLocalNav && !hasSidebar && !isScrolled)) return null
 
@@ -66,8 +76,13 @@ export function VPLocalNav({
             aria-controls="VPSidebarNav"
             onClick={onOpenMenu}
           >
-            <span className={cx('menuIcon', 'vpi-align-left', 'menu-icon')} aria-hidden="true" />
-            <span className="menu-text">{themeCfg.sidebarMenuLabel || 'Menu'}</span>
+            <span
+              className={cx('menuIcon', 'vpi-align-left', 'menu-icon')}
+              aria-hidden="true"
+            />
+            <span className="menu-text">
+              {themeCfg.sidebarMenuLabel || 'Menu'}
+            </span>
           </button>
         ) : null}
 
@@ -76,4 +91,3 @@ export function VPLocalNav({
     </div>
   )
 }
-

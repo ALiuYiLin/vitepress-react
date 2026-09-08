@@ -1,20 +1,24 @@
 import { useData } from '@10coding/vitepress-react'
 
+import { useThemeComponent } from '../composables/use-theme-component'
 import { type ThemeableImage } from './VPImage'
-import { VPHero, type VpHeroAction } from './VPHero'
+import { VPHero as VPHeroDefault, type VpHeroAction } from './VPHero'
 
 /** 首页 hero 包装(对应 Vue VPHomeHero.vue):fm.hero 存在才渲染 */
 export function VPHomeHero() {
   const { frontmatter } = useData()
-  const hero = (frontmatter as {
-    hero?: {
-      name?: string
-      text?: string
-      tagline?: string
-      image?: ThemeableImage
-      actions?: VpHeroAction[]
+  const VPHero = useThemeComponent('VPHero', VPHeroDefault)
+  const hero = (
+    frontmatter as {
+      hero?: {
+        name?: string
+        text?: string
+        tagline?: string
+        image?: ThemeableImage
+        actions?: VpHeroAction[]
+      }
     }
-  }).hero
+  ).hero
 
   if (!hero) return null
 

@@ -1,7 +1,9 @@
+import { useThemeComponent } from '../composables/use-theme-component'
 import '../styles/components/VPMenuGroup.scoped.css'
-import { VPMenuLink } from './VPMenuLink'
+import { VPMenuLink as VPMenuLinkDefault } from './VPMenuLink'
 
-const cx = (...c: (string | false | undefined | null)[]) => c.filter(Boolean).join(' ')
+const cx = (...c: (string | false | undefined | null)[]) =>
+  c.filter(Boolean).join(' ')
 
 export interface VPMenuGroupProps {
   text?: string
@@ -14,6 +16,7 @@ export function VPMenuGroup({
   items,
   className
 }: VPMenuGroupProps & { className?: string }) {
+  const VPMenuLink = useThemeComponent('VPMenuLink', VPMenuLinkDefault)
   const hasSubGroups = items.some(
     (item) => !('link' in item) && !('component' in item)
   )

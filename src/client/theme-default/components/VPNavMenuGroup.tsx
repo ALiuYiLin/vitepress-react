@@ -1,11 +1,13 @@
 import { useId, useState } from 'react'
 import { useRoute } from '@10coding/vitepress-react'
 
+import { useThemeComponent } from '../composables/use-theme-component'
 import { normalizePath, type VpNavItem } from '../theme-utils'
-import { VPFlyout } from './VPFlyout'
-import { VPMenuGroup } from './VPMenuGroup'
-import { VPMenuLink } from './VPMenuLink'
-const cx = (...c: (string | false | undefined | null)[]) => c.filter(Boolean).join(' ')
+import { VPFlyout as VPFlyoutDefault } from './VPFlyout'
+import { VPMenuGroup as VPMenuGroupDefault } from './VPMenuGroup'
+import { VPMenuLink as VPMenuLinkDefault } from './VPMenuLink'
+const cx = (...c: (string | false | undefined | null)[]) =>
+  c.filter(Boolean).join(' ')
 
 export type VpNavMenuGroupItem = VpNavItem & {
   noIcon?: boolean
@@ -62,6 +64,10 @@ export function VPNavMenuGroup({
   const [isOpen, setIsOpen] = useState(false)
   const groupId = useId()
 
+  const VPMenuGroup = useThemeComponent('VPMenuGroup', VPMenuGroupDefault)
+  const VPFlyout = useThemeComponent('VPFlyout', VPFlyoutDefault)
+  const VPMenuLink = useThemeComponent('VPMenuLink', VPMenuLinkDefault)
+
   // ⋯ 菜单内:平铺分组
   if (menu) {
     return (
@@ -106,7 +112,10 @@ export function VPNavMenuGroup({
         aria-controls={groupId}
         onClick={() => setIsOpen((v) => !v)}
       >
-        <span className="button-text" dangerouslySetInnerHTML={{ __html: item.text ?? '' }} />
+        <span
+          className="button-text"
+          dangerouslySetInnerHTML={{ __html: item.text ?? '' }}
+        />
         <span className="vpi-plus button-icon" aria-hidden="true" />
       </button>
 
@@ -115,13 +124,19 @@ export function VPNavMenuGroup({
         id={groupId}
         className="items"
       >
-        {(item.items as VpNavMenuGroupItem[] | undefined ?? []).map((child) => {
-          if (child.link) return <VPMenuLink key={child.text} item={child} />
-          if (child.component) return null
-          return (
-            <VPMenuGroup key={child.text} text={child.text} items={child.items ?? []} />
-          )
-        })}
+        {((item.items as VpNavMenuGroupItem[] | undefined) ?? []).map(
+          (child) => {
+            if (child.link) return <VPMenuLink key={child.text} item={child} />
+            if (child.component) return null
+            return (
+              <VPMenuGroup
+                key={child.text}
+                text={child.text}
+                items={child.items ?? []}
+              />
+            )
+          }
+        )}
       </ul>
     </div>
   )

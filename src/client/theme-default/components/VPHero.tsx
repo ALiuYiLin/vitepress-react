@@ -1,5 +1,6 @@
-import { VPButton } from './VPButton'
-import { VPImage, type ThemeableImage } from './VPImage'
+import { useThemeComponent } from '../composables/use-theme-component'
+import { VPButton as VPButtonDefault } from './VPButton'
+import { VPImage as VPImageDefault, type ThemeableImage } from './VPImage'
 
 export type VpHeroAction = {
   theme?: 'brand' | 'alt'
@@ -28,6 +29,8 @@ export function VPHero({
   image?: ThemeableImage
   actions?: VpHeroAction[]
 }) {
+  const VPButton = useThemeComponent('VPButton', VPButtonDefault)
+  const VPImage = useThemeComponent('VPImage', VPImageDefault)
   const hasImage = Boolean(image)
   const rootClass = hasImage
     ? `VPHero has-image${className ? ` ${className}` : ''}`
@@ -39,14 +42,23 @@ export function VPHero({
         <div className="main">
           <h1 className="heading">
             {name ? (
-              <span className="name clip" dangerouslySetInnerHTML={{ __html: name }} />
+              <span
+                className="name clip"
+                dangerouslySetInnerHTML={{ __html: name }}
+              />
             ) : null}
             {text ? (
-              <span className="text" dangerouslySetInnerHTML={{ __html: text }} />
+              <span
+                className="text"
+                dangerouslySetInnerHTML={{ __html: text }}
+              />
             ) : null}
           </h1>
           {tagline ? (
-            <p className="tagline" dangerouslySetInnerHTML={{ __html: tagline }} />
+            <p
+              className="tagline"
+              dangerouslySetInnerHTML={{ __html: tagline }}
+            />
           ) : null}
 
           {actions ? (

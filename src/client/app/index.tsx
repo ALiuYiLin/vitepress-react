@@ -4,6 +4,8 @@ import { createRoot, hydrateRoot } from 'react-dom/client'
 import RawTheme from '@theme/index'
 import { VpStoreProvider, createStore, useData, type VpStore } from './data'
 import { createRouter, type Router } from './router'
+import type { Theme } from './theme'
+import { ThemeComponentsContext } from '../theme-default/composables/use-theme-component'
 import { Content } from './components/Content'
 import { syncHead } from './composables/head'
 import { setupCopyButtons } from './composables/copyCode'
@@ -13,12 +15,16 @@ import { inBrowser, pathToFile } from './utils'
 import type { PageData } from '../shared'
 import type { PageModule } from './router'
 
-function resolveThemeExtends(theme: typeof RawTheme): typeof RawTheme {
+function resolveThemeExtends(theme: Theme): Theme {
   if (theme.extends) {
     const base = resolveThemeExtends(theme.extends)
     return {
       ...base,
       ...theme,
+      // components 是“按 key 覆盖”的表:子主题应叠加在 base 之上,不能被整表冲掉
+      components: theme.components
+        ? { ...(base.components ?? {}), ...theme.components }
+        : base.components,
       async enhanceApp(ctx) {
         await base.enhanceApp?.(ctx)
         await theme.enhanceApp?.(ctx)
@@ -63,7 +69,11 @@ export function VitePressApp() {
   }, [])
 
   const Layout = Theme.Layout
-  return Layout ? <Layout /> : <Content />
+  return (
+    <ThemeComponentsContext.Provider value={Theme.components}>
+      {Layout ? <Layout /> : <Content />}
+    </ThemeComponentsContext.Provider>
+  )
 }
 
 export interface CreatedApp {

@@ -235,7 +235,7 @@ export default {
 几个注意点：
 
 - **导入来源**：`Layout` 不在 `@10coding/vitepress-react` 根导出里（那里只有 `useData`/`Content` 等）；默认主题要写 `@10coding/vitepress-react/theme`。
-- **组合粒度是"整层"**：默认 `Layout` 不接受 `children`/props，也没有插槽——想微调导航、侧栏内部结构做不到复用默认外壳再局部替换，只能整页复用或整页自绘（要改内部就 fork 一份布局组件自己拼，上面的[构建布局](#building-a-layout)列了全部可拆分部件思路）。
+- **组合粒度**：默认 `Layout` 是自包含组件、不接受 `children`，但它提供与 Vue 上游对齐的**具名插槽 props**（camelCase，如 `asideOutlineBefore`/`layoutTop`），可不动默认结构在指定位置注入内容；默认主题内部组合树还可用 `Theme.components` 注册表按名覆盖（含叶子组件）。两者详见[扩展默认主题](./extending-default-theme)。若连插槽与注册表都不够（要改变整体骨架），再整页自绘或 fork 一份布局组件自己拼（上面的[构建布局](#building-a-layout)列了全部可拆分部件思路）。
 - **在默认布局外面再包一层**（如全站顶部横幅）是允许的：把 `<Theme.Layout />` 放进自己的容器即可。
 - **404**：此 fork 已废弃 `Theme.NotFound`，按 `page.isNotFound` 分支（参考[构建布局](#building-a-layout)里的 404 处理）；不特殊处理时让它走 `<Theme.Layout />` 也可以。
 

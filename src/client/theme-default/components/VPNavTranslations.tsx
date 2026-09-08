@@ -1,12 +1,14 @@
 import { useId, useState } from 'react'
 import { useData } from '@10coding/vitepress-react'
 
+import { useThemeComponent } from '../composables/use-theme-component'
 import { useLangs } from '../composables/use-langs'
 import { useNavOverflow } from '../composables/use-nav-overflow'
-import { VPFlyout } from './VPFlyout'
-import { VPLink } from './VPLink'
-import { VPMenuLink } from './VPMenuLink'
-const cx = (...c: (string | false | undefined | null)[]) => c.filter(Boolean).join(' ')
+import { VPFlyout as VPFlyoutDefault } from './VPFlyout'
+import { VPLink as VPLinkDefault } from './VPLink'
+import { VPMenuLink as VPMenuLinkDefault } from './VPMenuLink'
+const cx = (...c: (string | false | undefined | null)[]) =>
+  c.filter(Boolean).join(' ')
 
 /**
  * 语言切换(对应 Vue VPNavTranslations.vue),三种形态:
@@ -39,6 +41,10 @@ export function VPNavTranslations({
   const [isOpen, setIsOpen] = useState(false)
   const listId = useId()
 
+  const VPLink = useThemeComponent('VPLink', VPLinkDefault)
+  const VPMenuLink = useThemeComponent('VPMenuLink', VPMenuLinkDefault)
+  const VPFlyout = useThemeComponent('VPFlyout', VPFlyoutDefault)
+
   if (!show) return null
 
   const localeProps = (locale: (typeof localeLinks)[number]) => ({
@@ -54,7 +60,11 @@ export function VPNavTranslations({
   if (screen) {
     return (
       <div
-        className={cx('VPNavTranslations VPNavScreenTranslations', isOpen && 'open', className)}
+        className={cx(
+          'VPNavTranslations VPNavScreenTranslations',
+          isOpen && 'open',
+          className
+        )}
       >
         <button
           type="button"

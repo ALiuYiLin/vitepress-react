@@ -1,11 +1,21 @@
-import { useCallback, useEffect, useId, useRef, useState, type PointerEvent, type ReactNode } from 'react'
+import {
+  useCallback,
+  useEffect,
+  useId,
+  useRef,
+  useState,
+  type PointerEvent,
+  type ReactNode
+} from 'react'
 import { useRoute } from '@10coding/vitepress-react'
 
+import { useThemeComponent } from '../composables/use-theme-component'
 import { useFlyout } from '../composables/use-flyout'
 import '../styles/components/VPFlyout.scoped.css'
-import { VPMenu } from './VPMenu'
+import { VPMenu as VPMenuDefault } from './VPMenu'
 
-const cx = (...c: (string | false | undefined | null)[]) => c.filter(Boolean).join(' ')
+const cx = (...c: (string | false | undefined | null)[]) =>
+  c.filter(Boolean).join(' ')
 
 /**
  * 导航悬停/点击两用下拉(对应 Vue VPFlyout.vue):
@@ -70,6 +80,8 @@ export function VPFlyout({
     return () => window.removeEventListener('pointerdown', onPointerDown)
   }, [open, close])
 
+  const VPMenu = useThemeComponent('VPMenu', VPMenuDefault)
+
   function onPointerEnter(e: PointerEvent) {
     if (e.pointerType !== 'mouse') return
     if (!open) {
@@ -82,7 +94,8 @@ export function VPFlyout({
     if (e.pointerType !== 'mouse') return
     const to = e.relatedTarget as Node | null
     // 仍处于 按钮 ∪ 面板 区域,不算离开
-    if (to && (buttonEl.current?.contains(to) || menuEl.current?.contains(to))) return
+    if (to && (buttonEl.current?.contains(to) || menuEl.current?.contains(to)))
+      return
     close()
   }
 
@@ -113,18 +126,30 @@ export function VPFlyout({
             {icon ? (
               <span className={cx(icon, 'option-icon')} aria-hidden="true" />
             ) : null}
-            {button ? <span dangerouslySetInnerHTML={{ __html: button }} /> : null}
-            <span className={cx('textIcon', 'vpi-chevron-down', 'text-icon')} aria-hidden="true" />
+            {button ? (
+              <span dangerouslySetInnerHTML={{ __html: button }} />
+            ) : null}
+            <span
+              className={cx('textIcon', 'vpi-chevron-down', 'text-icon')}
+              aria-hidden="true"
+            />
           </span>
         ) : (
-          <span className={cx('icon', 'vpi-more-horizontal')} aria-hidden="true" />
+          <span
+            className={cx('icon', 'vpi-more-horizontal')}
+            aria-hidden="true"
+          />
         )}
       </button>
 
-      <div ref={menuEl} className={'menu'} id={menuId} onPointerLeave={onPointerLeave}>
+      <div
+        ref={menuEl}
+        className={'menu'}
+        id={menuId}
+        onPointerLeave={onPointerLeave}
+      >
         <VPMenu items={items as any[]}>{children}</VPMenu>
       </div>
     </div>
   )
 }
-

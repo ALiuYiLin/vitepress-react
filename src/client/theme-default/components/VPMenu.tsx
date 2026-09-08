@@ -1,10 +1,12 @@
 import * as React from 'react'
 
+import { useThemeComponent } from '../composables/use-theme-component'
 import '../styles/components/VPMenu.scoped.css'
-import { VPMenuGroup } from './VPMenuGroup'
-import { VPMenuLink } from './VPMenuLink'
+import { VPMenuGroup as VPMenuGroupDefault } from './VPMenuGroup'
+import { VPMenuLink as VPMenuLinkDefault } from './VPMenuLink'
 
-const cx = (...c: (string | false | undefined | null)[]) => c.filter(Boolean).join(' ')
+const cx = (...c: (string | false | undefined | null)[]) =>
+  c.filter(Boolean).join(' ')
 
 export interface VPMenuProps {
   items?: any[]
@@ -13,6 +15,8 @@ export interface VPMenuProps {
 
 /** 下拉菜单容器 */
 export function VPMenu({ items, children }: VPMenuProps) {
+  const VPMenuLink = useThemeComponent('VPMenuLink', VPMenuLinkDefault)
+  const VPMenuGroup = useThemeComponent('VPMenuGroup', VPMenuGroupDefault)
   return (
     <div className={cx('menu', 'VPMenu')}>
       {items ? (

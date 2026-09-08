@@ -1,4 +1,5 @@
-import { VPFeature } from './VPFeature'
+import { useThemeComponent } from '../composables/use-theme-component'
+import { VPFeature as VPFeatureDefault } from './VPFeature'
 
 export type VpFeatureIcon =
   | string
@@ -31,6 +32,7 @@ export function VPFeatures({
   features: VpFeature[]
   className?: string
 }) {
+  const VPFeature = useThemeComponent('VPFeature', VPFeatureDefault)
   const length = features.length
 
   let grid: string | undefined

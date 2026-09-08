@@ -1,12 +1,14 @@
 import { useRef } from 'react'
 import { useData } from '@10coding/vitepress-react'
 
+import { useThemeComponent } from '../composables/use-theme-component'
 import { useLayout } from '../composables/use-layout'
 import { resolveTitle, useActiveAnchor } from '../composables/use-active-anchor'
 import '../styles/components/VPDocAsideOutline.scoped.css'
-import { VPDocOutlineItem } from './VPDocOutlineItem'
+import { VPDocOutlineItem as VPDocOutlineItemDefault } from './VPDocOutlineItem'
 
-const cx = (...c: (string | false | undefined | null)[]) => c.filter(Boolean).join(' ')
+const cx = (...c: (string | false | undefined | null)[]) =>
+  c.filter(Boolean).join(' ')
 
 /** 右侧页面导航(大纲) */
 export function VPDocAsideOutline() {
@@ -15,6 +17,10 @@ export function VPDocAsideOutline() {
   const marker = useRef<HTMLDivElement | null>(null)
   const { headers, hasLocalNav } = useLayout()
   useActiveAnchor(container, marker)
+  const VPDocOutlineItem = useThemeComponent(
+    'VPDocOutlineItem',
+    VPDocOutlineItemDefault
+  )
 
   return (
     <nav

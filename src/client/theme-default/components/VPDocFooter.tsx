@@ -1,17 +1,23 @@
 import { useData } from '@10coding/vitepress-react'
 
+import { useThemeComponent } from '../composables/use-theme-component'
 import { useEditLink } from '../composables/use-edit-link'
 import { usePrevNext } from '../composables/use-prev-next'
 import '../styles/components/VPDocFooter.scoped.css'
-import { VPDocFooterLastUpdated } from './vp-doc-footer-last-updated'
+import { VPDocFooterLastUpdated as VPDocFooterLastUpdatedDefault } from './vp-doc-footer-last-updated'
 
-const cx = (...c: (string | false | undefined | null)[]) => c.filter(Boolean).join(' ')
+const cx = (...c: (string | false | undefined | null)[]) =>
+  c.filter(Boolean).join(' ')
 
 /** 文档页脚(编辑链接 / 最后更新 / 上一页下一页) */
 export function VPDocFooter() {
   const { theme, page, frontmatter } = useData()
   const editLink = useEditLink()
   const { prev, next } = usePrevNext()
+  const VPDocFooterLastUpdated = useThemeComponent(
+    'VPDocFooterLastUpdated',
+    VPDocFooterLastUpdatedDefault
+  )
   const t = theme as {
     editLink?: unknown
     docFooter?: { prev?: string; next?: string }
@@ -24,10 +30,13 @@ export function VPDocFooter() {
 
   return (
     <footer className={cx('footer', 'VPDocFooter')}>
-      {(hasEdit || hasUpdated) ? (
+      {hasEdit || hasUpdated ? (
         <div className="editInfo">
           {hasEdit && editLink.url ? (
-            <a className={cx('editLinkButton', 'edit-link-button')} href={editLink.url}>
+            <a
+              className={cx('editLinkButton', 'edit-link-button')}
+              href={editLink.url}
+            >
               <span className="vpi-square-pen edit-link-icon" />
               {editLink.text}
             </a>
@@ -40,7 +49,7 @@ export function VPDocFooter() {
         </div>
       ) : null}
 
-      {(prev?.link || next?.link) ? (
+      {prev?.link || next?.link ? (
         <nav className="prevNext" aria-labelledby="doc-footer-aria-label">
           <span className="visually-hidden" id="doc-footer-aria-label">
             Pager

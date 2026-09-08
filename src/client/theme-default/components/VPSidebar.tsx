@@ -1,17 +1,21 @@
 import { useEffect, useMemo, useRef, type ReactNode } from 'react'
 
+import { useThemeComponent } from '../composables/use-theme-component'
 import { useBodyScrollLock } from '../composables/use-body-scroll-lock'
 import { useLayout } from '../composables/use-layout'
+import { useLayoutSlot } from '../layout-slots'
 import { type VpSidebarItem } from '../theme-utils'
-import { VPSidebarGroup } from './VPSidebarGroup'
+import { VPSidebarGroup as VPSidebarGroupDefault } from './VPSidebarGroup'
 import '../styles/components/VPSidebar.scoped.css'
 
-const cx = (...c: (string | false | undefined | null)[]) => c.filter(Boolean).join(' ')
+const cx = (...c: (string | false | undefined | null)[]) =>
+  c.filter(Boolean).join(' ')
 
 /**
  * 侧栏抽屉(对应 Vue VPSidebar.vue):
  * - 打开时锁定 body 滚动并把焦点移入导航(可访问性);
  * - 侧栏分组深层变化时整体重挂(key)以复位折叠状态。
+ * 插槽挂载点:sidebarNavBefore/After(<nav> 前后)。
  */
 export function VPSidebar({
   open,
@@ -28,6 +32,13 @@ export function VPSidebar({
   const { hasSidebar, sidebarGroups } = useLayout()
   const navEl = useRef<HTMLElement | null>(null)
   const { lock, unlock } = useBodyScrollLock()
+
+  const VPSidebarGroup = useThemeComponent(
+    'VPSidebarGroup',
+    VPSidebarGroupDefault
+  )
+  const slotBefore = useLayoutSlot('sidebarNavBefore', before)
+  const slotAfter = useLayoutSlot('sidebarNavAfter', after)
 
   useEffect(() => {
     if (open) {
@@ -63,14 +74,13 @@ export function VPSidebar({
           Sidebar Navigation
         </span>
 
-        {before}
+        {slotBefore}
         <VPSidebarGroup
           key={groupKey}
           items={sidebarGroups as unknown as VpSidebarItem[]}
         />
-        {after}
+        {slotAfter}
       </nav>
     </aside>
   )
 }
-

@@ -1,11 +1,13 @@
 import type { MouseEvent, ReactNode } from 'react'
 
+import { useThemeComponent } from '../composables/use-theme-component'
 import { useSidebarItemControl } from '../composables/use-sidebar'
 import { type VpSidebarItem as VpItem } from '../theme-utils'
-import { VPLink } from './VPLink'
+import { VPLink as VPLinkDefault } from './VPLink'
 import '../styles/components/VPSidebarItem.scoped.css'
 
-const cx = (...c: (string | false | undefined | null)[]) => c.filter(Boolean).join(' ')
+const cx = (...c: (string | false | undefined | null)[]) =>
+  c.filter(Boolean).join(' ')
 
 /**
  * 侧栏条目(递归)。DOM/状态类与 Vue VPSidebarItem.vue 一致:
@@ -34,6 +36,7 @@ export function VPSidebarItem({
     toggleCollapsed
   } = useSidebarItemControl(item)
 
+  const VPLink = useThemeComponent('VPLink', VPLinkDefault)
   const text = item.text
   const textTag: 'h2' | 'h3' | 'h4' | 'h5' | 'h6' | 'p' =
     hasChildren && depth < 5
@@ -103,7 +106,9 @@ export function VPSidebarItem({
           aria-expanded={!collapsed}
           onClick={onCaretClick}
         >
-          <span className={cx('caretIcon', 'caret-icon', 'vpi-chevron-right')} />
+          <span
+            className={cx('caretIcon', 'caret-icon', 'vpi-chevron-right')}
+          />
         </button>
       ) : null}
     </div>

@@ -1,7 +1,12 @@
-import { VPSocialLink, type VPSocialLinkProps } from './VPSocialLink'
+import { useThemeComponent } from '../composables/use-theme-component'
+import {
+  VPSocialLink as VPSocialLinkDefault,
+  type VPSocialLinkProps
+} from './VPSocialLink'
 import '../styles/components/vp-social-links.scoped.css'
 
-const cx = (...c: (string | false | undefined | null)[]) => c.filter(Boolean).join(' ')
+const cx = (...c: (string | false | undefined | null)[]) =>
+  c.filter(Boolean).join(' ')
 
 export type VpSocialLink = VPSocialLinkProps
 
@@ -13,6 +18,7 @@ export function VPSocialLinks({
   links: VpSocialLink[]
   className?: string
 }) {
+  const VPSocialLink = useThemeComponent('VPSocialLink', VPSocialLinkDefault)
   if (!links.length) return null
   return (
     <ul className={cx('VPSocialLinks', className)}>

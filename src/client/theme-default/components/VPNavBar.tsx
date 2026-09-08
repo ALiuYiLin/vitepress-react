@@ -2,21 +2,25 @@ import { type ReactNode } from 'react'
 
 import { useWindowScrollY } from './use-window-scroll-y'
 
+import { useThemeComponent } from '../composables/use-theme-component'
 import { useLayout } from '../composables/use-layout'
 import { useNavOverflow } from '../composables/use-nav-overflow'
-import { VPNavAppearance } from './VPNavAppearance'
-import { VPNavBarExtra } from './VPNavBarExtra'
-import { VPNavBarHamburger } from './VPNavBarHamburger'
-import { VPNavBarTitle } from './VPNavBarTitle'
-import { VPNavMenu } from './VPNavMenu'
-import { VPNavSocialLinks } from './VPNavSocialLinks'
-import { VPNavTranslations } from './VPNavTranslations'
-import { VPNavBarSearch } from './vp-nav-bar-search'
-const cx = (...c: (string | false | undefined | null)[]) => c.filter(Boolean).join(' ')
+import { useLayoutSlot } from '../layout-slots'
+import { VPNavAppearance as VPNavAppearanceDefault } from './VPNavAppearance'
+import { VPNavBarExtra as VPNavBarExtraDefault } from './VPNavBarExtra'
+import { VPNavBarHamburger as VPNavBarHamburgerDefault } from './VPNavBarHamburger'
+import { VPNavBarTitle as VPNavBarTitleDefault } from './VPNavBarTitle'
+import { VPNavMenu as VPNavMenuDefault } from './VPNavMenu'
+import { VPNavSocialLinks as VPNavSocialLinksDefault } from './VPNavSocialLinks'
+import { VPNavTranslations as VPNavTranslationsDefault } from './VPNavTranslations'
+import { VPNavBarSearch as VPNavBarSearchDefault } from './vp-nav-bar-search'
+const cx = (...c: (string | false | undefined | null)[]) =>
+  c.filter(Boolean).join(' ')
 
 /**
  * 顶栏主体(对应 Vue VPNavBar.vue):
  * title 列 + content-body(搜索/菜单/语言/外观/社交/溢出/汉堡)。
+ * 插槽挂载点:navBarContentBefore/After(content-body 前后)。
  */
 export function VPNavBar({
   isScreenOpen,
@@ -36,6 +40,35 @@ export function VPNavBar({
   const { isHome, hasSidebar, hasLocalNav } = useLayout()
   const isTop = useWindowScrollY() <= 0
   const overflow = useNavOverflow()
+
+  // 内部子组件:可被 Theme.components 覆盖(默认兜底)
+  const VPNavBarTitle = useThemeComponent('VPNavBarTitle', VPNavBarTitleDefault)
+  const VPNavBarSearch = useThemeComponent(
+    'VPNavBarSearch',
+    VPNavBarSearchDefault
+  )
+  const VPNavMenu = useThemeComponent('VPNavMenu', VPNavMenuDefault)
+  const VPNavTranslations = useThemeComponent(
+    'VPNavTranslations',
+    VPNavTranslationsDefault
+  )
+  const VPNavAppearance = useThemeComponent(
+    'VPNavAppearance',
+    VPNavAppearanceDefault
+  )
+  const VPNavSocialLinks = useThemeComponent(
+    'VPNavSocialLinks',
+    VPNavSocialLinksDefault
+  )
+  const VPNavBarExtra = useThemeComponent('VPNavBarExtra', VPNavBarExtraDefault)
+  const VPNavBarHamburger = useThemeComponent(
+    'VPNavBarHamburger',
+    VPNavBarHamburgerDefault
+  )
+
+  // 具名插槽(content-body 前后;fallback 兼容旧 prop 通道)
+  const slotContentBefore = useLayoutSlot('navBarContentBefore', contentBefore)
+  const slotContentAfter = useLayoutSlot('navBarContentAfter', contentAfter)
 
   return (
     <div
@@ -59,14 +92,14 @@ export function VPNavBar({
               className="content-body"
               ref={(el) => overflow.setContainerEl(el as HTMLElement | null)}
             >
-              {contentBefore}
+              {slotContentBefore}
               <VPNavBarSearch className="search" />
               <VPNavMenu className="menu" />
               <VPNavTranslations className="translations" />
               <VPNavAppearance className="appearance" />
               <VPNavSocialLinks className="social-links" />
               <VPNavBarExtra className="extra" />
-              {contentAfter}
+              {slotContentAfter}
               <VPNavBarHamburger
                 className="hamburger"
                 active={isScreenOpen}

@@ -1,8 +1,10 @@
+import { useThemeComponent } from '../composables/use-theme-component'
 import { useNavContext } from '../nav-context'
 import { useNavItemLink } from '../composables/use-nav'
 import type { VpNavItem } from '../theme-utils'
-import { VPLink } from './VPLink'
-const cx = (...c: (string | false | undefined | null)[]) => c.filter(Boolean).join(' ')
+import { VPLink as VPLinkDefault } from './VPLink'
+const cx = (...c: (string | false | undefined | null)[]) =>
+  c.filter(Boolean).join(' ')
 
 /**
  * 顶栏/屏幕导航链接项(对应 Vue VPNavMenuLink.vue)。
@@ -20,6 +22,7 @@ export function VPNavMenuLink({
 }) {
   const { href, isActiveLink, isCurrentLink } = useNavItemLink(item)
   const { closeScreen } = useNavContext()
+  const VPLink = useThemeComponent('VPLink', VPLinkDefault)
 
   const onClick = () => {
     if (screen) closeScreen()

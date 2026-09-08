@@ -1,13 +1,22 @@
-import { useEffect, useId, useRef, useState, type CSSProperties, type MouseEvent } from 'react'
+import {
+  useEffect,
+  useId,
+  useRef,
+  useState,
+  type CSSProperties,
+  type MouseEvent
+} from 'react'
 import { onContentUpdated, useData } from '@10coding/vitepress-react'
 
+import { useThemeComponent } from '../composables/use-theme-component'
 import { resolveTitle } from '../composables/use-active-anchor'
 import { useBodyScrollLock } from '../composables/use-body-scroll-lock'
 import { type VpHeader } from '../theme-utils'
-import { VPDocOutlineItem } from './VPDocOutlineItem'
+import { VPDocOutlineItem as VPDocOutlineItemDefault } from './VPDocOutlineItem'
 import '../styles/components/VPLocalNavOutlineDropdown.scoped.css'
 
-const cx = (...c: (string | false | undefined | null)[]) => c.filter(Boolean).join(' ')
+const cx = (...c: (string | false | undefined | null)[]) =>
+  c.filter(Boolean).join(' ')
 
 /**
  * 本地导航的"本页大纲"下拉(对应 Vue VPLocalNavOutlineDropdown.vue):
@@ -21,7 +30,10 @@ export function VPLocalNavOutlineDropdown({
   navHeight: number
 }) {
   const { theme } = useData()
-  const themeCfg = theme as { returnToTopLabel?: string; outline?: { label?: string } }
+  const themeCfg = theme as {
+    returnToTopLabel?: string
+    outline?: { label?: string }
+  }
   const [open, setOpen] = useState(false)
   const [vh, setVh] = useState(0)
   const mainRef = useRef<HTMLDivElement | null>(null)
@@ -53,6 +65,11 @@ export function VPLocalNavOutlineDropdown({
 
   // 路由内容提交后关闭(对应 Vue onContentUpdated)
   useEffect(() => onContentUpdated(() => setOpen(false)), [])
+
+  const VPDocOutlineItem = useThemeComponent(
+    'VPDocOutlineItem',
+    VPDocOutlineItemDefault
+  )
 
   function toggle() {
     setOpen((v) => !v)
@@ -90,7 +107,10 @@ export function VPLocalNavOutlineDropdown({
           onClick={toggle}
         >
           <span className="menu-text">{resolveTitle(themeCfg)}</span>
-          <span className={cx('icon', 'icon', 'vpi-chevron-right')} aria-hidden="true" />
+          <span
+            className={cx('icon', 'icon', 'vpi-chevron-right')}
+            aria-hidden="true"
+          />
         </button>
       ) : (
         <button type="button" onClick={scrollToTop}>
@@ -125,4 +145,3 @@ export function VPLocalNavOutlineDropdown({
     </div>
   )
 }
-

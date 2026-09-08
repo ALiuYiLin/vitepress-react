@@ -1,16 +1,20 @@
 import { useData } from '@10coding/vitepress-react'
 
+import { useThemeComponent } from '../composables/use-theme-component'
 import { useLangs } from '../composables/use-langs'
 import { useLayout } from '../composables/use-layout'
+import { useLayoutSlot } from '../layout-slots'
 import { normalizeLink } from '../support/utils'
 import '../styles/components/VPNavBarTitle.scoped.css'
-import { VPImage } from './VPImage'
+import { VPImage as VPImageDefault } from './VPImage'
 
-const cx = (...c: (string | false | undefined | null)[]) => c.filter(Boolean).join(' ')
+const cx = (...c: (string | false | undefined | null)[]) =>
+  c.filter(Boolean).join(' ')
 
 /**
  * 顶栏站点标题(对应 Vue VPNavBarTitle.vue):logo + siteTitle,
  * logoLink 可配置(字符串或 { link, rel, target })。
+ * 插槽挂载点:navBarTitleBefore/After(标题链接前后)。
  */
 export function VPNavBarTitle({
   titleBefore,
@@ -22,6 +26,9 @@ export function VPNavBarTitle({
   const { site, theme } = useData()
   const { hasSidebar } = useLayout()
   const { currentLang } = useLangs()
+  const VPImage = useThemeComponent('VPImage', VPImageDefault)
+  const slotBefore = useLayoutSlot('navBarTitleBefore', titleBefore)
+  const slotAfter = useLayoutSlot('navBarTitleAfter', titleAfter)
   const t = theme as {
     logo?: unknown
     logoLink?: string | { link?: string; rel?: string; target?: string }
@@ -33,7 +40,9 @@ export function VPNavBarTitle({
       ? t.logoLink
       : (t.logoLink as { link?: string } | undefined)?.link
   const rel =
-    typeof t.logoLink === 'string' ? undefined : (t.logoLink as { rel?: string } | undefined)?.rel
+    typeof t.logoLink === 'string'
+      ? undefined
+      : (t.logoLink as { rel?: string } | undefined)?.rel
   const target =
     typeof t.logoLink === 'string'
       ? undefined
@@ -55,14 +64,14 @@ export function VPNavBarTitle({
         target={target}
         title={textTitle}
       >
-        {titleBefore}
+        {slotBefore}
         {t.logo ? <VPImage className="logo" image={t.logo as never} /> : null}
         {t.siteTitle ? (
           <span dangerouslySetInnerHTML={{ __html: t.siteTitle }} />
         ) : t.siteTitle === undefined ? (
           <span>{site.title}</span>
         ) : null}
-        {titleAfter}
+        {slotAfter}
       </a>
     </div>
   )

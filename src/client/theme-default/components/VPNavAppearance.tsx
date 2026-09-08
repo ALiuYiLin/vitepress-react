@@ -1,10 +1,12 @@
 import { useId } from 'react'
 import { useData } from '@10coding/vitepress-react'
 
+import { useThemeComponent } from '../composables/use-theme-component'
 import { useAppearanceSwitch } from '../composables/use-nav'
 import { useNavOverflow } from '../composables/use-nav-overflow'
-import { VPSwitchAppearance } from './VPSwitchAppearance'
-const cx = (...c: (string | false | undefined | null)[]) => c.filter(Boolean).join(' ')
+import { VPSwitchAppearance as VPSwitchAppearanceDefault } from './VPSwitchAppearance'
+const cx = (...c: (string | false | undefined | null)[]) =>
+  c.filter(Boolean).join(' ')
 
 /**
  * 外观切换(对应 Vue VPNavAppearance.vue):
@@ -29,6 +31,11 @@ export function VPNavAppearance({
   const isCollapsed = Boolean(overflow) && !overflow!.state.appearance
   const labelId = useId()
 
+  const VPSwitchAppearance = useThemeComponent(
+    'VPSwitchAppearance',
+    VPSwitchAppearanceDefault
+  )
+
   if (!show) return null
 
   const variant = row
@@ -39,7 +46,12 @@ export function VPNavAppearance({
 
   return (
     <div
-      className={cx('VPNavAppearance', variant, isCollapsed && 'collapsed', className)}
+      className={cx(
+        'VPNavAppearance',
+        variant,
+        isCollapsed && 'collapsed',
+        className
+      )}
     >
       {row ? (
         <p id={labelId} className="text">
