@@ -1,5 +1,5 @@
 ---
-description: 在 VitePress（React fork）中创建和使用自定义主题，全面控制站点的外观和风格。
+description: 在 VitePress（React 实现）中创建和使用自定义主题，全面控制站点的外观和风格。
 ---
 
 # 自定义主题 {#using-a-custom-theme}
@@ -21,7 +21,7 @@ description: 在 VitePress（React fork）中创建和使用自定义主题，�
 
 当检测到存在主题入口文件时，VitePress 总会使用自定义主题而不是默认主题。但你可以[扩展默认主题](./extending-default-theme)来在其基础上实现更高级的自定义。
 
-::: tip 本 fork 的主题是 React
+::: tip 本项目 的主题是 React
 主题入口与组件是普通的 `.tsx`（React）文件，构建由 Vite 完成（TSX 自动 JSX runtime，无需额外插件）。不再有 `.vue` 文件或 Vue 应用实例。
 :::
 
@@ -248,9 +248,9 @@ export default defineTheme({
 几个注意点：
 
 - **导入来源**：`Layout` 不在 `@10coding/vitepress-react` 根导出里（那里只有 `useData`/`Content` 等）；默认主题要写 `@10coding/vitepress-react/theme`。
-- **组合粒度**：默认 `Layout` 是自包含组件、不接受 `children`，但它提供与 Vue 上游对齐的**具名插槽 props**（camelCase，如 `asideOutlineBefore`/`layoutTop`），可不动默认结构在指定位置注入内容；默认主题内部组合树还可用 `Theme.components` 注册表按名覆盖（含叶子组件）。两者详见[扩展默认主题](./extending-default-theme)。若连插槽与注册表都不够（要改变整体骨架），再整页自绘或 fork 一份布局组件自己拼（上面的[构建布局](#building-a-layout)列了全部可拆分部件思路）。
+- **组合粒度**：默认 `Layout` 是自包含组件、不接受 `children`，但它提供与 Vue 上游对齐的**具名插槽 props**（camelCase，如 `asideOutlineBefore`/`layoutTop`），可不动默认结构在指定位置注入内容；默认主题内部组合树还可用 `Theme.components` 注册表按名覆盖（含叶子组件）。两者详见[扩展默认主题](./extending-default-theme)。若连插槽与注册表都不够（要改变整体骨架），再整页自绘或复制一份布局组件自己拼（上面的[构建布局](#building-a-layout)列了全部可拆分部件思路）。
 - **在默认布局外面再包一层**（如全站顶部横幅）是允许的：把 `<Theme.Layout />` 放进自己的容器即可。
-- **404**：此 fork 已废弃 `Theme.NotFound`，按 `page.isNotFound` 分支（参考[构建布局](#building-a-layout)里的 404 处理）；不特殊处理时让它走 `<Theme.Layout />` 也可以。
+- **404**：本项目 已废弃 `Theme.NotFound`，按 `page.isNotFound` 分支（参考[构建布局](#building-a-layout)里的 404 处理）；不特殊处理时让它走 `<Theme.Layout />` 也可以。
 
 ## 分发自定义主题 {#distributing-a-custom-theme}
 
@@ -291,7 +291,7 @@ export default {
 }
 ```
 
-> 注意：fork 的主题对象用对象展开/覆盖组合（`extends` 主题字段也可用，语义见[主题接口](#theme-interface)），不是 Vue 的“extends 组件再包装”那套写法。
+> 注意：本项目的主题对象用对象展开/覆盖组合（`extends` 主题字段也可用，语义见[主题接口](#theme-interface)），不是 Vue 的“extends 组件再包装”那套写法。
 
 如果主题需要特殊的 VitePress 配置，在站点配置中扩展它：
 

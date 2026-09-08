@@ -43,7 +43,7 @@ layout: doc
 
 ## 自定义布局 {#custom-layout}
 
-默认主题的 Layout 只识别 `doc` / `page` / `home` / `false` 几种布局；其它字符串会被当作 `doc` 处理。若要支持自定义布局名，请提供自定义 Theme，并在自己的 Layout 里按 frontmatter 分支渲染（本 fork 没有“全局注册组件后 `layout: foo` 自动命中”的机制）：
+默认主题的 Layout 只识别 `doc` / `page` / `home` / `false` 几种布局；其它字符串会被当作 `doc` 处理。若要支持自定义布局名，请提供自定义 Theme，并在自己的 Layout 里按 frontmatter 分支渲染（本项目 没有“全局注册组件后 `layout: foo` 自动命中”的机制）：
 
 ```md
 ---

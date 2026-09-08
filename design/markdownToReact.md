@@ -53,7 +53,7 @@ token 流 + env(jsxStore、sfcBlocks、headers、links …)
 ```
 
 为什么保留“HTML 中间层”:为了让 markdown-it 及大量 md 插件(标题锚点、容器、高亮、
-include 等)原样工作,它们的产出就是 HTML;本 fork 只在其后把 HTML 序列化成 JSX。
+include 等)原样工作,它们的产出就是 HTML;本项目只在其后把 HTML 序列化成 JSX。
 
 ## 2. 入口与编排:createMarkdownToReactRenderFn
 

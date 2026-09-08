@@ -37,9 +37,9 @@ body:
       options:
         - label: Follow our [Code of Conduct](https://vuejs.org/about/coc.html)
           required: true
-        - label: Read the [docs](https://vitepress.dev).
+        - label: Read the [docs](https://aliuyilin.github.io/vitepress-react/).
           required: true
-        - label: Read the [Contributing Guidelines](https://github.com/vuejs/vitepress/blob/main/.github/contributing.md).
+        - label: Read the [Contributing Guidelines](https://github.com/ALiuYiLin/vitepress-react/blob/main/.github/contributing.md).
           required: true
         - label: Check that there isn't already an issue that asks for the same feature to avoid creating a duplicate.
           required: true

@@ -1,5 +1,5 @@
 ---
-description: VitePress（React fork）运行时 API 参考，包括 hooks、辅助方法与内置组件。
+description: VitePress（React 实现）运行时 API 参考，包括 hooks、辅助方法与内置组件。
 ---
 
 # 运行时 API {#runtime-api}
@@ -150,4 +150,4 @@ export function Demo() {
 
 ## frontmatter / 参数（在页面中读取） {#data-access}
 
-Vue 版曾经提供的 `$frontmatter` / `$params` 模板全局与 `{{ }}` 插值在本 fork 不再可用。请在页面 `<script>` 的 page-scope 中通过 `useData()` 读取后，用正文 `<>{expr}</>` 引用——示例见 [frontmatter](../guide/frontmatter#accessing-frontmatter-data) 与[路由参数](../guide/routing#accessing-params-in-page)。
+Vue 版曾经提供的 `$frontmatter` / `$params` 模板全局与 `{{ }}` 插值在本项目 不再可用。请在页面 `<script>` 的 page-scope 中通过 `useData()` 读取后，用正文 `<>{expr}</>` 引用——示例见 [frontmatter](../guide/frontmatter#accessing-frontmatter-data) 与[路由参数](../guide/routing#accessing-params-in-page)。

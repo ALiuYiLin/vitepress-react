@@ -1,5 +1,5 @@
 // 默认主题内部组件注册表(机制 B):
-// 对齐 Vue 用 Vite alias 替换 VPNavBar.vue 等内部组件的能力——React fork
+// 对齐 Vue 用 Vite alias 替换 VPNavBar.vue 等内部组件的能力——本项目
 // 以编译产物发布、内部都是相对路径 import,alias 无法稳定命中,因此把
 // “按内部组件名覆盖”从构建期依赖改写移到渲染期组件解析:
 //

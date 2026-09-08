@@ -531,9 +531,9 @@ export default {
 }
 ```
 
-### vue(上游 Vue 专用,本 fork 不适用)
+### vue(上游 Vue 专用,本项目 不适用)
 
-上游 VitePress 的 `vue` 选项(@vitejs/plugin-vue)在本 React fork 中不存在：TSX/JSX 与 React 相关转换由构建内置处理(oxc + automatic JSX runtime)，无需额外配置插件。
+上游 VitePress 的 `vue` 选项(@vitejs/plugin-vue)在本 React 实现 中不存在：TSX/JSX 与 React 相关转换由构建内置处理(oxc + automatic JSX runtime)，无需额外配置插件。
 
 ## 构建钩子 {#build-hooks}
 

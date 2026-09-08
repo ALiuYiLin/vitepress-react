@@ -203,7 +203,7 @@ export namespace DefaultTheme {
     notFound?: NotFoundOptions
 
     /**
-     * Enable Vue-like scoped styles for markdown pages (React fork 扩展):
+     * Enable Vue-like scoped styles for markdown pages (React 实现扩展):
      *
      * 开启后,页面里的 `<style scoped>` 块与 `<script>` 中的 `*.scoped.*`
      * 样式导入由 `@10coding/vite-plugin-jsx-scoped` 处理——scope 属性
@@ -351,7 +351,7 @@ export namespace DefaultTheme {
     /**
      * Pattern for edit link.
      *
-     * @example 'https://github.com/vuejs/vitepress/edit/main/docs/:path'
+     * @example 'https://github.com/ALiuYiLin/vitepress-react/edit/main/docs/:path'
      * @example ({ filePath }) => { ... }
      */
     pattern: string | ((payload: PageData) => string)

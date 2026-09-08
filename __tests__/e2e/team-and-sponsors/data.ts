@@ -1,4 +1,4 @@
-// React fork 的 VPTeamMembers 数据形状(与 vp-team.tsx 的 VpTeamMember 对齐,
+// React 实现的 VPTeamMembers 数据形状(与 vp-team.tsx 的 VpTeamMember 对齐,
 // 另含 Vue 时代上游示例仍保留的 orgLink/sponsor 扩展字段)
 type TeamMember = {
   avatar?: string

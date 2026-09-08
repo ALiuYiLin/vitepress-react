@@ -21,7 +21,7 @@ editLink: true
 
 ## 访问 frontmatter 数据 {#accessing-frontmatter-data}
 
-本 fork 的 Markdown 是 React 语义（见[在 Markdown 中使用 React](./using-react)），没有 Vue 的 `$frontmatter` 全局与 `{{ }}` 插值。改为在 `<script>` 的 **page-scope** 中通过 [`useData()`](../reference/runtime-api#usedata) 读取（它是 hook，必须放在页面的 `<script>` 里，不能放模块顶层具名导出之外的位置），再用正文 `<>{expr}</>` 引用：
+本项目 的 Markdown 是 React 语义（见[在 Markdown 中使用 React](./using-react)），没有 Vue 的 `$frontmatter` 全局与 `{{ }}` 插值。改为在 `<script>` 的 **page-scope** 中通过 [`useData()`](../reference/runtime-api#usedata) 读取（它是 hook，必须放在页面的 `<script>` 里，不能放模块顶层具名导出之外的位置），再用正文 `<>{expr}</>` 引用：
 
 ```md
 ---

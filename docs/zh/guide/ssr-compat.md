@@ -87,11 +87,11 @@ export default {
 } satisfies Theme
 ```
 
-> 本 fork 没有 Vue 的插件（plugin/`app.use`）概念；对应注册行为通过 `enhanceApp` 或主题组件的 effect 完成。
+> 本项目 没有 Vue 的插件（plugin/`app.use`）概念；对应注册行为通过 `enhanceApp` 或主题组件的 effect 完成。
 
 ### 懒加载客户端组件(`React.lazy`) {#lazy-client-components}
 
-VitePress 的 Vue 版提供了 `defineClientComponent` 辅助函数；React fork 用标准的 `React.lazy` + `Suspense` 即可，再配合 `<ClientOnly>` 保证 SSR 不解析该组件：
+VitePress 的 Vue 版提供了 `defineClientComponent` 辅助函数；React 实现 用标准的 `React.lazy` + `Suspense` 即可，再配合 `<ClientOnly>` 保证 SSR 不解析该组件：
 
 ```md
 <script>

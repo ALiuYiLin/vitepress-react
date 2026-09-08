@@ -7,7 +7,7 @@ outline: deep
 
 VitePress 带有内置的 Markdown 扩展。
 
-::: tip 本 fork 的正文是 React 语义
+::: tip 本项目 的正文是 React 语义
 想在 Markdown 里写组件、`<>{expr}</>` 动态表达式或页面级 scoped 样式？请先读[在 Markdown 中使用 React](./using-react) 与 [md 页面 scoped 样式](./md-scoped-demo)。本页其余语法（标题锚点、容器、代码高亮等）与上游一致。
 :::
 

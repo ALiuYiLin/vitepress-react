@@ -16,7 +16,7 @@ editLink: true
 ---
 ```
 
-在页面里访问 frontmatter：在 `<script>` 的 page-scope 中 `useData()` 读取、正文 `<>{expr}</>` 引用（示例见[指南 frontmatter](../guide/frontmatter#accessing-frontmatter-data)）。本 fork 没有 Vue 的 `$frontmatter` 全局与 `{{ }}` 插值。
+在页面里访问 frontmatter：在 `<script>` 的 page-scope 中 `useData()` 读取、正文 `<>{expr}</>` 引用（示例见[指南 frontmatter](../guide/frontmatter#accessing-frontmatter-data)）。本项目 没有 Vue 的 `$frontmatter` 全局与 `{{ }}` 插值。
 
 ## title
 

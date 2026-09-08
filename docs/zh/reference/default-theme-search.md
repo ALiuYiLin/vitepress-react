@@ -215,7 +215,7 @@ export default defineConfig({
 
 :::
 
-更多信息请参考[官方 Algolia 文档](https://docsearch.algolia.com/docs/api#translations)。想要快速开始，你也可以从[我们的 GitHub 仓库](https://github.com/search?q=repo:vuejs/vitepress+%22function+searchOptions%22&type=code)复制此站点使用的翻译。
+更多信息请参考[官方 Algolia 文档](https://docsearch.algolia.com/docs/api#translations)。想要快速开始，你也可以从[我们的 GitHub 仓库](https://github.com/search?q=repo:ALiuYiLin/vitepress-react+%22function+searchOptions%22&type=code)复制此站点使用的翻译。
 
 ### Algolia Ask AI 支持 {#ask-ai}
 

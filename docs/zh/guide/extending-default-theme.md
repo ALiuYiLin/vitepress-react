@@ -1,6 +1,6 @@
 ---
 outline: deep
-description: 通过自定义 CSS、组件与布局包装来定制和扩展 VitePress（React fork）默认主题。
+description: 通过自定义 CSS、组件与布局包装来定制和扩展 VitePress（React 实现）默认主题。
 ---
 
 # 扩展默认主题 {#extending-the-default-theme}
@@ -88,7 +88,7 @@ export default {
 
 ## 全站可用的组件 {#registering-global-components}
 
-本 fork 是 React，**没有 Vue 的 `app.component` 全局注册机制**（`EnhanceAppContext` 里的 `registerComponent` 为未来预留，当前不会渲染到 md 页面）。可用方案：
+本项目 是 React，**没有 Vue 的 `app.component` 全局注册机制**（`EnhanceAppContext` 里的 `registerComponent` 为未来预留，当前不会渲染到 md 页面）。可用方案：
 
 1. **页面级导入**（推荐）：在用到该组件的每个 md 页面的 `<script>` 顶层 `import`，正文用大写标签（见[在 Markdown 中使用 React](./using-react#using-components)）。默认主题导出的组件（`VPBadge`、`VPTeamMembers`、`VPTeamPage` 等）也按此导入，或在 markdown 里直接用 `@10coding/vitepress-react/theme` 自动导入的标签名。
 2. **Layout 插槽**：若组件需要出现在“每个页面”的固定位置（例如全站横幅、大纲上方卡片），用下一节的 Layout 具名插槽。
@@ -96,7 +96,7 @@ export default {
 
 ## Layout 具名插槽 {#layout-slots}
 
-Vue 默认主题的 `<Layout/>` 提供具名插槽（如 `<template #aside-outline-before>`）；React fork 用等价的**具名 props**（统一 camelCase）挂在 `DefaultTheme.Layout` 上，支持两种值形态：
+Vue 默认主题的 `<Layout/>` 提供具名插槽（如 `<template #aside-outline-before>`）；React 实现 用等价的**具名 props**（统一 camelCase）挂在 `DefaultTheme.Layout` 上，支持两种值形态：
 
 - `ReactNode`：静态节点（等价于 Vue 的模板内容）；
 - `(ctx) => ReactNode`：渲染函数（插槽可带参数；当前各挂载点无额外数据，`ctx` 为空对象，后续扩展时调用处不变）。
@@ -160,7 +160,7 @@ export function MyLayout() {
 
 ## 重写内部组件 {#overriding-internal-components}
 
-Vue 版用 Vite alias 替换 `VPNavBar.vue` 等内部组件；React fork 以编译产物发布、内部都是相对路径 import，alias 无法稳定命中，因此提供等价的**主题级组件注册表** `Theme.components`——把“按内部组件名覆盖”移到渲染期解析（用 `defineTheme` 包一层可让 `components` 的 key 受 `THEME_COMPONENT_NAMES` 约束，拼错组件名会立即报错）：
+Vue 版用 Vite alias 替换 `VPNavBar.vue` 等内部组件；React 实现 以编译产物发布、内部都是相对路径 import，alias 无法稳定命中，因此提供等价的**主题级组件注册表** `Theme.components`——把“按内部组件名覆盖”移到渲染期解析（用 `defineTheme` 包一层可让 `components` 的 key 受 `THEME_COMPONENT_NAMES` 约束，拼错组件名会立即报错）：
 
 ```ts [.vitepress-react/theme/index.ts]
 import { defineTheme } from '@10coding/vitepress-react'

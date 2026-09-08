@@ -169,4 +169,4 @@ export default {
 
 ## 自定义组件 {#custom-components}
 
-`component` 形式的导航项在 React fork 中**暂不支持**（会被忽略/跳过）。如需自定义导航/菜单内容，请使用自定义 Layout，或把交互内容放进页面正文的 React 组件（见[在 Markdown 中使用 React](../guide/using-react)）。
+`component` 形式的导航项在 React 实现 中**暂不支持**（会被忽略/跳过）。如需自定义导航/菜单内容，请使用自定义 Layout，或把交互内容放进页面正文的 React 组件（见[在 Markdown 中使用 React](../guide/using-react)）。

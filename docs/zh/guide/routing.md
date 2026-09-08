@@ -325,7 +325,7 @@ export default {
 
 ### 访问页面中的参数 {#accessing-params-in-page}
 
-可以使用参数将附加数据传递到每个页面。本 fork 是 React 语义（没有 `$params` 全局或 `{{ }}` 插值，规则见[在 Markdown 中使用 React](./using-react)）：在页面 `<script>` 的 page-scope 里通过 [`useData()`](../reference/runtime-api#usedata) 读取 `params`，再用正文 `<>{expr}</>` 引用：
+可以使用参数将附加数据传递到每个页面。本项目 是 React 语义（没有 `$params` 全局或 `{{ }}` 插值，规则见[在 Markdown 中使用 React](./using-react)）：在页面 `<script>` 的 page-scope 里通过 [`useData()`](../reference/runtime-api#usedata) 读取 `params`，再用正文 `<>{expr}</>` 引用：
 
 ```md
 <script>

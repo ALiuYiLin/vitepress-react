@@ -5,7 +5,7 @@
 
 ---
 
-**VitePress React** is a React-powered static site generator forked from [VitePress](https://github.com/vuejs/vitepress), built on top of [Vite](https://github.com/vitejs/vite) and [React 19](https://react.dev). Write docs in Markdown, sprinkle in React components, expressions and theme components.
+**VitePress React** (published as `@10coding/vitepress-react`) is an independent, React-powered static site generator. Its configuration schema, default theme and markdown behavior are designed to be API-compatible with [VitePress](https://github.com/vuejs/vitepress) (the Vue-based original), while the runtime, theme and the markdown→page pipeline are a ground-up React rewrite on top of [Vite](https://github.com/vitejs/vite) and [React 19](https://react.dev). Write docs in Markdown, sprinkle in React components, expressions and theme components.
 
 ## Documentation
 
@@ -23,7 +23,7 @@ Please make sure to read the [Contributing Guide](https://github.com/ALiuYiLin/v
 
 [MIT](https://github.com/ALiuYiLin/vitepress-react/blob/main/LICENSE)
 
-Forked from VitePress (c) 2019-present, Yuxi (Evan) You
+API and default-theme design based on VitePress (c) 2019-present, Yuxi (Evan) You
 
 ## Special Thanks
 

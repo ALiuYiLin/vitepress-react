@@ -52,11 +52,11 @@ body:
       label: Validations
       description: Before submitting the issue, please make sure you do the following
       options:
-        - label: Check if you're on the [latest VitePress version](https://github.com/vuejs/vitepress/releases/latest).
+        - label: Check if you're on the [latest vitepress-react version](https://github.com/ALiuYiLin/vitepress-react/releases/latest).
           required: true
         - label: Follow our [Code of Conduct](https://vuejs.org/about/coc.html)
           required: true
-        - label: Read the [docs](https://vitepress.dev).
+        - label: Read the [docs](https://aliuyilin.github.io/vitepress-react/).
           required: true
         - label: Check that there isn't already an issue that reports the same bug to avoid creating a duplicate.
           required: true
