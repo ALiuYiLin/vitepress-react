@@ -52,18 +52,30 @@ interface EnhanceAppContext {
 }
 ```
 
-主题入口文件需要将主题对象作为默认导出来导出：
+主题入口文件需要将主题对象作为默认导出来导出。**建议用 `defineTheme()` 包一层**(或给对象字面量加 `satisfies Theme`)以获得类型约束——直接写裸对象只有字面量推断,拼错键名(如 `compnents`)、把 `components` 覆盖表写成非内部组件名、字段值类型不对,都不会报错:
 
 ```ts [.vitepress-react/theme/index.ts]
+import { defineTheme } from '@10coding/vitepress-react'
 import Layout from './Layout.tsx'
 
-export default {
+export default defineTheme({
   Layout,
   enhanceApp({ router }) {
     // ...
   }
-}
+})
 ```
+
+两种等效写法:
+
+```ts
+// 方式一:defineTheme(推荐;参数即 Theme,错误在编辑期提示)
+export default defineTheme({ Layout, components: { VPNavBar: MyNavBar } })
+
+// 方式二:satisfies Theme(需要 import type { Theme })
+export default { Layout, components: { VPNavBar: MyNavBar } } satisfies Theme
+```
+
 
 默认导出是自定义主题的唯一方式；`Layout` 也是最常用的属性——从技术上讲，一个 VitePress 主题可以只是一个 React 布局组件。注意主题同样需要保证 [SSR 兼容](./ssr-compat)。
 
@@ -223,13 +235,14 @@ layout: custom
 接线时用 `extends` 继承默认主题的其余能力，再覆盖 `Layout`：
 
 ```ts [.vitepress-react/theme/index.ts]
+import { defineTheme } from '@10coding/vitepress-react'
 import Theme from '@10coding/vitepress-react/theme'
 import CustomLayout from './Layout.tsx'
 
-export default {
+export default defineTheme({
   extends: Theme, // 继承默认主题其余字段;enhanceApp 会 base-first 链式执行
   Layout: CustomLayout
-}
+})
 ```
 
 几个注意点：

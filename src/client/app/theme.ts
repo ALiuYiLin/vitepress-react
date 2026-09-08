@@ -45,3 +45,16 @@ export interface Theme {
    */
   components?: ThemeComponents
 }
+
+/**
+ * 定义自定义主题的类型约束入口。
+ *
+ * 直接 `export default { extends: Theme, … }` 是裸对象字面量,TS 只做字面量
+ * 推断、不做 Theme 形状检查——拼错键(如 `compnents`)、`components` 里写了
+ * 非注册名单的组件名、把字段值类型写错,都不会报错。包一层本函数(或用
+ * `export default { … } satisfies Theme`)后,全部字段受 Theme 类型约束,
+ * 编辑期即可发现错误并拿到补全。
+ */
+export function defineTheme(theme: Theme): Theme {
+  return theme
+}

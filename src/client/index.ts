@@ -6,6 +6,9 @@ export type { Router, Route } from './app/router'
 export type { EnhanceAppContext, Theme } from './app/theme'
 export type { VitePressData } from './shared'
 
+// theme authoring helper (type-checked defineTheme)
+export { defineTheme } from './app/theme'
+
 // components
 import { ClientOnly } from './app/components/ClientOnly'
 import { Content } from './app/components/Content'
@@ -21,12 +24,7 @@ export {
 } from './app/data'
 
 // utilities
-export {
-  _escapeHtml,
-  inBrowser,
-  onContentUpdated,
-  withBase
-} from './app/utils'
+export { _escapeHtml, inBrowser, onContentUpdated, withBase } from './app/utils'
 
 // components
 export { ClientOnly, Content }

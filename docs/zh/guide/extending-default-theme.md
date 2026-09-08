@@ -101,16 +101,17 @@ Vue 默认主题的 `<Layout/>` 提供具名插槽（如 `<template #aside-outli
 - `ReactNode`：静态节点（等价于 Vue 的模板内容）；
 - `(ctx) => ReactNode`：渲染函数（插槽可带参数；当前各挂载点无额外数据，`ctx` 为空对象，后续扩展时调用处不变）。
 
-接线方式：在自定义主题的 `Layout` 里包一层默认 `Layout`，把插槽作为 props 传入：
+接线方式：在自定义主题的 `Layout` 里包一层默认 `Layout`，把插槽作为 props 传入（主题对象用 `defineTheme` 定义以获得类型约束，见[自定义主题](./custom-theme#theme-interface)）：
 
 ```ts [.vitepress-react/theme/index.ts]
+import { defineTheme } from '@10coding/vitepress-react'
 import Theme from '@10coding/vitepress-react/theme'
 import { MyLayout } from './MyLayout.tsx'
 
-export default {
+export default defineTheme({
   ...Theme,
   Layout: MyLayout
-}
+})
 ```
 
 ```tsx [.vitepress-react/theme/MyLayout.tsx]
@@ -159,19 +160,20 @@ export function MyLayout() {
 
 ## 重写内部组件 {#overriding-internal-components}
 
-Vue 版用 Vite alias 替换 `VPNavBar.vue` 等内部组件；React fork 以编译产物发布、内部都是相对路径 import，alias 无法稳定命中，因此提供等价的**主题级组件注册表** `Theme.components`——把“按内部组件名覆盖”移到渲染期解析：
+Vue 版用 Vite alias 替换 `VPNavBar.vue` 等内部组件；React fork 以编译产物发布、内部都是相对路径 import，alias 无法稳定命中，因此提供等价的**主题级组件注册表** `Theme.components`——把“按内部组件名覆盖”移到渲染期解析（用 `defineTheme` 包一层可让 `components` 的 key 受 `THEME_COMPONENT_NAMES` 约束，拼错组件名会立即报错）：
 
 ```ts [.vitepress-react/theme/index.ts]
+import { defineTheme } from '@10coding/vitepress-react'
 import Theme from '@10coding/vitepress-react/theme'
 import { MyNavBar } from './MyNavBar.tsx'
 
-export default {
+export default defineTheme({
   extends: Theme,
   components: {
     VPNavBar: MyNavBar, // 替换整个顶栏;其余内部组件保持默认
     VPSidebarItem: MySidebarItem // 叶子组件同样可覆盖
   }
-}
+})
 ```
 
 要点：
