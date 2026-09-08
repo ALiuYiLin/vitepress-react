@@ -254,13 +254,19 @@ export async function scaffold({
     )
   }
 
-  if (
-    theme !== ScaffoldThemeType.Default &&
-    !userPkg.dependencies?.['react'] &&
-    !userPkg.devDependencies?.['react']
-  ) {
+  const reactInUserPkg =
+    userPkg.dependencies?.['react'] || userPkg.devDependencies?.['react']
+  if (!reactInUserPkg && injectNpmScripts) {
+    // react/react-dom are required peers of the framework (hydration + JSX
+    // runtime); strict pnpm keeps nested copies invisible to host-authored
+    // code, so scaffolded sites declare them explicitly (npm ≥ 7 would
+    // auto-install the peers too).
+    userPkg.devDependencies ||= {}
+    userPkg.devDependencies.react = '^19.0.0'
+    userPkg.devDependencies['react-dom'] = '^19.0.0'
+  } else if (!reactInUserPkg) {
     tips.push(
-      `Since you've chosen to customize the theme, you should also explicitly install ${c.cyan(`react`)} and ${c.cyan(`react-dom`)} as dev dependencies (the framework can run without them, but it's good to have them in your own package.json).`
+      `Add ${c.cyan(`react`)} and ${c.cyan(`react-dom`)} (^19) to your project's devDependencies — they are required peers of ${c.cyan(`@10coding/vitepress-react`)} and must be resolvable from the host (strict pnpm can't see nested copies).`
     )
   }
 

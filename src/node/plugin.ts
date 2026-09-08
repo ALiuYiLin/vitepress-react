@@ -156,12 +156,17 @@ export async function createVitePressPlugin(
           __ASSETS_BASE__: JSON.stringify(siteConfig.assetsBase ?? '')
         },
         optimizeDeps: {
-          // force include react to avoid duplicated copies when linked +
-          // optimized; jsx runtime entries are imported by every compiled md
-          // page module (automatic JSX runtime), so they must be pre-bundled
+          // react、react-dom 及其 client / jsx-runtime 子路径全是 CJS:必须
+          // 预打包成 ESM 才能被浏览器以具名导入。自包在 exclude 中按原样
+          // serving,编译后的 md 页面(宿主模块)与包内文件对这些 bare
+          // import 的引用全靠 include 的优化产物获得 CJS interop;遗漏任何
+          // 一个都会让浏览器直接拿到裸 CJS → “does not provide an export”。
+          // include 从宿主根解析,故 react/react-dom 必须是宿主可见的 peers
+          // (见快速上手文档的依赖说明)。
           include: [
             'react',
             'react-dom',
+            'react-dom/client',
             'react/jsx-runtime',
             'react/jsx-dev-runtime'
           ],

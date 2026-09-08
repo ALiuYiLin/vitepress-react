@@ -74,7 +74,13 @@ $ bun vitepress-react init
 <<< @/snippets/init.ansi
 
 ::: tip React 作为依赖
-vitepress 自身已内置 react/react-dom 供默认主题与 md 页面运行时使用；如果你要在自定义主题或页面 `<script>` 里直接 `import 'react'`，建议在项目中显式安装 `react` 与 `react-dom`（版本以 vitepress 依赖的 React 19 为准）。
+
+`react` / `react-dom`(React 19)是本包的**必需 peerDependencies**:站点运行时(hydration)与 md 页面编译产物的 JSX runtime 都要从**宿主根**解析 react,而 strict pnpm 只会把宿主直接声明的依赖放在根上——所以宿主项目必须能解析到它们。
+
+- **npm(≥ 7)**:安装本包时会自动安装 peer,上面一条命令即可。
+- **pnpm / yarn**:需要显式安装:`pnpm add -D @10coding/vitepress-react react react-dom`(pnpm 默认不自动安装 peer)。
+- 用 `vitepress-react init` 搭建的站点会自动把 `react`、`react-dom` 写入 `devDependencies`。
+
 :::
 
 ## 文件结构 {#file-structure}

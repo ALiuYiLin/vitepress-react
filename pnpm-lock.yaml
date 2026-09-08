@@ -41,12 +41,6 @@ importers:
       minisearch:
         specifier: ^7.2.0
         version: 7.2.0
-      react:
-        specifier: ^19.0.0
-        version: 19.2.8
-      react-dom:
-        specifier: ^19.0.0
-        version: 19.2.8(react@19.2.8)
       shiki:
         specifier: ^4.4.3
         version: 4.4.3
@@ -228,6 +222,12 @@ importers:
       publint:
         specifier: ^0.3.24
         version: 0.3.24
+      react:
+        specifier: ^19.0.0
+        version: 19.2.8
+      react-dom:
+        specifier: ^19.0.0
+        version: 19.2.8(react@19.2.8)
       rolldown:
         specifier: ^1.2.5
         version: 1.2.5
