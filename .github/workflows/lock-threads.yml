@@ -15,7 +15,7 @@ concurrency:
 
 jobs:
   action:
-    if: github.repository == 'vuejs/vitepress'
+    if: github.repository == 'ALiuYiLin/vitepress-react'
     runs-on: ubuntu-latest
     steps:
       - uses: dessant/lock-threads@v6

@@ -7,7 +7,7 @@ on:
 
 jobs:
   release:
-    if: github.repository == 'vuejs/vitepress'
+    if: github.repository == 'ALiuYiLin/vitepress-react'
     runs-on: ubuntu-latest
 
     steps:
