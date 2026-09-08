@@ -12,7 +12,7 @@ description: VitePress CLI 命令参考，包括 dev、build、preview 和 init 
 
 ```sh
 # 从当前目录启动，省略 `dev`
-vitepress
+vitepress-react
 
 # 从子目录启动
 vitepress-react dev [root]
