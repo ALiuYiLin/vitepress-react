@@ -8,9 +8,9 @@ import { resolveConfig } from '../../../src/node/config'
 import { disposeMdItInstance } from '../../../src/node/markdown/markdown'
 import { createMarkdownToReactRenderFn } from '../../../src/node/markdownToReact'
 
-// V2 契约(见根目录 MD-DYNAMIC-SYNTAX-V2.md):正文裸 {…} 一律字面文本;
+// V2 契约:正文裸 {…} 一律字面文本;
 // 动态内容必须显式写成 JSX(<>{expr}</> / 组件标签),由 md 内 token 级规则
-// (jsxTokenRules,见 MD-TOKEN-TAKEOVER.md)占位、序列化时原样还原。
+// (jsxTokenRules)占位、序列化时原样还原。
 
 async function renderReact(src: string, markdownOptions: object = {}) {
   const root = await mkdtemp(join(tmpdir(), 'vpr-mdr-'))

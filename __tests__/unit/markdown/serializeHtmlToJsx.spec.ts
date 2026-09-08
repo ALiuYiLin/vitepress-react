@@ -36,7 +36,7 @@ describe('serializeHtmlToJsx', () => {
   it('emits boolean attributes bare and maps checked to defaultChecked', () => {
     const code = round('<input disabled checked>')
     // disabled → 裸属性;checked → 非受控 defaultChecked(静态 HTML 无 onChange;
-    // 存量行为,见 MD-DYNAMIC-SYNTAX-V2.md §4.5)
+    // 存量行为)
     expect(code).toContain('<input disabled defaultChecked')
     expect(code).not.toContain('disabled="')
     expect(code).not.toContain('checked="')

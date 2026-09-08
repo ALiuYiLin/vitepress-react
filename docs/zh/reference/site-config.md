@@ -473,7 +473,7 @@ export default {
 - 类型：`boolean`
 - 默认值： `false`
 
-设置为 `true` 时，生产应用程序将在 [MPA 模式](../guide/mpa-mode)下构建。MPA 模式默认提供 零 JavaScript 支持，代价是禁用客户端导航，并且需要明确选择加入才能进行交互。
+设置为 `true` 时，生产应用将以 MPA（多页应用）模式构建：默认提供零 JavaScript 支持，代价是禁用客户端导航，并且需要明确选择加入才能进行交互。
 
 ## 主题 {#theming}
 

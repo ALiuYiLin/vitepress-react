@@ -168,10 +168,7 @@ function sidebarGuide(): DefaultTheme.SidebarItem[] {
     {
       text: '实验性功能',
       collapsed: false,
-      items: [
-        { text: 'MPA 模式', link: 'mpa-mode' },
-        { text: 'sitemap 生成', link: 'sitemap-generation' }
-      ]
+      items: [{ text: 'sitemap 生成', link: 'sitemap-generation' }]
     },
     { text: '配置和 API 参考', base: '/reference/', link: 'site-config' }
   ]

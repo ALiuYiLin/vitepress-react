@@ -5,10 +5,10 @@
 // 渲染后处理(死链校验 / pageData 组装)→
 // markdown/buildReactPageModule 的模块组装 → 写缓存并返回。
 //
-// V2 契约(见根目录 MD-DYNAMIC-SYNTAX-V2.md):正文裸 {…} 一律字面文本,
+// V2 契约:正文裸 {…} 一律字面文本,
 // 不再有表达式掩码 Pass;动态内容 = 作者显式写的 JSX(<>{expr}</> /
 // 组件标签 / ::: react),由 markdown/jsxTokenRules 的 A/B/C token 规则
-// (见 MD-TOKEN-TAKEOVER.md)在 md 内占位、序列化时还原。
+// 在 md 内占位、序列化时还原。
 //
 // 各阶段的实现已拆分到(本目录均相对于 src/node):
 //   markdown/jsxTokenRules.ts    token 级接管规则(A script/B Fragment/C 判定)

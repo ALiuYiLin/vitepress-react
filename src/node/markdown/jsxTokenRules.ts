@@ -1,4 +1,4 @@
-// Token 级 JSX 区域规则(A/B/C)——按 MD-TOKEN-TAKEOVER.md 把"哪些文本是
+// Token 级 JSX 区域规则(A/B/C)——按"哪些文本是
 // React 接管区"的识别下沉到 markdown-it 内部,替代 markdownToReact.ts 的
 // 字符串预扫 Pass(maskScriptBlocks / maskJsxHtmlLines)。
 //

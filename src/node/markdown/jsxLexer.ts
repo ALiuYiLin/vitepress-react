@@ -1,7 +1,7 @@
 // 词法级文本工具集(纯函数、无副作用)。
 // 服务对象:markdown/jsxTokenRules.ts 的标签配平扫描(tagDepth)与
 // "是否 React 接管"的 Vue 特征判定(hasVueishAttr)。
-// V2 契约(见根目录 MD-DYNAMIC-SYNTAX-V2.md)下正文裸 {…} 一律字面;tagDepth
+// V2 契约下正文裸 {…} 一律字面;tagDepth
 // 需识别 Fragment 空标签名(`<>` / `</>`),以便 <>{expr}</> 被当作 JSX 接管。
 
 /** void 元素(自闭合,不增加标签深度) */

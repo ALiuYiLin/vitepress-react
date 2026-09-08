@@ -49,5 +49,3 @@ VitePress 旨在使用 Markdown 生成内容时提供出色的开发体验。
 ## 与 VuePress / 上游 VitePress 的关系 {#what-about-vuepress}
 
 VitePress 灵感来源于 VuePress（一个基于 Vue 的静态站点生成器）。**本仓库是 VitePress 的 React 移植版**：构建/路由/默认主题/正文渲染均为 React 实现，配置项与文档沿用上游语义；需要 Vue 语法与组件的地方（如部分历史文档、`{{ }}` 插值、`.vue` 组件）不再适用，请参考[在 Markdown 中使用 React](./using-react) 的规则。
-
-如果你是从 VuePress 1 或旧版 Vue 体系迁移过来，可以参见[从 VuePress 迁移](./migration-from-vuepress)。
