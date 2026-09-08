@@ -53,6 +53,9 @@ export type {
   LayoutProps,
   LayoutSlotContext
 } from './layout-slots'
+// 主题对象类型约束入口(与根导出同名同源,便于在 theme 子路径一处导入)
+export { defineTheme } from '../app/theme'
+export type { Theme } from '../app/theme'
 
 const theme = {
   Layout,

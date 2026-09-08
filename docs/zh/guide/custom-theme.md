@@ -30,12 +30,12 @@ description: 在 VitePress（React fork）中创建和使用自定义主题，�
 VitePress 自定义主题是一个对象，该对象具有如下接口：
 
 ```ts
-import type { ComponentType, ReactNode } from 'react'
+import type { ComponentType } from 'react'
 import type { Router, SiteData } from '@10coding/vitepress-react'
 
 interface Theme {
-  /** 每个页面的根布局组件 */
-  Layout?: ComponentType<{ children?: ReactNode }>
+  /** 每个页面的根布局组件(props 不限;框架以无参方式渲染) */
+  Layout?: ComponentType
   /**
    * 在客户端增强应用（可异步；服务端阶段也会在 SSR 中运行，注意 `import.meta.env.SSR`）
    */

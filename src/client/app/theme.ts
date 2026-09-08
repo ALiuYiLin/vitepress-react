@@ -1,4 +1,4 @@
-import type { ComponentType, ReactNode } from 'react'
+import type { ComponentType } from 'react'
 
 import type { ThemeComponents } from '../theme-default/composables/use-theme-component'
 import type { Awaitable, SiteData } from '../shared'
@@ -21,7 +21,11 @@ export interface EnhanceAppContext {
 }
 
 export interface Theme {
-  Layout?: ComponentType<{ children?: ReactNode }>
+  /**
+   * 每个页面的根布局组件。props 不限(框架只以无参方式渲染);
+   * 默认主题的 Layout 接受具名插槽 props(类型见 theme 包的 LayoutProps)。
+   */
+  Layout?: ComponentType<any>
   enhanceApp?: (ctx: EnhanceAppContext) => Awaitable<void>
   extends?: Theme
 
