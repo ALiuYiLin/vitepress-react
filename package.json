@@ -15,6 +15,9 @@
     "type": "git",
     "url": "git+https://github.com/ALiuYiLin/vitepress-react.git"
   },
+  "publishConfig": {
+    "access": "public"
+  },
   "license": "MIT",
   "author": "ALiuYiLin",
   "type": "module",
