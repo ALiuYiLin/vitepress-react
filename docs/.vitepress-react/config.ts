@@ -35,7 +35,7 @@ function toRootPaths<T>(value: T): T {
   return value
 }
 
-const zhTheme = toRootPaths(zhConfig.themeConfig)
+const zhTheme = toRootPaths(zhConfig.themeConfig ?? {})
 
 export default defineConfig({
   title: 'VitePress-React',

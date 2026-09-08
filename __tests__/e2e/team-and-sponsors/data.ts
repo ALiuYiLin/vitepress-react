@@ -1,6 +1,17 @@
-import type { DefaultTheme } from '@10coding/vitepress-react/theme'
+// React fork 的 VPTeamMembers 数据形状(与 vp-team.tsx 的 VpTeamMember 对齐,
+// 另含 Vue 时代上游示例仍保留的 orgLink/sponsor 扩展字段)
+type TeamMember = {
+  avatar?: string
+  name?: string
+  title?: string
+  org?: string
+  orgLink?: string
+  desc?: string
+  links?: { icon: string; link: string }[]
+  sponsor?: string
+}
 
-export const members: DefaultTheme.TeamMember[] = [
+export const members: TeamMember[] = [
   {
     // smaller than the rendered avatar, checks that it still fills the circle
     avatar: '/team-avatar-small.svg',
@@ -29,7 +40,7 @@ export const members: DefaultTheme.TeamMember[] = [
   }
 ]
 
-export const partners: DefaultTheme.TeamMember[] = [
+export const partners: TeamMember[] = [
   {
     avatar: '/team-avatar-wide.svg',
     name: 'Dave Example',

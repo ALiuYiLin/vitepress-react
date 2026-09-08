@@ -1,10 +1,7 @@
-import { resolveHeaders } from 'client/theme-default/composables/outline'
+import { resolveHeaders } from 'client/theme-default/composables/use-active-anchor'
 
-const element = {
-  classList: {
-    contains: () => false
-  }
-} as unknown as HTMLHeadElement
+// 夹具故意只给部分字段(level/title/link 即足以测 resolveHeaders 的取树语义),
+// resolveHeaders 参数已放宽为该最小形状。
 
 describe('client/theme-default/composables/outline', () => {
   describe('resolveHeader', () => {
@@ -15,14 +12,12 @@ describe('client/theme-default/composables/outline', () => {
             {
               level: 2,
               title: 'h2 - 1',
-              link: '#h2-1',
-              element
+              link: '#h2-1'
             },
             {
               level: 3,
               title: 'h3 - 1',
-              link: '#h3-1',
-              element
+              link: '#h3-1'
             }
           ],
           [2, 3]
@@ -37,11 +32,9 @@ describe('client/theme-default/composables/outline', () => {
               level: 3,
               title: 'h3 - 1',
               link: '#h3-1',
-              children: [],
-              element
+              children: []
             }
-          ],
-          element
+          ]
         }
       ])
     })
@@ -53,14 +46,12 @@ describe('client/theme-default/composables/outline', () => {
             {
               level: 2,
               title: 'h2 - 1',
-              link: '#h2-1',
-              element
+              link: '#h2-1'
             },
             {
               level: 3,
               title: 'h3 - 1',
-              link: '#h3-1',
-              element
+              link: '#h3-1'
             }
           ],
           2
@@ -70,8 +61,7 @@ describe('client/theme-default/composables/outline', () => {
           level: 2,
           title: 'h2 - 1',
           link: '#h2-1',
-          children: [],
-          element
+          children: []
         }
       ])
     })
@@ -83,50 +73,42 @@ describe('client/theme-default/composables/outline', () => {
             {
               level: 2,
               title: 'h2 - 1',
-              link: '#h2-1',
-              element
+              link: '#h2-1'
             },
             {
               level: 3,
               title: 'h3 - 1',
-              link: '#h3-1',
-              element
+              link: '#h3-1'
             },
             {
               level: 4,
               title: 'h4 - 1',
-              link: '#h4-1',
-              element
+              link: '#h4-1'
             },
             {
               level: 3,
               title: 'h3 - 2',
-              link: '#h3-2',
-              element
+              link: '#h3-2'
             },
             {
               level: 4,
               title: 'h4 - 2',
-              link: '#h4-2',
-              element
+              link: '#h4-2'
             },
             {
               level: 2,
               title: 'h2 - 2',
-              link: '#h2-2',
-              element
+              link: '#h2-2'
             },
             {
               level: 3,
               title: 'h3 - 3',
-              link: '#h3-3',
-              element
+              link: '#h3-3'
             },
             {
               level: 4,
               title: 'h4 - 3',
-              link: '#h4-3',
-              element
+              link: '#h4-3'
             }
           ],
           'deep'
@@ -146,11 +128,9 @@ describe('client/theme-default/composables/outline', () => {
                   level: 4,
                   title: 'h4 - 1',
                   link: '#h4-1',
-                  children: [],
-                  element
+                  children: []
                 }
-              ],
-              element
+              ]
             },
             {
               level: 3,
@@ -161,14 +141,11 @@ describe('client/theme-default/composables/outline', () => {
                   level: 4,
                   title: 'h4 - 2',
                   link: '#h4-2',
-                  children: [],
-                  element
+                  children: []
                 }
-              ],
-              element
+              ]
             }
-          ],
-          element
+          ]
         },
         {
           level: 2,
@@ -184,14 +161,11 @@ describe('client/theme-default/composables/outline', () => {
                   level: 4,
                   title: 'h4 - 3',
                   link: '#h4-3',
-                  children: [],
-                  element
+                  children: []
                 }
-              ],
-              element
+              ]
             }
-          ],
-          element
+          ]
         }
       ])
     })

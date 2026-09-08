@@ -25,18 +25,62 @@ export function getHeaders(range?: number): VpHeader[] {
   return headers
 }
 
-/** 按 range 过滤并构建树 */
+/** themeConfig.outline.level:数字 / 区间 / 'deep' */
+export type OutlineLevel = number | [number, number] | 'deep'
+/** resolveHeaders 的 range 参数:对齐 DefaultTheme.Config['outline'] */
+export type OutlineRange = false | OutlineLevel | { level?: OutlineLevel }
+
+/** resolveHeaders 可接受的最小标题形状(完整 VpHeader 或部分字段均可) */
+export type OutlineHeaderInput = {
+  level: number
+  title?: string
+  slug?: string
+  link?: string
+}
+
+/**
+ * 按 outline level 配置过滤扁平 headers 并构建树
+ * (对齐 Vue composables/outline.ts resolveHeaders):
+ * - `false` → 空;
+ * - 数字 n → 只保留 level === n;
+ * - `[min, max]` → 保留该区间;
+ * - `'deep'` → 保留 2..6;
+ * - `{ level }` → 取其中 level;
+ * - 缺省 → 与 Vue 一致默认 level 2。
+ */
 export function resolveHeaders(
-  headers: VpHeader[],
-  range?: number
+  headers: OutlineHeaderInput[],
+  range?: OutlineRange
 ): VpHeader[] {
-  const filtered = range ? headers.filter((h) => h.level <= range) : headers
+  if (range === false) return []
+
+  const levelsRange =
+    (typeof range === 'object' && !Array.isArray(range)
+      ? range.level
+      : range) || 2
+
+  let min: number
+  let max: number
+  if (typeof levelsRange === 'number') {
+    min = max = levelsRange
+  } else if (levelsRange === 'deep') {
+    min = 2
+    max = 6
+  } else {
+    ;[min, max] = levelsRange
+  }
+
   const tree: VpHeader[] = []
   const stack: { node: VpHeader; level: number }[] = []
-  for (const h of filtered) {
-    const node: VpHeader = { ...h, children: [] }
+  for (const h of headers) {
+    // 透传输入字段并补 children;部分字段输入由调用方保证(title/slug/link
+    // 缺省时不会凭空出现键,保持与输入一致的输出形状)
+    const node: VpHeader = { ...h, children: [] } as VpHeader
+    // 弹出到第一个不比本标题浅的祖先(与 Vue 一致:越界的标题也参与出栈,
+    // 只是不进入树)
     while (stack.length && stack[stack.length - 1]!.level >= h.level)
       stack.pop()
+    if (node.level > max || node.level < min) continue
     const parent = stack[stack.length - 1]?.node
     if (parent) parent.children.push(node)
     else tree.push(node)

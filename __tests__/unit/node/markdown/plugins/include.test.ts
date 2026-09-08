@@ -540,7 +540,9 @@ describe('node/markdown/plugins/include', () => {
     )
     const { html, env } = await render(
       '---\nlogo: ./assets/a.png\ndoc: ./other.md\n---\n\n<!-- @include: ./shared/note.md -->',
-      {},
+      // fork:正文 {{ }} 默认是字面文本;这里依赖 include 与 eager 插值
+      // (frontmatterDest 防 rebase)的协作,需显式开启该 Vue 遗留插值
+      { eagerFrontmatterInterpolation: true },
       {
         path: path.join(root, 'guide/index.md'),
         relativePath: 'guide/index.md'

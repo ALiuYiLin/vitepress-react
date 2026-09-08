@@ -4,6 +4,7 @@ import path from 'node:path'
 
 import { resolveConfig } from 'node/config'
 import { createContentLoader } from 'node/contentLoader'
+import { disposeMdItInstance } from 'node/markdown/markdown'
 
 describe('node/contentLoader', () => {
   let root: string | undefined
@@ -57,6 +58,17 @@ describe('node/contentLoader', () => {
       path.join(root!, 'post.md'),
       '---\ntitle: My Post\n---\n\nIntro says {{ $frontmatter.title }}.\n\n---\n\nBody.\n'
     )
+    // fork 的 React 语义下 `{{ }}` 默认是字面文本;该用例验证的是 excerpt
+    // 渲染(不依赖 render:true)在开启 eager 插值后能解析 $frontmatter,
+    // 故在此显式开启 Vue 遗留插值选项并重建渲染器
+    const siteConfig = (global as any).VITEPRESS_CONFIG as {
+      markdown?: Record<string, unknown>
+    }
+    siteConfig.markdown = {
+      ...siteConfig.markdown,
+      eagerFrontmatterInterpolation: true
+    }
+    disposeMdItInstance()
 
     const data = await createContentLoader('post.md', {
       excerpt: true

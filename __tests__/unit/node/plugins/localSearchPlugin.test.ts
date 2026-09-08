@@ -5,7 +5,7 @@ import path from 'node:path'
 import MiniSearch from 'minisearch'
 import { resolveConfig } from 'node/config'
 import { disposeMdItInstance } from 'node/markdown/markdown'
-import { createMarkdownToVueRenderFn } from 'node/markdownToVue'
+import { createMarkdownToReactRenderFn } from 'node/markdownToReact'
 import { localSearchPlugin } from 'node/plugins/localSearchPlugin'
 
 describe('node/plugins/localSearchPlugin', () => {
@@ -150,7 +150,7 @@ describe('node/plugins/localSearchPlugin', () => {
       { publicDir: siteConfig.publicDir }
     )
 
-    const render = await createMarkdownToVueRenderFn(
+    const render = await createMarkdownToReactRenderFn(
       siteConfig.srcDir,
       siteConfig.markdown ?? {},
       siteConfig.site.base,
@@ -163,8 +163,8 @@ describe('node/plugins/localSearchPlugin', () => {
     const zhFile = path.join(root, 'zh', 'index.md')
     const rootPage = await render(await readFile(rootFile, 'utf-8'), rootFile)
     const zhPage = await render(await readFile(zhFile, 'utf-8'), zhFile)
-    expect(rootPage.vueSrc).toContain('TIP')
-    expect(zhPage.vueSrc).toContain('zhtiplabel')
+    expect(rootPage.reactSrc).toContain('TIP')
+    expect(zhPage.reactSrc).toContain('zhtiplabel')
 
     // the indexed text must use the localized labels too
     await (plugin.load as any)?.handler.call({}, '/@localSearchIndex')

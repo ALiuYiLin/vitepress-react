@@ -1,13 +1,11 @@
 import { dirname, resolve } from 'node:path'
 import { fileURLToPath } from 'node:url'
 
-import vue from '@vitejs/plugin-vue'
 import { defineConfig } from 'vitest/config'
 
 const dir = dirname(fileURLToPath(import.meta.url))
 
 export default defineConfig({
-  plugins: [vue()],
   resolve: {
     alias: [
       { find: '@siteData', replacement: resolve(dir, './shims.ts') },
@@ -16,11 +14,11 @@ export default defineConfig({
       { find: 'shared', replacement: resolve(dir, '../../src/shared') },
       {
         find: /^@10coding\/vitepress-react$/,
-        replacement: resolve(dir, '../../src/client/index.js')
+        replacement: resolve(dir, '../../src/client/index.ts')
       },
       {
         find: /^@10coding\/vitepress-react\/theme$/,
-        replacement: resolve(dir, '../../src/client/theme-default/index.js')
+        replacement: resolve(dir, '../../src/client/theme-default/index.ts')
       }
     ]
   },

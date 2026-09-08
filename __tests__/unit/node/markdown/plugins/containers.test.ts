@@ -137,7 +137,7 @@ describe('node/markdown/plugins/containers', () => {
       'You have completed the walkthrough!',
       ':::',
       '',
-      '::: success Well done ((no-title))',
+      '::: success Well done {no-title}',
       'content',
       ':::'
     ].join('\n')
@@ -166,11 +166,11 @@ describe('node/markdown/plugins/containers', () => {
 
   test('supports attrs on the fence line', async () => {
     const src = [
-      '::: details Click me ((open))',
+      '::: details Click me {open}',
       'content',
       ':::',
       '',
-      '::: tip Custom ((.extra-class #custom-id))',
+      '::: tip Custom {.extra-class #custom-id}',
       'content',
       ':::'
     ].join('\n')
@@ -186,9 +186,8 @@ describe('node/markdown/plugins/containers', () => {
   })
 
   test('supports quoted and bare attr values on the fence line', async () => {
-    expect(
-      await render('::: tip Custom ((data-a="b c" data-d=e))\ncontent\n:::')
-    ).toMatchInlineSnapshot(`
+    expect(await render('::: tip Custom {data-a="b c" data-d=e}\ncontent\n:::'))
+      .toMatchInlineSnapshot(`
         "<div data-a="b c" data-d="e" class="tip custom-block"><p class="custom-block-title">Custom</p>
         <p>content</p>
         </div>
@@ -198,15 +197,15 @@ describe('node/markdown/plugins/containers', () => {
 
   test('skips the title element with a no-title attr', async () => {
     const src = [
-      '::: tip ((no-title))',
+      '::: tip {no-title}',
       'content',
       ':::',
       '',
-      '::: warning Discarded ((no-title .extra-class))',
+      '::: warning Discarded {no-title .extra-class}',
       'content',
       ':::',
       '',
-      '::: details ((no-title))',
+      '::: details {no-title}',
       'still needs its summary',
       ':::'
     ].join('\n')
@@ -232,7 +231,7 @@ describe('node/markdown/plugins/containers', () => {
     expect(delimiters).toContain('<div class="extra-class tip custom-block">')
 
     const allowed = await render(
-      '::: tip Custom ((.extra-class data-x=1))\ncontent\n:::',
+      '::: tip Custom {.extra-class data-x=1}\ncontent\n:::',
       { attrs: { allowed: ['class'] } }
     )
     expect(allowed).toContain('<div class="extra-class tip custom-block">')
