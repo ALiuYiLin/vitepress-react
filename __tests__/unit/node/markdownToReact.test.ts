@@ -123,6 +123,55 @@ describe('node/markdownToReact (V2 literal-braces contract)', () => {
     expect(code).not.toContain('@@VP_')
   })
 
+  test('block fragment allows blank lines + multi-line expression (replaces ::: react)', async () => {
+    const code = await renderReact(
+      [
+        fm(),
+        '<>',
+        '  {',
+        '    // 多行 JSX 表达式',
+        '',
+        '    items.map((it) => <li key={it}>{it}</li>)',
+        '  }',
+        '</>'
+      ].join('\n')
+    )
+    // 整段原文还原为 JSX(占位消失),跨空行内容不被拆散;
+    // 关键:map 源码不在 {"…"} 字符串字面量里(否则就是没接管的 md 文本)
+    expect(code).toContain('items.map((it) => <li key={it}>{it}</li>)')
+    expect(code).not.toContain('"items.map')
+    expect(code).toContain('{/* JSX md:')
+    expect(code).not.toContain('@@VP_')
+    expect(code).not.toContain('data-vp-jsx')
+  })
+
+  test('block fragment stops at balanced </>; following md still parses', async () => {
+    const code = await renderReact(
+      [
+        fm(),
+        '<>',
+        '  {items.map(x => x)}',
+        '</>',
+        '',
+        'after: <>{1 + 1}</>'
+      ].join('\n')
+    )
+    expect(code).toContain('items.map(x => x)')
+    expect(code).toContain('after:')
+    expect(code).toContain('{1 + 1}')
+    expect(code).not.toContain('@@VP_')
+  })
+
+  test('unclosed block fragment falls back to markdown (never swallows later text)', async () => {
+    const code = await renderReact(
+      [fm(), '<>', '{x}', '', '正文段落', '', 'closing </> alone'].join('\n')
+    )
+    // 没找到配平闭口 → 不接管:内容按普通 md 字面输出
+    expect(code).not.toContain('@@VP_')
+    expect(code).not.toContain('data-vp-jsx')
+    expect(code).toContain('正文段落')
+  })
+
   test('page-scope script + <>{count}</> share scope', async () => {
     const code = await renderReact(
       [

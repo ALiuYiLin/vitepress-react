@@ -263,6 +263,10 @@ function reactContainerRule(
 // B-块:独立成行的多行 <>…</> 遮蔽(块级,先于 paragraph 整段占用)
 // 多行 Fragment 内容里若含会"打断段落"的行(如独立 <p> 开标签 → html_block
 // 拆分),inline 规则看不到完整区域,必须先按行整段收集再占位。
+// 从首行 '<>' 开始按原文行扫描(允许内部空行),直到某行行尾恰好是配平的
+// '</>'——因此任意多行的 JSX children / 表达式(含注释、空行)都能整体
+// 接管,基本覆盖 `::: react` 容器的使用场景;未配平到文末则整体回退,
+// 交回 markdown(不吞后续段落)。
 // ------------------------------------------------------------
 function fragmentBlockRule(
   state: any,
@@ -278,19 +282,19 @@ function fragmentBlockRule(
   const lines: string[] = [first]
   let cur = startLine
   let done = false
-  while (!done) {
-    const nl = cur + 1
-    if (nl >= state.lineMax) break
+  for (let nl = startLine + 1; nl < state.lineMax; nl++) {
     const p = state.bMarks[nl] + state.tShift[nl]
     const text = state.src.slice(p, state.eMarks[nl])
-    if (text.trim() === '') break // Fragment 不跨空行(与旧扫描一致)
     lines.push(text)
     cur = nl
-    const joined = lines.join('\n')
-    const end = fragmentEnd(joined, 0)
-    if (end > 0 && end === joined.length) {
-      done = true
-      break
+    // 空行本身不可能闭合,但允许出现在 fragment 内部(如表达式间的空行)
+    if (text.trim() !== '') {
+      const joined = lines.join('\n')
+      const end = fragmentEnd(joined, 0)
+      if (end > 0 && end === joined.length) {
+        done = true
+        break
+      }
     }
   }
   if (!done) return false
