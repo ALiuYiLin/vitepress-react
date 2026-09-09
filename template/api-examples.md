@@ -12,43 +12,29 @@ The main `useData()` API can be used to access site, theme, and page data for th
 <script>
 import { useData } from '@10coding/vitepress-react'
 
-export function DataView({ label, field }) {
-  const data = useData()
-  return (
-    <section>
-      <h3>{label}</h3>
-      <pre>{JSON.stringify(data[field], null, 2)}</pre>
-    </section>
-  )
-}
+const { theme, page } = useData()
 </script>
 
-## Results
+### Theme Data
+<>{JSON.stringify(theme)}</>
 
-<DataView label="Theme Data" field="theme" />
-<DataView label="Page Data" field="page" />
-<DataView label="Page Frontmatter" field="frontmatter" />
+### Page
+<>{JSON.stringify(page)}</>
 ```
 
 <script>
 import { useData } from '@10coding/vitepress-react'
 
-export function DataView({ label, field }) {
-  const data = useData()
-  return (
-    <section>
-      <h3>{label}</h3>
-      <pre>{JSON.stringify(data[field], null, 2)}</pre>
-    </section>
-  )
-}
+const { theme, page } = useData()
 </script>
 
 ## Results
 
-<DataView label="Theme Data" field="theme" />
-<DataView label="Page Data" field="page" />
-<DataView label="Page Frontmatter" field="frontmatter" />
+### Theme Data
+<>{JSON.stringify(theme)}</>
+
+### Page
+<>{JSON.stringify(page)}</>
 
 ## More
 
