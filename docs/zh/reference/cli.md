@@ -75,3 +75,7 @@ vitepress-react preview [root]
 ```sh
 vitepress-react init
 ```
+
+选择"Add VitePress npm scripts to package.json?"后,向导会把
+`@10coding/vitepress-react`、`react` 与 `react-dom` 一并写入项目的
+`devDependencies`,随后执行包管理器安装即可。

@@ -173,6 +173,24 @@ export async function scaffold({
     '../../template'
   )
 
+  // 当前运行的包信息(与 templateDir 同基准):脚手架要把框架自身写进
+  // devDependencies,版本取自身版本(^range),避免 init 后还要手动添加。
+  let packageName = '@10coding/vitepress-react'
+  let packageVersion = ''
+  try {
+    const metaPath = path.resolve(
+      path.dirname(fileURLToPath(import.meta.url)),
+      '../../package.json'
+    )
+    if (fs.existsSync(metaPath)) {
+      const meta = JSON.parse(fs.readFileSync(metaPath, 'utf8'))
+      if (typeof meta.name === 'string') packageName = meta.name
+      if (typeof meta.version === 'string') packageVersion = meta.version
+    }
+  } catch {
+    // 兜底:拿不到版本时走"手动安装"提示
+  }
+
   const data = {
     srcDir: srcDir ? JSON.stringify(srcDir) : undefined, // omit if default
     title: JSON.stringify(title),
@@ -244,6 +262,7 @@ export async function scaffold({
   }
 
   const tips = []
+  const pm = getPackageManger()
 
   const gitignorePrefix = root
     ? `${slash(root)}/${CONFIG_DIR_NAME}`
@@ -254,25 +273,47 @@ export async function scaffold({
     )
   }
 
-  const reactInUserPkg =
-    userPkg.dependencies?.['react'] || userPkg.devDependencies?.['react']
-  if (!reactInUserPkg && injectNpmScripts) {
-    // react/react-dom are required peers of the framework (hydration + JSX
-    // runtime); strict pnpm keeps nested copies invisible to host-authored
-    // code, so scaffolded sites declare them explicitly (npm ≥ 7 would
-    // auto-install the peers too).
-    userPkg.devDependencies ||= {}
-    userPkg.devDependencies.react = '^19.0.0'
-    userPkg.devDependencies['react-dom'] = '^19.0.0'
-  } else if (!reactInUserPkg) {
-    tips.push(
-      `Add ${c.cyan(`react`)} and ${c.cyan(`react-dom`)} (^19) to your project's devDependencies — they are required peers of ${c.cyan(`@10coding/vitepress-react`)} and must be resolvable from the host (strict pnpm can't see nested copies).`
-    )
+  const devDeps = userPkg.devDependencies || (userPkg.devDependencies = {})
+  const hasFramework =
+    !!userPkg.dependencies?.[packageName] || !!devDeps[packageName]
+  const hasReact = !!userPkg.dependencies?.['react'] || !!devDeps['react']
+
+  if (injectNpmScripts) {
+    // 框架自身一并写入 devDependencies:init 之后只需安装一次依赖,
+    // 不必再手动 `add @10coding/vitepress-react`。
+    if (!hasFramework) {
+      if (packageVersion) {
+        devDeps[packageName] = `^${packageVersion}`
+      } else {
+        tips.push(
+          `Add ${c.cyan(packageName)} to your devDependencies before running the scripts.`
+        )
+      }
+    }
+    // react/react-dom 是框架必需 peers(hydration + JSX runtime 从宿主根
+    // 解析);strict pnpm 下嵌套副本不可见,须在宿主显式声明(npm ≥ 7
+    // 会自动安装 peer)。
+    if (!hasReact) {
+      devDeps.react = '^19.0.0'
+      devDeps['react-dom'] = '^19.0.0'
+    }
+  } else {
+    if (!hasFramework) {
+      tips.push(
+        `Install ${c.cyan(packageName)} as a devDependency first, e.g. ${c.cyan(
+          `${pm} add -D ${packageName}`
+        )} — the scaffolded scripts need its CLI.`
+      )
+    }
+    if (!hasReact) {
+      tips.push(
+        `Add ${c.cyan(`react`)} and ${c.cyan(`react-dom`)} (^19) to your project's devDependencies — they are required peers of ${c.cyan(packageName)} and must be resolvable from the host (strict pnpm can't see nested copies).`
+      )
+    }
   }
 
   const tip = tips.length ? c.yellow([`\n\nTips:`, ...tips].join('\n- ')) : ``
   const dir = root ? ' ' + root : ''
-  const pm = getPackageManger()
 
   if (injectNpmScripts) {
     const scripts: Record<string, string> = {}

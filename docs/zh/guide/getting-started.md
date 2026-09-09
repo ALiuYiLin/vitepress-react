@@ -79,7 +79,7 @@ $ bun vitepress-react init
 
 - **npm(≥ 7)**:安装本包时会自动安装 peer,上面一条命令即可。
 - **pnpm / yarn**:需要显式安装:`pnpm add -D @10coding/vitepress-react react react-dom`(pnpm 默认不自动安装 peer)。
-- 用 `vitepress-react init` 搭建的站点会自动把 `react`、`react-dom` 写入 `devDependencies`。
+- 用 `vitepress-react init` 搭建的站点会自动把 `@10coding/vitepress-react`、`react`、`react-dom` 写入 `devDependencies`;之后只需 `pnpm install` / `npm install` 即可启动,无需再手动添加。
 
 :::
 

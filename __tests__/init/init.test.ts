@@ -1,4 +1,5 @@
-import { rm } from 'node:fs/promises'
+import { mkdir, rm, writeFile } from 'node:fs/promises'
+import { readFileSync } from 'node:fs'
 import path from 'node:path'
 import { fileURLToPath, URL } from 'node:url'
 
@@ -74,4 +75,35 @@ test.each(variations)('init %s', async (_, { theme, useTs }) => {
   } finally {
     await server.close()
   }
+})
+
+test('init injects framework + react devDependencies when writing scripts', async () => {
+  const root = getTempRoot()
+  await rm(root, { recursive: true, force: true })
+  await mkdir(root, { recursive: true })
+  await writeFile(
+    path.join(root, 'package.json'),
+    JSON.stringify({ name: 'scaffold-deps', private: true, type: 'module' })
+  )
+
+  // scaffold writes scripts/deps into the package.json at process.cwd()
+  const cwd = process.cwd()
+  process.chdir(root)
+  try {
+    await scaffold({
+      root: '.',
+      theme: ScaffoldThemeType.Default,
+      useTs: false,
+      injectNpmScripts: true,
+      addNpmScriptsPrefix: false
+    })
+  } finally {
+    process.chdir(cwd)
+  }
+
+  const pkg = JSON.parse(readFileSync(path.join(root, 'package.json'), 'utf8'))
+  expect(pkg.scripts).toMatchObject({ dev: 'vitepress-react dev' })
+  expect(pkg.devDependencies['@10coding/vitepress-react']).toMatch(/^\^/)
+  expect(pkg.devDependencies.react).toBe('^19.0.0')
+  expect(pkg.devDependencies['react-dom']).toBe('^19.0.0')
 })
