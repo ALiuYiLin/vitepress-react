@@ -71,6 +71,14 @@ test.each(variations)('init %s', async (_, { theme, useTs }) => {
     await page.waitForFunction('document.querySelector("pre code")')
     expect(await page.textContent('h1')).toMatch('Runtime API Examples')
 
+    // 回归:SPA 导航后 URL 带 .html,侧栏当前项仍需高亮
+    // (高亮基于 pageData.relativePath + isActive,而非 URL pathname)
+    if (theme !== ScaffoldThemeType.Custom) {
+      const active = page.locator('.VPSidebarItem.is-active .text').first()
+      await active.waitFor({ state: 'visible', timeout: 5000 })
+      expect(await active.textContent()).toContain('API Examples')
+    }
+
     // teardown
   } finally {
     await server.close()

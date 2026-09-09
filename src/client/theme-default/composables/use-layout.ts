@@ -21,7 +21,10 @@ export function useLayout() {
   }
   const isHome = Boolean(fm.isHome ?? fm.layout === 'home')
   const sidebarConfig = cfg.sidebar as never
-  const groups = sidebarGroupsFor(sidebarConfig, route.path)
+  // 侧栏选择基于页面相对路径(Vue 同款:getSidebar(page.relativePath)),
+  // 而不是 URL path——URL 带 .html、带 base 时照样命中对应侧栏配置
+  const sidebarPath = route.data?.relativePath ?? route.path
+  const groups = sidebarGroupsFor(sidebarConfig, sidebarPath)
   const hasSidebarEnabled = fm.sidebar !== false && cfg.sidebar !== false
   const hasSidebar = hasSidebarEnabled && groups.length > 0
   const headers = ((page as { headers?: VpHeader[] })?.headers ??

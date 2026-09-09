@@ -1,6 +1,8 @@
 // 默认主题数据工具:路径归一化、导航/侧栏匹配、大纲树、prev/next 展平。
 // 供 React 组件使用;类型与 Vue 默认主题 themeConfig 结构对齐。
 
+import { normalize } from '../shared'
+
 export type VpNavItem = {
   text?: string
   link?: string
@@ -42,13 +44,11 @@ export type VpHeader = {
   children: VpHeader[]
 }
 
-/** 归一化路径:相对斜杠、去尾斜杠(保留根 "/") */
+/** 归一化路径:相对斜杠、解码、去 query/hash、去 .html/.md 与 index、去尾斜杠(根 "/") */
 export function normalizePath(path: string): string {
   let p = path
   if (p.startsWith('./')) p = p.slice(2)
-  if (p.startsWith('//') || p.startsWith('\\/\\/')) {
-    p = p.replace(/^\/\//, '')
-  }
+  p = normalize(p)
   if (p.length > 1 && p.endsWith('/')) p = p.slice(0, -1)
   return p
 }

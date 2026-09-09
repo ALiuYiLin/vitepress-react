@@ -1,8 +1,9 @@
 import { useId, useState } from 'react'
 import { useRoute } from '@10coding/vitepress-react'
 
+import { isActive } from '../../shared'
 import { useThemeComponent } from '../composables/use-theme-component'
-import { normalizePath, type VpNavItem } from '../theme-utils'
+import type { VpNavItem } from '../theme-utils'
 import { VPFlyout as VPFlyoutDefault } from './VPFlyout'
 import { VPMenuGroup as VPMenuGroupDefault } from './VPMenuGroup'
 import { VPMenuLink as VPMenuLinkDefault } from './VPMenuLink'
@@ -16,24 +17,22 @@ export type VpNavMenuGroupItem = VpNavItem & {
   items?: VpNavMenuGroupItem[]
 }
 
-function isActiveOn(routePath: string, item: VpNavItem): boolean {
-  if (item.activeMatch) {
-    return new RegExp(item.activeMatch.replace('$', '\\$')).test(routePath)
-  }
-  const link = item.link
-  if (!link) return false
-  const current = normalizePath(routePath)
-  const normalized = normalizePath(link)
-  return (
-    (normalized !== '/' && current.startsWith(normalized + '/')) ||
-    normalized === current
-  )
-}
-
-function isChildActive(routePath: string, item: VpNavMenuGroupItem): boolean {
+/** 子项是否命中当前页(对齐 Vue VPNavMenuGroup.vue isChildActive) */
+function isChildActive(
+  relativePath: string,
+  hash: string,
+  item: VpNavMenuGroupItem
+): boolean {
   if (item.component) return false
-  if (item.link) return isActiveOn(routePath, item)
-  return (item.items ?? []).some((i) => isChildActive(routePath, i))
+  if (item.link) {
+    return isActive(
+      relativePath,
+      hash,
+      item.activeMatch || item.link,
+      Boolean(item.activeMatch)
+    )
+  }
+  return (item.items ?? []).some((i) => isChildActive(relativePath, hash, i))
 }
 
 /**
@@ -56,9 +55,11 @@ export function VPNavMenuGroup({
   className?: string
 }) {
   const route = useRoute()
+  const relativePath = route.data?.relativePath ?? ''
+  const hash = route.hash ?? ''
   const isActiveGroup = item.activeMatch
-    ? new RegExp(item.activeMatch.replace('$', '\\$')).test(route.path)
-    : isChildActive(route.path, item)
+    ? isActive(relativePath, hash, item.activeMatch, true)
+    : isChildActive(relativePath, hash, item)
 
   // 屏幕手风琴状态与 id(钩子无条件调用)
   const [isOpen, setIsOpen] = useState(false)

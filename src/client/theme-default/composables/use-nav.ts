@@ -1,7 +1,8 @@
 import { useEffect, useSyncExternalStore } from 'react'
 import { inBrowser, useData, useRoute } from '@10coding/vitepress-react'
 
-import { normalizePath, type VpNavItem } from '../theme-utils'
+import { isActive } from '../../shared'
+import type { VpNavItem } from '../theme-utils'
 
 /**
  * 屏幕导航状态(对应 Vue composables/nav.ts):模块级单例,
@@ -90,16 +91,19 @@ export function useAppearanceSwitch() {
   )
 }
 
-/** 导航项链接信息:href / 是否当前页 / 是否高亮 */
+/** 导航项链接信息:href / 是否当前页 / 是否高亮(对齐 Vue composables/nav.ts) */
 export function useNavItemLink(item: VpNavItem) {
   const route = useRoute()
-  const link = item.link ?? ''
-  const current = normalizePath(route.path)
-  const normalized = normalizePath(link)
-  const isCurrentLink = normalized === current
-  const isActiveLink = item.activeMatch
-    ? new RegExp(item.activeMatch.replace('$', '\\$')).test(route.path)
-    : (normalized !== '/' && current.startsWith(normalized + '/')) ||
-      isCurrentLink
-  return { href: link, isActiveLink, isCurrentLink }
+  const href = item.link ?? ''
+  const activeMatch = item.activeMatch
+  const relativePath = route.data?.relativePath ?? ''
+  const hash = route.hash ?? ''
+  // 用 relativePath + isActive 判定:URL 带 .html/query 或页面为 index 时也命中;
+  // activeMatch 作为正则匹配(若提供)
+  const isActiveLink = activeMatch
+    ? isActive(relativePath, hash, activeMatch, true)
+    : isActive(relativePath, hash, href)
+  // 仅精确匹配——宽的 activeMatch 负责视觉高亮,不冒充 aria-current
+  const isCurrentLink = isActive(relativePath, hash, href)
+  return { href, isActiveLink, isCurrentLink }
 }

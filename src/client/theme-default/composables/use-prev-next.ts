@@ -1,10 +1,7 @@
 import { useData, useRoute } from '@10coding/vitepress-react'
 
-import {
-  flattenSidebarItems,
-  normalizePath,
-  sidebarGroupsFor
-} from '../theme-utils'
+import { isActive } from '../../shared'
+import { flattenSidebarItems, sidebarGroupsFor } from '../theme-utils'
 
 type PrevNextEntry = {
   text?: string
@@ -32,11 +29,15 @@ export function usePrevNext(): { prev?: PrevNextEntry; next?: PrevNextEntry } {
   }
   const fm = frontmatter as { prev?: FmEntry; next?: FmEntry }
 
-  const current = normalizePath(route.path)
+  // 侧栏选择与"当前页"索引都基于 relativePath + isActive(Vue 同款):
+  // URL 带 .html/query 或页面为 /dir/index 时也能定位到当前位置
+  const relativePath = route.data?.relativePath ?? route.path
   const flat = flattenSidebarItems(
-    sidebarGroupsFor(cfg.sidebar as never, route.path)
+    sidebarGroupsFor(cfg.sidebar as never, relativePath)
   )
-  const idx = flat.findIndex((l) => normalizePath(l.link) === current)
+  const idx = flat.findIndex((l) =>
+    isActive(relativePath, '', l.link, false, true)
+  )
   if (idx < 0) return {}
 
   function resolve(dir: 'prev' | 'next'): PrevNextEntry | undefined {
