@@ -46,6 +46,12 @@ Vue 版文档里的 `{{ }}` 在这里不存在,正文也**不做 `{expr}` 求值
 - 要显示动态内容,显式包成 JSX Fragment:**`<>{count}</>`**、**`<>{fmt(page.title)}</>`**、`<>{items.length > 0 ? '有' : '无'}</>`,可独立成行,也可嵌在句子中间;
 - 完整交互(带状态/事件)仍写组件标签 `<Counter />`(见 §2)。
 
+::: tip 两个常见坑
+- Fragment 标签必须是无空格开标签 `<>`、带斜杠的闭标签 `</>`;写成 `< >…` 或漏掉 `/`(如只写 `<>` 收尾)都不会被识别,整行会按**字面文本**原样输出。
+- `<>{expr}</>` 里只能放可渲染值(字符串/数字/元素/数组);`useData()` 返回的 `theme`/`page`/`frontmatter` 是**对象**,直接放 `<>{data.theme}</>` 会整页崩溃(React: "Objects are not valid as a React child")。要看对象请 `JSON.stringify` 包一层,或只取标量字段:
+  `<>{JSON.stringify(data.theme)}</>` / `<>{data.theme.title}</>`
+:::
+
 **输入 / 输出对比**
 
 输入:
