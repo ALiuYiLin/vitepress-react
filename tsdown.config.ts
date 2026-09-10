@@ -144,41 +144,60 @@ function hasGlobal(selector: string): boolean {
   return selector.includes(':global(')
 }
 
+type CssPartition = { local: postcss.ChildNode[]; global: postcss.ChildNode[] }
+
+/**
+ * 递归拆分 css 节点:`:global(...)` 规则解包后进"全局段",其余进"局部段"。
+ *
+ * at-rule(@media/@supports/…) 内部按子节点递归,**混合内容会拆成同一个
+ * at-rule 的两份**:局部子规则那份留给 transformScopedCss 追加
+ * [data-v-{hash}],全局子规则那份解包后进全局段。
+ *
+ * 早前的实现只处理"全部子规则都是 :global" 的 at-rule,混合时整段退回局部
+ * 处理 → `:global(...)` 包装泄漏进产物(`:global(.x)[data-v-y]`):lightningcss
+ * 会警告 'global' is not a recognized pseudo-class,浏览器则整条忽略该规则。
+ */
+function splitGlobalNodes(nodes: readonly postcss.ChildNode[]): CssPartition {
+  const part: CssPartition = { local: [], global: [] }
+
+  for (const node of nodes) {
+    if (node.type === 'rule') {
+      if (hasGlobal(node.selector)) {
+        part.global.push(node.clone({ selector: unwrapGlobal(node.selector) }))
+      } else {
+        part.local.push(node.clone())
+      }
+      continue
+    }
+
+    if (node.type === 'atrule' && node.nodes) {
+      const inner = splitGlobalNodes(node.nodes)
+      const withChildren = (children: postcss.ChildNode[]) => {
+        const copy = node.clone({ nodes: [] })
+        copy.append(children)
+        return copy
+      }
+      if (inner.local.length) part.local.push(withChildren(inner.local))
+      if (inner.global.length) part.global.push(withChildren(inner.global))
+      continue
+    }
+
+    part.local.push(node.clone())
+  }
+
+  return part
+}
+
 function partitionGlobalCss(css: string): { local: string; global: string } {
   const root = postcss.parse(css)
+  const { local, global } = splitGlobalNodes(root.nodes)
+
   const localRoot = postcss.root()
+  localRoot.append(local)
+
   const globalRoot = postcss.root()
-  for (const node of root.nodes) {
-    if (node.type === 'rule' && hasGlobal(node.selector)) {
-      globalRoot.append(node.clone({ selector: unwrapGlobal(node.selector) }))
-    } else if (node.type === 'atrule' && node.nodes) {
-      const children = node.nodes.filter((n) => n.type === 'rule')
-      const globalChildren = children.filter((n) =>
-        hasGlobal((n as { selector?: string }).selector ?? '')
-      )
-      if (
-        globalChildren.length > 0 &&
-        globalChildren.length === children.length
-      ) {
-        const copy = node.clone({ nodes: [] })
-        for (const n of globalChildren) {
-          copy.append(
-            n.clone({
-              selector: unwrapGlobal(
-                (n as { selector?: string }).selector ?? ''
-              )
-            })
-          )
-        }
-        globalRoot.append(copy)
-      } else {
-        // 混合或纯局部:整段走 scoped 处理
-        localRoot.append(node.clone())
-      }
-    } else {
-      localRoot.append(node.clone())
-    }
-  }
+  globalRoot.append(global)
+
   return { local: localRoot.toString(), global: globalRoot.toString() }
 }
 
