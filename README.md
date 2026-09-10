@@ -1,6 +1,5 @@
 # VitePress React 📝💨
 
-[![test](https://github.com/ALiuYiLin/vitepress-react/actions/workflows/test.yml/badge.svg?branch=main)](https://github.com/ALiuYiLin/vitepress-react/actions/workflows/test.yml)
 [![npm](https://img.shields.io/npm/v/@10coding/vitepress-react/next)](https://www.npmjs.com/package/@10coding/vitepress-react/v/next)
 
 ---
