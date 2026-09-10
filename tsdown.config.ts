@@ -134,6 +134,20 @@ function clientAssets(): Rolldown.Plugin {
 // css 文件里的 `:global(...)` 规则(后代元素不属于本组件 scope,例如渲染在
 // 子组件里或由 innerHTML 注入的 svg)会被拆到产物的“全局段”:局部段经
 // transformScopedCss 追加 [data-v-{hash}],全局段保持原选择器不追加。
+//
+// TODO(jsx-scoped):这里的 unwrapGlobal / partitionGlobalCss 只是本仓库的
+// 构建期补丁,`:global()` 的正解应由 @10coding/postcss-jsx-scoped 在选择器
+// AST 层处理(与 Vue @vue/compiler-sfc 一致),原因与待办语义:
+//   - `:global()` 目前在 dev 路径完全没实现:Vite 插件最终调
+//     transformScopedCss(packages/vite/src/pipeline.ts),dev 里选择器会变成
+//     `:global(.a)[data-v-x]` —— 浏览器把它当无效选择器整条丢弃,规则永不生效;
+//     build 才靠本文件补丁救回来 → dev/build 行为不一致。
+//   - 期望语义:解包 `:global(...)`,`[data-v-x]` 落在最后一个“非 global”
+//     compound 上;整条全 global 时不加 attr;`:deep(...)` 解包且 attr 落在其
+//     前一个 compound(Vue 语义);at-rule 递归天然覆盖,且规则位置不移动
+//     (cascade 顺序比现在“global 段挪到文件末尾”更正确)。
+//   - 迁移:上游支持后删除本文件的 unwrapGlobal/partitionGlobalCss,只保留
+//     transformScopedCss,并升依赖(vite-plugin-jsx-scoped / postcss-jsx-scoped)。
 const COMPONENTS_DIR = path.join(ROOT, 'src/client/theme-default/components')
 
 function unwrapGlobal(selector: string): string {
