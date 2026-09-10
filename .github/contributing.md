@@ -36,6 +36,15 @@ $ pnpm simple-git-hooks
 
 ### Setup VitePress Dev Environment
 
+> [!WARNING]
+> **Do not commit symlinks.** This repo is developed on Windows
+> (`core.symlinks=false`, where a checked-out symlink degrades into a small text
+> file) and built on Linux CI (where it is a real symlink). If a symlink's
+> "target" ends up holding the file's own content, `git checkout` on Linux fails
+> with `unable to create symlink … File name too long`, which breaks every
+> workflow at the checkout step. Commit a regular file instead — keep sources in
+> `art/` and copy them into `docs/public/`.
+
 The easiest way to start testing out VitePress is to tweak the VitePress docs. You may run `pnpm run docs` to boot up VitePress documentation site locally, with live reloading of the source code.
 
 ```sh
