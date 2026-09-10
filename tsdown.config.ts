@@ -20,16 +20,25 @@ rmSync(path.join(ROOT, 'dist'), {
   maxRetries: 10
 })
 
-const normalizePath = (p: string): string => {
-  const normalized = p.replaceAll('\\', '/')
-  return process.platform === 'win32' ? normalized.toLowerCase() : normalized
-}
+/**
+ * POSIX 化路径:只统一分隔符,**不改大小写**。
+ * 用于产物文件名与 scope hash 种子——两者都必须逐字节稳定,否则在 Windows
+ * 上构建出来的包(文件名被小写)拿到 Linux 上会因大小写不匹配而找不到文件;
+ * hash 种子大小写不同还会让同一份源码在两平台产出不同的 data-v-{hash}。
+ */
+const toPosixPath = (p: string): string => p.replaceAll('\\', '/')
 
-const TYPES_DIR = normalizePath(path.join(ROOT, 'types')) + '/'
+/**
+ * 比较用路径:统一小写后再比(Windows 文件系统大小写不敏感,同一文件可能以
+ * 不同拼写出现;只在比较/前缀判定里使用,绝不用于生成文件名)。
+ */
+const foldPath = (p: string): string => toPosixPath(p).toLowerCase()
+
+const TYPES_DIR = foldPath(path.join(ROOT, 'types')) + '/'
 
 function isRootTypes(id: string, importer: string | undefined): boolean {
   if (!importer || !/^\.\.?\//.test(id)) return false
-  const resolved = normalizePath(path.resolve(path.dirname(importer), id))
+  const resolved = foldPath(path.resolve(path.dirname(importer), id))
   return resolved.startsWith(TYPES_DIR)
 }
 
@@ -116,7 +125,9 @@ function clientAssets(): Rolldown.Plugin {
         this.addWatchFile(file)
         this.emitFile({
           type: 'asset',
-          fileName: normalizePath(entry),
+          // 保持原始大小写:组件的相对 css 导入(VPSidebarGroup.scoped.css)
+          // 是逐字节比较的,小写化只在大小写不敏感的文件系统上"看起来"正常
+          fileName: toPosixPath(entry),
           source: readFileSync(file)
         })
       }
@@ -216,7 +227,7 @@ function partitionGlobalCss(css: string): { local: string; global: string } {
 }
 
 function scopedRelPath(fileAbs: string): string {
-  return normalizePath(path.relative(ROOT, fileAbs))
+  return toPosixPath(path.relative(ROOT, fileAbs))
 }
 
 // 变量当标签的组件(如 const Comp = tag || 'a' 后的 <Comp>)通过 marker
@@ -240,10 +251,9 @@ function themeScoped(): Rolldown.Plugin {
   return {
     name: 'vitepress:theme-scoped',
     transform(code, id) {
-      const normalized = normalizePath(id)
+      const normalized = foldPath(id)
       if (!normalized.endsWith('.tsx')) return
-      if (!normalized.startsWith(normalizePath(COMPONENTS_DIR + path.sep)))
-        return
+      if (!normalized.startsWith(foldPath(COMPONENTS_DIR + path.sep))) return
       if (!/\.scoped\.css/.test(code)) return
       const attr = computeScopeAttr(scopedRelPath(id), 8)
       let result
