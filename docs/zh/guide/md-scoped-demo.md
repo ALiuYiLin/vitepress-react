@@ -137,10 +137,10 @@ import './md-scoped-demo.scoped.css'
 下方卡片用的就是 `./md-scoped-demo.scoped.css`(本页顶部 `<script>` 已真实导入;
 类名由独立一行的 `{.md-scoped-card}` 注入):
 
-{.md-scoped-card}
+
 
 **加粗文字**的 danger 色来自外部 scoped 文件的选择器
-`.md-scoped-card strong`(同样被 scope 化)。
+`.md-scoped-card strong`(同样被 scope 化)。{.md-scoped-card}
 
 ## 用法三:选择器宏(`:global()` / `:deep()`)
 
