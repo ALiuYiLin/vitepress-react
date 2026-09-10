@@ -60,6 +60,22 @@ test.each(variations)('init %s', async (_, { theme, useTs }) => {
     await goto('/')
     expect(await page.textContent('h1')).toMatch('My Awesome Project')
 
+    // 回归:dev 没有生成的 vp-icons.css,useIcon 必须按需取
+    // /_vpi/<collection>/<name>.svg(否则 --icon 只剩空 SVG,mask 画出空白)
+    if (theme !== ScaffoldThemeType.Custom) {
+      await page.waitForFunction(
+        () => {
+          const span = document.querySelector('.VPSocialLink span')
+          if (!span) return false
+          return getComputedStyle(span)
+            .getPropertyValue('--icon')
+            .includes('/_vpi/simple-icons/github.svg')
+        },
+        undefined,
+        { timeout: 5000 }
+      )
+    }
+
     await page.click('a[href="/markdown-examples.html"]')
     await page.waitForFunction('document.querySelector("pre code")')
     expect(await page.textContent('h1')).toMatch('Markdown Extension Examples')

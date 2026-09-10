@@ -2,6 +2,7 @@ import { StrictMode, useEffect, type ReactElement } from 'react'
 import { createRoot, hydrateRoot } from 'react-dom/client'
 
 import RawTheme from '@theme/index'
+import { SSRIconsContext } from './ssr-icons'
 import { VpStoreProvider, createStore, useData, type VpStore } from './data'
 import { createRouter, type Router } from './router'
 import type { Theme } from './theme'
@@ -82,7 +83,17 @@ export interface CreatedApp {
   element: ReactElement
 }
 
-export async function createApp(): Promise<CreatedApp> {
+export interface CreateAppOptions {
+  /**
+   * SSR 图标收集器:服务端渲染时传入,`useIcon()` 会把用到的图标名登记进来,
+   * build 收尾据此生成 `vp-icons.{hash}.css`(见 app/ssr-icons.ts)。
+   */
+  ssrIcons?: Set<string>
+}
+
+export async function createApp(
+  options: CreateAppOptions = {}
+): Promise<CreatedApp> {
   ;(globalThis as any).__VITEPRESS__ = true
 
   const store = createStore()
@@ -97,9 +108,11 @@ export async function createApp(): Promise<CreatedApp> {
 
   const element = (
     <StrictMode>
-      <VpStoreProvider store={store}>
-        <VitePressApp />
-      </VpStoreProvider>
+      <SSRIconsContext.Provider value={options.ssrIcons ?? null}>
+        <VpStoreProvider store={store}>
+          <VitePressApp />
+        </VpStoreProvider>
+      </SSRIconsContext.Provider>
     </StrictMode>
   )
 
