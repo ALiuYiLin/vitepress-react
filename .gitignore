@@ -12,6 +12,8 @@ dist
 cache
 temp
 examples-temp
+# local scratch site scaffolded by `vitepress-react init`
+dooc
 node_modules
 pnpm-global
 TODOs.md
