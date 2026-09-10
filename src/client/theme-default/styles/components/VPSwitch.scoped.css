@@ -35,7 +35,9 @@
   overflow: hidden;
 }
 
-.icon :global([class^='vpi-']) {
+/* 图标 span 由 VPSwitchAppearance 渲染(另一个 scope)→ 用 :deep 进入子作用域,
+   属性只落在本组件的 .icon 上 */
+.icon :deep([class^='vpi-']) {
   position: absolute;
   top: 0.1875rem;
   left: 0.1875rem;
@@ -44,7 +46,9 @@
   color: var(--vp-c-text-2);
 }
 
-:global(.dark) .icon :global([class^='vpi-']) {
+/* `.dark` 在 <html> 上:只取最后一个复合选择器的 scoped 属性,故这里天然全局;
+   单个选择器里不要出现两个宏(第二个不会被展开) */
+.dark .icon :deep([class^='vpi-']) {
   color: var(--vp-c-text-1);
   transition: opacity 0.25s;
 }

@@ -7,7 +7,6 @@ import {
   jsxScopedBabelPlugin
 } from '@10coding/plugin-jsx-scoped'
 import { transformScopedCss } from '@10coding/postcss-jsx-scoped'
-import postcss from 'postcss'
 import { defineConfig, type Rolldown, type UserConfig } from 'tsdown'
 
 const ROOT = import.meta.dirname
@@ -142,89 +141,17 @@ function clientAssets(): Rolldown.Plugin {
 // dist 里 css 导入保持普通相对路径(clientAssets 的 external),消费站点的
 // bundler 当普通 css 处理——不需要运行时虚拟模块,跨机器可发布。
 //
-// css 文件里的 `:global(...)` 规则(后代元素不属于本组件 scope,例如渲染在
-// 子组件里或由 innerHTML 注入的 svg)会被拆到产物的“全局段”:局部段经
-// transformScopedCss 追加 [data-v-{hash}],全局段保持原选择器不追加。
-//
-// TODO(jsx-scoped):这里的 unwrapGlobal / partitionGlobalCss 只是本仓库的
-// 构建期补丁,`:global()` 的正解应由 @10coding/postcss-jsx-scoped 在选择器
-// AST 层处理(与 Vue @vue/compiler-sfc 一致),原因与待办语义:
-//   - `:global()` 目前在 dev 路径完全没实现:Vite 插件最终调
-//     transformScopedCss(packages/vite/src/pipeline.ts),dev 里选择器会变成
-//     `:global(.a)[data-v-x]` —— 浏览器把它当无效选择器整条丢弃,规则永不生效;
-//     build 才靠本文件补丁救回来 → dev/build 行为不一致。
-//   - 期望语义:解包 `:global(...)`,`[data-v-x]` 落在最后一个“非 global”
-//     compound 上;整条全 global 时不加 attr;`:deep(...)` 解包且 attr 落在其
-//     前一个 compound(Vue 语义);at-rule 递归天然覆盖,且规则位置不移动
-//     (cascade 顺序比现在“global 段挪到文件末尾”更正确)。
-//   - 迁移:上游支持后删除本文件的 unwrapGlobal/partitionGlobalCss,只保留
-//     transformScopedCss,并升依赖(vite-plugin-jsx-scoped / postcss-jsx-scoped)。
+// 选择器宏(`:global(...)` / `:deep(...)`)由 @10coding/postcss-jsx-scoped
+// 0.2.0 在选择器 AST 层处理(与 Vue @vue/compiler-sfc 一致),这里只需把整份
+// css 交给 transformScopedCss:宏所在规则就地改写、位置不移动,dev(vite 插件
+// 走同一个 postcss 插件)与 build 行为因此一致。语义要点:
+//   - `:global(.x)`:括号内不加 scoped 属性,其余照常;无前后缀时整条全局;
+//   - `:deep(.x)`:进入子组件作用域,属性落在左侧最后一个复合选择器上;
+//   - 同一选择器里只认第一个宏,不要写两个(第二个不会被展开);
+//   - 只支持函数式写法,`>>>` / `/deep/` / `::v-deep` 等旧别名按普通伪类处理;
+//   - scoped 作用域内 @keyframes 动画名会追加 -{scopeAttr} 后缀(可用
+//     transformScopedCss 的 scopeKeyframes: false 关闭)。
 const COMPONENTS_DIR = path.join(ROOT, 'src/client/theme-default/components')
-
-function unwrapGlobal(selector: string): string {
-  // :global(…) 内部允许一层括号(如 :not(.dark));展开后去掉包装
-  return selector.replaceAll(/:global\(\s*((?:[^()]|\([^()]*\))*?)\s*\)/g, '$1')
-}
-function hasGlobal(selector: string): boolean {
-  return selector.includes(':global(')
-}
-
-type CssPartition = { local: postcss.ChildNode[]; global: postcss.ChildNode[] }
-
-/**
- * 递归拆分 css 节点:`:global(...)` 规则解包后进"全局段",其余进"局部段"。
- *
- * at-rule(@media/@supports/…) 内部按子节点递归,**混合内容会拆成同一个
- * at-rule 的两份**:局部子规则那份留给 transformScopedCss 追加
- * [data-v-{hash}],全局子规则那份解包后进全局段。
- *
- * 早前的实现只处理"全部子规则都是 :global" 的 at-rule,混合时整段退回局部
- * 处理 → `:global(...)` 包装泄漏进产物(`:global(.x)[data-v-y]`):lightningcss
- * 会警告 'global' is not a recognized pseudo-class,浏览器则整条忽略该规则。
- */
-function splitGlobalNodes(nodes: readonly postcss.ChildNode[]): CssPartition {
-  const part: CssPartition = { local: [], global: [] }
-
-  for (const node of nodes) {
-    if (node.type === 'rule') {
-      if (hasGlobal(node.selector)) {
-        part.global.push(node.clone({ selector: unwrapGlobal(node.selector) }))
-      } else {
-        part.local.push(node.clone())
-      }
-      continue
-    }
-
-    if (node.type === 'atrule' && node.nodes) {
-      const inner = splitGlobalNodes(node.nodes)
-      const withChildren = (children: postcss.ChildNode[]) => {
-        const copy = node.clone({ nodes: [] })
-        copy.append(children)
-        return copy
-      }
-      if (inner.local.length) part.local.push(withChildren(inner.local))
-      if (inner.global.length) part.global.push(withChildren(inner.global))
-      continue
-    }
-
-    part.local.push(node.clone())
-  }
-
-  return part
-}
-
-function partitionGlobalCss(css: string): { local: string; global: string } {
-  const root = postcss.parse(css)
-  const { local, global } = splitGlobalNodes(root.nodes)
-
-  const localRoot = postcss.root()
-  localRoot.append(local)
-
-  const globalRoot = postcss.root()
-  globalRoot.append(global)
-
-  return { local: localRoot.toString(), global: globalRoot.toString() }
-}
 
 function scopedRelPath(fileAbs: string): string {
   return toPosixPath(path.relative(ROOT, fileAbs))
@@ -294,9 +221,8 @@ function themeScoped(): Rolldown.Plugin {
           typeof file.source === 'string'
             ? file.source
             : Buffer.from(file.source).toString('utf8')
-        const { local, global } = partitionGlobalCss(raw)
-        const scoped = await transformScopedCss(local, attr)
-        file.source = global ? `${scoped}\n${global}` : scoped
+        // 宏(:global/:deep)与 @keyframes 改名都由上游 postcss 插件处理
+        file.source = await transformScopedCss(raw, attr)
       }
     }
   }

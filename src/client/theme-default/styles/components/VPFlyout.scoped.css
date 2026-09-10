@@ -16,11 +16,14 @@
   fill: var(--vp-c-text-2);
 }
 
-.root:global(.active) .text {
+/* active 由父组件(VPNavBarMenuGroup)以 className 传进来,和 .root 同元素;
+   写成复合选择器,scoped 属性落在末尾的 .text 上(与 Vue 编译结果一致)。
+   注意不要写成 `.root:global(.active)`:宏展开会把复合关系变成后代关系。 */
+.root.active .text {
   color: var(--vp-c-brand-1);
 }
 
-.root:global(.active):hover .text {
+.root.active:hover .text {
   color: var(--vp-c-brand-2);
 }
 

@@ -12,10 +12,11 @@
   transition: color 0.25s;
 }
 
-/* 与 Vue VPSocialLink.vue 一致:以唯一类为作用域,而不是泛化的 `.link`。
-   `.link :global(span)` 会被 scoped 模拟漏成全局规则,命中所有 `.link`
-   的子孙 span(顶栏菜单 VPNavBarMenuLink 的文本 span 被当成 20px 图标容器
-   压缩 → 长文本溢出、元素挤作一团)。 */
+/* 以唯一类为作用域,而不是泛化的 `.link`:图标 span 由 VPIcon 渲染(另一个
+   scope),用 `:global(...)` 进入子作用域——展开后是
+   `.VPSocialLink[data-v-x] span`,前缀仍带本组件属性,泛化的 `.link`
+   会把顶栏菜单 VPNavBarMenuLink 的文本 span 一并命中(长文本溢出、元素挤作
+   一团)。 */
 .VPSocialLink :global(span) {
   display: flex;
   width: 1.25rem;

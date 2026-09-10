@@ -142,6 +142,34 @@ import './md-scoped-demo.scoped.css'
 **加粗文字**的 danger 色来自外部 scoped 文件的选择器
 `.md-scoped-card strong`(同样被 scope 化)。
 
+## 用法三:选择器宏(`:global()` / `:deep()`)
+
+scoped 样式里可用 Vue 同款的两个选择器宏,它们在**选择器 AST 层**展开(dev 与
+build 行为一致),`*.scoped.css` 与 `<style scoped>` 都支持:
+
+| 写法                | 展开结果                 | 语义                                        |
+| ------------------- | ------------------------ | ------------------------------------------- |
+| `:global(.x)`       | `.x`                     | 整条全局(不带任何 `data-v-*`)             |
+| `.a :global(.b)`    | `.a[data-v-x] .b`        | `.a` 仍属本页,`.b` 不加 scope               |
+| `.a :global(.b) .c` | `.a[data-v-x] .b .c[data-v-x]` | 只有括号内放行,`.c` 回到本页         |
+| `.a :deep(.b)`      | `.a[data-v-x] .b`        | 进入子组件作用域(`.b` 起不再加 scope)      |
+| `:deep(.b)`         | `[data-v-x] .b`          | 从本页普通元素开始,命中子组件内部元素       |
+
+::: warning 注意点
+
+- 只支持**函数式**写法;`>>>`、`/deep/`、`::v-deep` 等旧别名会被当作普通伪类,
+  按普通规则追加 scope 属性。
+- 一条选择器里**只认第一个宏**:写两个(如 `:global(.dark) .a :global(.b)`)
+  时第二个不会展开、会原样残留在 CSS 里,浏览器按无效选择器整条丢弃。需要整条
+  全局时把整条选择器放进一个宏:`:global(.dark .a .b)`。
+- 复合写法 `.a:global(.b) .c` 会被展开成**后代**关系(`.a[data-v-x] .b .c[…]`),
+  与 Vue 的复合语义不同;这种场景直接写普通复合选择器 `.a.b .c` 即可。
+
+:::
+
+scoped 文件里的 `@keyframes` 会自动改名为 `name-data-v-{hash}`(避免不同页面/组件
+的同名动画互相覆盖),同文件内的 `animation` / `animation-name` 引用会同步改写。
+
 ## 作用域语义与注意点
 
 - **hash 唯一**:`data-v-{hash}` 由 md 文件绝对路径生成,每一页各不相同;
@@ -155,6 +183,11 @@ import './md-scoped-demo.scoped.css'
   出现在一页;
 - **失败降级**:极少数语法边界导致页面代码无法解析时,管线会告警并跳过 scoped
   处理,页面照常编译;
+- **同一进程只能有一份 jsx-scoped 插件实例**:内联 `<style scoped>` 的虚拟模块
+  靠插件实例的会话级 registry 传递内容。monorepo / 多包共存时若各 workspace
+  锁定了不同版本(安装出两份物理副本),registry 单例会分裂,`load` 阶段就会报
+  `找不到组件 … 第 0 个 <style scoped>(内容或顺序已变化?)`——把各处的
+  `@10coding/vite-plugin-jsx-scoped`、`@10coding/postcss-jsx-scoped` 版本对齐即可;
 - **构建产物**:scoped css 交给 Vite css 管线(dev 注入 + HMR,build 抽取成 css
   资源、仅由对应页面引入)。
 
