@@ -15,10 +15,21 @@ import llmstxt from 'vitepress-plugin-llms'
 // 但把配置里的 /zh/ 前缀路径改写为根路径(zh/*.md 经 rewrites 挂到 '/')。
 import zhConfig, { markdown as zhMarkdown } from '../zh/config.ts'
 
-const prod = !!process.env.NETLIFY
-const siteUrl = 'https://vitepress.dev'
+// GitHub Pages 的项目站点服务在 `/<repo>/` 子路径下,base 必须与之一致:
+// 由部署工作流注入 DOCS_BASE=/vitepress-react/;本地开发/预览保持根路径。
+const base = process.env.DOCS_BASE || '/'
+// 站点部署地址(**含部署子路径**;GitHub Pages 项目站点即 origin + /<repo>/),
+// 换域名 / 换平台时用 DOCS_SITE_URL 覆盖(例如仍部署在 Netlify 时)。
+// 必须以 `/` 结尾:否则 `new URL('guide/x', siteUrl)` 会把它当文件路径,
+// 吃掉最后一段。
+const siteUrl =
+  (
+    process.env.DOCS_SITE_URL || 'https://aliuyilin.github.io/vitepress-react'
+  ).replace(/\/+$/, '') + '/'
+// 生产构建:Netlify(历史部署),或由工作流显式声明 DOCS_PROD=1
+const prod = !!process.env.NETLIFY || process.env.DOCS_PROD === '1'
 
-const ogImage = new URL('/vitepress-og.jpg', siteUrl).href
+const ogImage = new URL('vitepress-og.jpg', siteUrl).href
 
 /** 把对象里的 /zh/ 路径前缀改写为根路径(纯字符串替换,配置无函数字段) */
 function toRootPaths<T>(value: T): T {
@@ -38,6 +49,7 @@ function toRootPaths<T>(value: T): T {
 const zhTheme = toRootPaths(zhConfig.themeConfig ?? {})
 
 export default defineConfig({
+  base,
   title: 'VitePress-React',
   description: zhConfig.description,
   lang: 'zh-Hans',
@@ -70,6 +82,8 @@ export default defineConfig({
   },
 
   sitemap: {
+    // sitemap 的 hostname 需要以 `/` 结尾(否则 URL 解析会吃掉最后一段路径);
+    // siteUrl 已含部署子路径,因此这里直接用它。
     hostname: siteUrl,
     transformItems(items) {
       return items.filter((item) => !item.url.includes('migration'))
@@ -78,8 +92,8 @@ export default defineConfig({
 
   // prettier-ignore
   head: [
-    ['link', { rel: 'icon', type: 'image/svg+xml', href: '/vitepress-logo-mini.svg' }],
-    ['link', { rel: 'icon', type: 'image/png', href: '/vitepress-logo-mini.png' }],
+    ['link', { rel: 'icon', type: 'image/svg+xml', href: `${base}vitepress-logo-mini.svg` }],
+    ['link', { rel: 'icon', type: 'image/png', href: `${base}vitepress-logo-mini.png` }],
     ['meta', { name: 'theme-color', content: '#5f67ee' }],
     ['script', { src: 'https://cdn.usefathom.com/script.js', 'data-site': 'AZBRSFGG', 'data-spa': 'auto', defer: '' }]
   ],
@@ -120,7 +134,16 @@ export default defineConfig({
           firebase: 'logos:firebase'
         }
       }),
-      prod && llmstxt({ workDir: 'zh', ignoreFiles: ['index.md'] })
+      // injectLLMHint 会在 md 源码里插入一段原生 HTML
+      // (`<div style="display: none;" hidden ...>`)——块级 HTML 在本引擎里按
+      // JSX 原文接管,`style="…"` 字符串不是合法的 React style prop,会直接
+      // 让 SSR 报错。插件其余能力(llms.txt / llms-full.txt / 每页 md)不受影响。
+      prod &&
+        llmstxt({
+          workDir: 'zh',
+          ignoreFiles: ['index.md'],
+          injectLLMHint: false
+        })
     ]
   },
 
@@ -128,7 +151,7 @@ export default defineConfig({
   transformPageData: prod ? (pageData, ctx) => {
     const url = new URL(pageData.relativePath.replace(/(?:(^|\/)index)?\.md$/, '$1'), siteUrl).href
     const site = resolveSiteDataByRoute(ctx.siteConfig.site, pageData.relativePath)
-    const title = pageData.title ? `${pageData.title} | VitePress` : site.title
+    const title = pageData.title ? `${pageData.title} | VitePress-React` : site.title
     const description = pageData.description || site.description
 
     ;((pageData.frontmatter.head ??= []) as HeadConfig[]).push(
@@ -136,7 +159,7 @@ export default defineConfig({
       ['meta', { property: 'og:title', content: title }],
       ['meta', { property: 'og:description', content: description }],
       ['meta', { property: 'og:locale', content: 'zh_CN' }],
-      ['meta', { property: 'og:site_name', content: 'VitePress' }],
+      ['meta', { property: 'og:site_name', content: 'VitePress-React' }],
       ['meta', { property: 'og:image', content: ogImage }],
       ['meta', { property: 'og:image:secure_url', content: ogImage }],
       ['meta', { property: 'og:image:type', content: 'image/jpeg' }],

@@ -1,0 +1,85 @@
+name: Deploy docs
+
+# 部署文档站到 GitHub Pages(项目站点:https://aliuyilin.github.io/vitepress-react/)
+# 首次使用前需在仓库 Settings → Pages → Build and deployment → Source 选择
+# “GitHub Actions”。
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'docs/**'
+      - 'src/**'
+      - 'types/**'
+      - 'template/**'
+      - 'package.json'
+      - 'pnpm-lock.yaml'
+      - 'tsdown.config.ts'
+      - '.github/workflows/deploy-docs.yml'
+  workflow_dispatch:
+
+# 只允许一个部署并发;正在部署时不打断(pages 部署中途取消会留下不完整产物)
+concurrency:
+  group: pages
+  cancel-in-progress: false
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v7
+
+      # 版本与本地保持一致:pnpm 由 package.json 的 packageManager 决定(11.24.0),
+      # node 与 test.yml 的矩阵一致(本地为 24)
+      - name: Install pnpm
+        uses: pnpm/action-setup@v6
+
+      - name: Set node version to 24
+        uses: actions/setup-node@v7
+        with:
+          node-version: 24
+          cache: pnpm
+
+      - name: Install deps
+        run: pnpm install
+        env:
+          PLAYWRIGHT_SKIP_BROWSER_DOWNLOAD: 1
+
+      # 根脚本会先 `pnpm build`(docs 站依赖 workspace 里的包产物),再构建文档站
+      - name: Build docs
+        run: pnpm docs:build
+        env:
+          # 项目站点部署在子路径下:base 必须与仓库名一致,否则静态资源 404
+          DOCS_BASE: /vitepress-react/
+          # sitemap/og 用的站点地址
+          DOCS_SITE_URL: https://aliuyilin.github.io/vitepress-react
+          # 视为生产构建(og 标签、llms.txt 等)
+          DOCS_PROD: '1'
+
+      - name: Setup Pages
+        uses: actions/configure-pages@v5
+
+      - name: Upload artifact
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: docs/.vitepress-react/dist
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+
+    steps:
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4
