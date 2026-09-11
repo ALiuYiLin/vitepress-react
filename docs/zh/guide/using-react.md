@@ -196,9 +196,8 @@ export default function Page() {
   return (
     <div className="vp-doc">
       <p>{/* JSX md:… */}当前计数: <>{count}</></p>
-      <p>
-        <button onClick={() => setCount(count + 1)}>+1</button>
-      </p>
+      {/* JSX md:… */}
+      <button onClick={() => setCount(count + 1)}>+1</button>
     </div>
   )
 }

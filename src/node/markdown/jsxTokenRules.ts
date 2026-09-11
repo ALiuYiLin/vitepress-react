@@ -23,7 +23,12 @@ import {
   SCRIPT_SETUP_TAG_OPEN_RE,
   type PlaceholderStore
 } from './placeholders'
-import { hasVueishAttr, tagDepth, VOID_HTML_TAGS } from './jsxLexer'
+import {
+  hasVueishAttr,
+  scanElement,
+  tagDepth,
+  VOID_HTML_TAGS
+} from './jsxLexer'
 
 /** <script setup> 开标签判定(与 @mdit-vue/plugin-sfc 一致:setup 命中即 scriptSetup) */
 const SCRIPT_OPEN_RE = /^ {0,3}<script\b(?![^>]*\bclient\b)[^>]*>/i
@@ -310,6 +315,91 @@ function fragmentBlockRule(
 }
 
 // ------------------------------------------------------------
+// D:作者手写元素(HTML 标签 / 组件标签 / <></>)
+// 语义契约:正文里作者写的标签就是 **JSX 元素**,一律原样交给 React(属性按
+// React JSX 语法写;写 `class` / `style="…"` 属作者写法错误,由 React 侧规则
+// 报错/告警)。只有 md 层自己生成的 HTML(attrs {.class}、锚点、容器、Shiki…)
+// 才在序列化时做属性转换。
+//
+// 之所以需要本规则:markdown-it 的 inline HTML 语法不接受"未加引号且含空格的
+// 属性值"(如 `onClick={() => …}`),这类作者标签根本不会被 token 化,旧的
+// "纯 HTML 段落/HTML 块"判定也就接管不到,最终退化成字面文本(并丢掉闭合标签)。
+// 这里用自带的括号感知扫描器切出整段元素,不再依赖 md-it 的 HTML 语法。
+// ------------------------------------------------------------
+
+/** 作者元素是否值得接管:非 Vue 写法 + 元素可配平 */
+function authorElementAt(
+  src: string,
+  pos: number
+): { raw: string; end: number } | null {
+  const el = scanElement(src, pos)
+  if (!el) return null
+  const raw = src.slice(pos, el.end)
+  if (hasVueishAttr(raw)) return null // Vue 指令/插值:交回旧 HTML 路径(丢弃并提示)
+  return { raw, end: el.end }
+}
+
+/** D-行内:句子里出现的作者元素(<span>…</span> / <Foo … /> / <></>) */
+function elementRule(state: any, silent: boolean): boolean {
+  const src = state.src
+  if (src.charCodeAt(state.pos) !== 60 /* < */) return false
+  const next = src[state.pos + 1]
+  if (next === '>' || next === '/' || next === '!') return false
+  const hit = authorElementAt(src, state.pos)
+  if (!hit) return false
+  if (silent) return true
+  const token = state.push('vp_jsx', '', 0)
+  token.content = hit.raw
+  token.map = state.env?.map ?? null
+  state.pos = hit.end
+  return true
+}
+
+/** D-块级:整行(可跨行到配平)的作者元素,整段占位以免被包进 <p> */
+function elementBlockRule(
+  state: any,
+  startLine: number,
+  _endLine: number,
+  silent: boolean
+): boolean {
+  if (state.tShift[startLine] !== 0) return false
+  const sp = state.bMarks[startLine] + state.tShift[startLine]
+  const first = state.src.slice(sp, state.eMarks[startLine])
+  if (!/^<[A-Za-z]/.test(first)) return false
+
+  const lines: string[] = [first]
+  let cur = startLine
+  let done = false
+  const closes = (joined: string) => {
+    const el = scanElement(joined, 0)
+    return el != null && el.end === joined.length
+  }
+  if (closes(first)) {
+    done = true
+  } else {
+    for (let nl = startLine + 1; nl < state.lineMax; nl++) {
+      const p = state.bMarks[nl] + state.tShift[nl]
+      lines.push(state.src.slice(p, state.eMarks[nl]))
+      cur = nl
+      if (closes(lines.join('\n'))) {
+        done = true
+        break
+      }
+    }
+  }
+  if (!done) return false
+  const raw = lines.join('\n')
+  if (hasVueishAttr(raw)) return false // Vue 写法:交回旧路径
+  if (silent) return true
+  const env: any = state.env
+  const placeholder = markRaw(env, raw, startLine + 1)
+  const token = state.push('vp_jsx_block', '', 0)
+  token.content = placeholder
+  state.line = cur + 1
+  return true
+}
+
+// ------------------------------------------------------------
 // C:core 末段接管判定(html_block / 纯 HTML 段落 / fragment 落 marker)
 // ------------------------------------------------------------
 function collectRule(state: any): void {
@@ -416,9 +506,19 @@ function convertFragmentChildren(
   }
 }
 
-/** 注册 A/B/C 全部规则(在 createMarkdownRenderer 内、用户 config 之后调用) */
-export function applyJsxTokenRules(md: any): void {
+/** 注册 A/B/C/D 全部规则(在 createMarkdownRenderer 内、用户 config 之后调用) */
+export function applyJsxTokenRules(
+  md: any,
+  options: { authorTags?: boolean } = {}
+): void {
   md.inline.ruler.before('text', 'vp_jsx_fragment', fragmentRule)
+  // D:作者元素(<Tag …>…</Tag> / <Foo … />)在行内与块级两个入口接管。
+  // markdown.component === false 时不启用(与 @mdit-vue/plugin-component 的
+  // 关闭语义一致:标签保持字面 HTML,不交给 React)。
+  if (options.authorTags !== false) {
+    md.inline.ruler.before('text', 'vp_jsx_element', elementRule)
+    md.block.ruler.before('paragraph', 'vp_element_block', elementBlockRule)
+  }
   md.block.ruler.before('html_block', 'vp_script', scriptRule)
   md.block.ruler.before('paragraph', 'vp_react_container', reactContainerRule)
   md.block.ruler.before('paragraph', 'vp_fragment_block', fragmentBlockRule)

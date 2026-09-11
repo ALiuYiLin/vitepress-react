@@ -594,7 +594,7 @@ export async function createMarkdownRenderer(
 
   // Token 级 JSX 区域规则(A script 块 / B Fragment / C 接管判定):
   // 在用户 config 之后注册,collect(core.push)保证排在全链最后(anchor 后)。
-  applyJsxTokenRules(md)
+  applyJsxTokenRules(md, { authorTags: options.component !== false })
 
   return md
 }
