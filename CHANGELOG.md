@@ -1,3 +1,5 @@
+# Changelog
+
 ## [2.0.0-alpha.19](https://github.com/vuejs/vitepress/compare/v2.0.0-alpha.18...v2.0.0-alpha.19) (2026-08-02)
 
 ### Bug Fixes

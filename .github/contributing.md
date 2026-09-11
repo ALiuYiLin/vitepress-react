@@ -21,6 +21,10 @@ Hi! We're really excited that you are interested in contributing to VitePress. B
 
 - Commit messages must follow the [commit message convention](/.github/commit-convention.md) so that changelogs can be automatically generated.
 
+- User-facing changes need a changeset: run `pnpm changeset` and describe the
+  change. `CHANGELOG.md` and the released version are generated from those files
+  — see [.changeset/README.md](/.changeset/README.md).
+
 ## Development Setup
 
 You will need [Node.js](https://nodejs.org) v20 or higher and [pnpm](https://pnpm.io).

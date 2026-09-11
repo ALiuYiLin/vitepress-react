@@ -91,9 +91,13 @@
     "check": "pnpm format:fail && pnpm build && git ls-files --error-unmatch THIRD-PARTY-NOTICES.md && git diff --exit-code -- THIRD-PARTY-NOTICES.md && pnpm test",
     "changelog": "conventional-changelog -p angular -i CHANGELOG.md -s",
     "changeset": "changeset",
+    "changeset:status": "changeset status --verbose",
     "changeset:version": "changeset version",
-    "changeset:publish": "pnpm build && changeset publish --tag next",
-    "release": "node scripts/release.ts"
+    "changeset:publish": "changeset publish",
+    "changeset:pre:enter": "changeset pre enter alpha",
+    "changeset:pre:exit": "changeset pre exit",
+    "release": "pnpm changeset:pre:enter && pnpm changeset:version && pnpm build && pnpm changeset:pre:exit && git add package.json CHANGELOG.md THIRD-PARTY-NOTICES.md .changeset && git commit -m \"chore: release\" && pnpm changeset:publish --tag next && git push origin HEAD --tags",
+    "release:stable": "pnpm changeset:version && pnpm build && git add package.json CHANGELOG.md THIRD-PARTY-NOTICES.md .changeset && git commit -m \"chore: release\" && pnpm changeset:publish --tag latest && git push origin HEAD --tags"
   },
   "simple-git-hooks": {
     "pre-commit": "pnpm lint-staged"
