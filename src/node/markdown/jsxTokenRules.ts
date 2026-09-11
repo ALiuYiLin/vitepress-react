@@ -23,12 +23,7 @@ import {
   SCRIPT_SETUP_TAG_OPEN_RE,
   type PlaceholderStore
 } from './placeholders'
-import {
-  hasVueishAttr,
-  scanElement,
-  tagDepth,
-  VOID_HTML_TAGS
-} from './jsxLexer'
+import { hasVueishAttr, scanElement, VOID_HTML_TAGS } from './jsxLexer'
 
 /** <script setup> 开标签判定(与 @mdit-vue/plugin-sfc 一致:setup 命中即 scriptSetup) */
 const SCRIPT_OPEN_RE = /^ {0,3}<script\b(?![^>]*\bclient\b)[^>]*>/i
@@ -41,12 +36,6 @@ const SCRIPT_CLOSE_RE = /<\/script>\s*$/
 function ensureStore(env: any): PlaceholderStore {
   if (!env.jsxStore) env.jsxStore = []
   return env.jsxStore
-}
-
-/** 开标签名(小写);非标签/空名返回 '' */
-function tagNameOf(raw: string): string {
-  const m = /^<\/?([A-Za-z][A-Za-z0-9-]*)/.exec(raw.trim())
-  return m ? m[1].toLowerCase() : ''
 }
 
 /**
@@ -132,18 +121,6 @@ function hasJsxInterior(raw: string): boolean {
   // 跳过注释与字符串近似后看是否含 { —— 简单起见直接找,字符串内的
   // 字面 { 属罕见作者场景,可接受
   return inner.includes('{')
-}
-
-/** 判断整段 raw 是否可整体接管(与旧 maskJsxHtmlLines 的门槛对齐) */
-function canTakeoverRaw(raw: string): boolean {
-  const text = raw.trim()
-  // 注释/关闭标签起头 → 机器 HTML 路径(序列化器正确处理注释)
-  if (!text || text.startsWith('</') || text.startsWith('<!--')) return false
-  const name = tagNameOf(text)
-  if (name === 'script' || name === 'style') return false
-  if (hasVueishAttr(text)) return false
-  if (tagDepth(text) !== 0) return false
-  return true
 }
 
 /** 把原文写入 store,返回带行号注释的原始文本 */
@@ -315,37 +292,65 @@ function fragmentBlockRule(
 }
 
 // ------------------------------------------------------------
-// D:作者手写元素(HTML 标签 / 组件标签 / <></>)
+// D:作者手写元素(HTML 标签 / 组件标签 / <></>)—— 作者元素识别的唯一入口
 // 语义契约:正文里作者写的标签就是 **JSX 元素**,一律原样交给 React(属性按
 // React JSX 语法写;写 `class` / `style="…"` 属作者写法错误,由 React 侧规则
 // 报错/告警)。只有 md 层自己生成的 HTML(attrs {.class}、锚点、容器、Shiki…)
-// 才在序列化时做属性转换。
+// 才在序列化时做属性转换——那些 HTML 不经过本规则,由 HTML→JSX 序列化器处理。
 //
 // 之所以需要本规则:markdown-it 的 inline HTML 语法不接受"未加引号且含空格的
-// 属性值"(如 `onClick={() => …}`),这类作者标签根本不会被 token 化,旧的
-// "纯 HTML 段落/HTML 块"判定也就接管不到,最终退化成字面文本(并丢掉闭合标签)。
-// 这里用自带的括号感知扫描器切出整段元素,不再依赖 md-it 的 HTML 语法。
+// 属性值"(如 `onClick={() => …}`),这类作者标签根本不会被 token 化,靠 token
+// 形态判定(旧的"纯 HTML 段落/HTML 块")接管不到,最终退化成字面文本(并丢掉
+// 闭合标签)。这里用自带的括号感知扫描器切出整段元素,不再依赖 md-it 的 HTML 语法。
+//
+// 块级入口注册在 html_block 之前(与 vp_script 同级),这样块级标签(div/table…)
+// 的作者写法也统一走"原始 JSX",而不是被 md-it 的 html_block 抢走后按 HTML 语义
+// 转换;md-it 自己产出的 html_block(HTML 注释、插件改写的源码等)则原样流向
+// 序列化器,由它做属性转换。
 // ------------------------------------------------------------
 
-/** 作者元素是否值得接管:非 Vue 写法 + 元素可配平 */
-function authorElementAt(
+/** script/style 不接管:分别由 vp_script 规则与 SFC/样式管线处理 */
+const NON_JSX_TAGS = new Set(['script', 'style'])
+
+/**
+ * 从 pos 处切出"作者元素序列":一个或多个元素,元素之间与末尾只允许空白。
+ * 返回原文与结束位置;不是元素序列(Vue 写法、涉及 script/style、不配平)返回 null。
+ */
+function authorElementsAt(
   src: string,
   pos: number
 ): { raw: string; end: number } | null {
-  const el = scanElement(src, pos)
-  if (!el) return null
-  const raw = src.slice(pos, el.end)
+  let i = pos
+  let end = pos
+  let count = 0
+  while (i < src.length) {
+    while (i < src.length && /[ \t\r\n]/.test(src[i])) i++
+    if (src[i] !== '<') break
+    const next = src[i + 1]
+    if (next === '/' || next === '!' || next === '>') break
+    const el = scanElement(src, i)
+    if (!el) {
+      // 已经开始读元素但配平失败 → 整个序列作废
+      return count > 0 ? null : null
+    }
+    if (NON_JSX_TAGS.has(el.name.toLowerCase())) return null
+    i = el.end
+    end = el.end
+    count++
+  }
+  if (count === 0) return null
+  const raw = src.slice(pos, end)
   if (hasVueishAttr(raw)) return null // Vue 指令/插值:交回旧 HTML 路径(丢弃并提示)
-  return { raw, end: el.end }
+  return { raw, end }
 }
 
-/** D-行内:句子里出现的作者元素(<span>…</span> / <Foo … /> / <></>) */
+/** D-行内:句子里出现的作者元素(<span>…</span> / <Foo … /> / 相邻多个) */
 function elementRule(state: any, silent: boolean): boolean {
   const src = state.src
   if (src.charCodeAt(state.pos) !== 60 /* < */) return false
   const next = src[state.pos + 1]
   if (next === '>' || next === '/' || next === '!') return false
-  const hit = authorElementAt(src, state.pos)
+  const hit = authorElementsAt(src, state.pos)
   if (!hit) return false
   if (silent) return true
   const token = state.push('vp_jsx', '', 0)
@@ -355,44 +360,42 @@ function elementRule(state: any, silent: boolean): boolean {
   return true
 }
 
-/** D-块级:整行(可跨行到配平)的作者元素,整段占位以免被包进 <p> */
+/** D-块级:整行(可跨行到配平)的作者元素序列,整段占位以免被包进 <p> */
 function elementBlockRule(
   state: any,
   startLine: number,
   _endLine: number,
   silent: boolean
 ): boolean {
-  if (state.tShift[startLine] !== 0) return false
+  // 不限制 tShift:缩进代码由更早的 code 规则消费,这里需要覆盖列表项/引用内的
+  // 作者元素(否则块级标签会被行内规则接管并包进 <p>,产生非法嵌套)
   const sp = state.bMarks[startLine] + state.tShift[startLine]
   const first = state.src.slice(sp, state.eMarks[startLine])
   if (!/^<[A-Za-z]/.test(first)) return false
 
   const lines: string[] = [first]
   let cur = startLine
-  let done = false
-  const closes = (joined: string) => {
-    const el = scanElement(joined, 0)
-    return el != null && el.end === joined.length
+  let hit: { raw: string; end: number } | null = null
+  const wholeLine = (joined: string) => {
+    const seq = authorElementsAt(joined, 0)
+    if (!seq) return null
+    // 元素之后只允许空白(否则这一行是"文字 + 元素",交给行内规则)
+    return joined.slice(seq.end).trim() === '' ? seq : null
   }
-  if (closes(first)) {
-    done = true
-  } else {
+  hit = wholeLine(first)
+  if (!hit) {
     for (let nl = startLine + 1; nl < state.lineMax; nl++) {
       const p = state.bMarks[nl] + state.tShift[nl]
       lines.push(state.src.slice(p, state.eMarks[nl]))
       cur = nl
-      if (closes(lines.join('\n'))) {
-        done = true
-        break
-      }
+      hit = wholeLine(lines.join('\n'))
+      if (hit) break
     }
   }
-  if (!done) return false
-  const raw = lines.join('\n')
-  if (hasVueishAttr(raw)) return false // Vue 写法:交回旧路径
+  if (!hit) return false
   if (silent) return true
   const env: any = state.env
-  const placeholder = markRaw(env, raw, startLine + 1)
+  const placeholder = markRaw(env, hit.raw, startLine + 1)
   const token = state.push('vp_jsx_block', '', 0)
   token.content = placeholder
   state.line = cur + 1
@@ -400,7 +403,10 @@ function elementBlockRule(
 }
 
 // ------------------------------------------------------------
-// C:core 末段接管判定(html_block / 纯 HTML 段落 / fragment 落 marker)
+// C:core 末段落占位(只做两件事:vp_jsx → 占位符、标题内的 Fragment 按字面)
+// 接管判定已全部收敛到 D(作者元素)与 HTML→JSX 序列化器(md 层产出的 HTML,
+// 例如 md-it 的 html_block:HTML 注释、插件改写源码注入的标记)。这里不再
+// 依据 token 形态去"猜"作者意图,避免与 D 形成两处实现。
 // ------------------------------------------------------------
 function collectRule(state: any): void {
   const env: any = state.env
@@ -409,80 +415,13 @@ function collectRule(state: any): void {
 
   for (let i = 0; i < tokens.length; i++) {
     const t = tokens[i]
-
-    // 块级:html_block 整体接管(style/script 与 Vue 特征行除外,交回旧路径)
-    if (t.type === 'html_block') {
-      const raw = t.content.trim()
-      if (raw && canTakeoverRaw(raw) && raw.includes('>')) {
-        t.type = 'vp_jsx_block'
-        t.content = markRaw(
-          env,
-          raw,
-          t.map?.[0] != null ? t.map[0] + 1 : undefined
-        )
-      }
+    if (t.type !== 'paragraph_open' || tokens[i + 1]?.type !== 'inline')
       continue
-    }
 
-    // 段落:children 仅由 HTML 片段/<> Fragment/标签内文本组成 → 整体接管
-    const isInlineFollow =
-      t.type === 'paragraph_open' && tokens[i + 1]?.type === 'inline'
-    if (!isInlineFollow) continue
-    const inline = tokens[i + 1]
-    if (isParagraphHtmlOnly(inline.children)) {
-      const raw = inline.content.trim()
-      if (raw && canTakeoverRaw(raw)) {
-        const placeholder = markRaw(
-          env,
-          raw,
-          inline.map?.[0] != null ? inline.map[0] + 1 : undefined
-        )
-        const block = new state.Token('vp_jsx_block', '', 0)
-        block.content = placeholder
-        block.map = inline.map
-        tokens.splice(i, 3, block)
-        continue
-      }
-    }
-
-    // 行内:vp_jsx(Fragment)→ marker;标题里的 Fragment 不接管,按字面文本
+    // 行内:vp_jsx(Fragment / 作者元素)→ marker;标题里的 Fragment 不接管,按字面文本
     const parentIsHeading = i > 0 && tokens[i - 1]?.type === 'heading_open'
-    convertFragmentChildren(inline.children, store, parentIsHeading)
+    convertFragmentChildren(tokens[i + 1].children, store, parentIsHeading)
   }
-}
-
-/** 段落 children 是否"纯 HTML":文字只允许出现在标签内部(深度>0) */
-function isParagraphHtmlOnly(children: any[] | null): boolean {
-  if (!children || children.length === 0) return false
-  let depth = 0
-  let sawTag = false
-  for (const c of children) {
-    switch (c.type) {
-      case 'html_inline': {
-        sawTag = true
-        const raw = c.content
-        if (raw.startsWith('</')) depth--
-        else if (!/\/>$/.test(raw.trim())) depth++
-        continue
-      }
-      case 'vp_jsx':
-        sawTag = true
-        continue
-      case 'text': {
-        if (!/^\s*$/.test(c.content)) {
-          if (depth <= 0) return false // 标签外的纯文本 → 交回 md
-        }
-        continue
-      }
-      case 'softbreak':
-      case 'hardbreak':
-        continue
-      default:
-        // 强调/链接/行内码/math 等 md 语法产物 → 段落不属于"纯 HTML"
-        return false
-    }
-  }
-  return sawTag && depth === 0
 }
 
 /** 把 inline children 里的 vp_jsx 落为 marker;标题场景则按字面文本 */
@@ -517,7 +456,10 @@ export function applyJsxTokenRules(
   // 关闭语义一致:标签保持字面 HTML,不交给 React)。
   if (options.authorTags !== false) {
     md.inline.ruler.before('text', 'vp_jsx_element', elementRule)
-    md.block.ruler.before('paragraph', 'vp_element_block', elementBlockRule)
+    // 注册在 html_block 之前:块级标签(div/table…)的作者写法也走"原始 JSX",
+    // 不被 md-it 的 html_block 抢走;md-it 自己产出的 html_block(HTML 注释、
+    // 插件改写源码注入的标记)照旧流向序列化器做属性转换。
+    md.block.ruler.before('html_block', 'vp_element_block', elementBlockRule)
   }
   md.block.ruler.before('html_block', 'vp_script', scriptRule)
   md.block.ruler.before('paragraph', 'vp_react_container', reactContainerRule)
