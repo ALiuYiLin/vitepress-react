@@ -1,4 +1,7 @@
 packages:
+  # 根包(要发布的 @10coding/vitepress-react)显式纳入:pnpm 自身总把根包算作
+  # workspace 的一部分,但 changesets/manypkg 只认 glob 匹配到的包
+  - '.'
   - docs
   - __tests__/*
   - playground/*
