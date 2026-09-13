@@ -112,8 +112,8 @@ describe('node/markdown/markdown', () => {
     test('component', async () => {
       const src = 'text\n<MyComponent/>\nmore'
       const enabled = await render(src)
-      // 组件插件开启时,作者写的 <MyComponent/> 由 jsxTokenRules 的 D 规则
-      // 整段接管(占位符),后续在 markdownToReact 里原样还原为 JSX 元素
+      // 组件插件开启时,作者写的 <MyComponent/> 由区域识别层的 element
+      // 规则整段接管(块级占位符),后续在 markdownToReact 里原样还原为 JSX
       expect(enabled).toContain('data-vp-jsx')
 
       const disabled = await render(src, { component: false })

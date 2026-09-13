@@ -9,8 +9,8 @@ import { disposeMdItInstance } from '../../../src/node/markdown/markdown'
 import { createMarkdownToReactRenderFn } from '../../../src/node/markdownToReact'
 
 // V2 契约:正文裸 {…} 一律字面文本;
-// 动态内容必须显式写成 JSX(<>{expr}</> / 组件标签),由 md 内 token 级规则
-// (jsxTokenRules)占位、序列化时原样还原。
+// 动态内容必须显式写成 JSX(<>{expr}</> / 组件标签),由 markdown/jsx 的
+// 区域识别层占位、序列化时原样还原。
 
 async function renderReact(src: string, markdownOptions: object = {}) {
   const root = await mkdtemp(join(tmpdir(), 'vpr-mdr-'))
@@ -259,5 +259,54 @@ describe('node/markdownToReact (V2 literal-braces contract)', () => {
     expect(code).not.toContain('@@VP_')
     expect(code).not.toContain('data-vp-jsx')
     expect(code).toContain('字面文字')
+  })
+
+  test('fragment gate ignores literal < (<>c < d</> 不算 JSX)', async () => {
+    const code = await renderReact(
+      [fm(), 'a <> b 与 <>c < d</> 都是字面'].join('\n')
+    )
+    // 闸门只看"动态部分":{…} 表达式或真正的标签;
+    // 裸 `<` + 空格不是标签 → 整段保持字面
+    expect(code).not.toContain('@@VP_')
+    expect(code).toContain('都是字面')
+  })
+
+  test('区域出现在链接标签内正常渲染(skipToken 回归)', async () => {
+    const code = await renderReact(
+      [fm(), '[<>{1 + 1}</>](/x) 与 [文字 <Badge />](/y)'].join('\n')
+    )
+    expect(code).toContain('{1 + 1}')
+    expect(code).toContain('<Badge />')
+    expect(code).not.toContain('@@VP_')
+  })
+
+  test('字面 marker 不会被当成占位符(旧文本 marker 的碰撞回归)', async () => {
+    const code = await renderReact(
+      [
+        fm(),
+        '字面 @@VP_HTML_0@@ 文字',
+        '',
+        '```md',
+        '@@VP_HTML_0@@',
+        '```',
+        '',
+        '<>{1 + 1}</>'
+      ].join('\n')
+    )
+    // 作者写的字面 marker 原样保留(正文 + 代码块各一处)
+    expect(code.match(/@@VP_HTML_0@@/g)?.length).toBe(2)
+    // 真正的区域只展开一次
+    expect(code.match(/\{1 \+ 1\}/g)?.length).toBe(1)
+  })
+
+  test('伪造的 data-vp-jsx 哨兵(nonce 不符)不被展开', async () => {
+    const code = await renderReact(
+      [fm(), '<span data-vp-jsx="0"></span>', '', '<>{1 + 1}</>'].join('\n'),
+      { component: false }
+    )
+    // 作者手写的哨兵走机器 HTML 路径 → 原样输出为普通 span
+    expect(code).toContain('data-vp-jsx="0"')
+    // 真正的区域照常展开(且只有一次)
+    expect(code.match(/\{1 \+ 1\}/g)?.length).toBe(1)
   })
 })

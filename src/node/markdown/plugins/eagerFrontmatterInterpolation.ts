@@ -3,6 +3,7 @@ import type StateCore from 'markdown-it/lib/rules_core/state_core.mjs'
 import type Token from 'markdown-it/lib/token.mjs'
 
 import type { MarkdownEnv } from '../../shared'
+import { readTag, VOID_HTML_TAGS } from '../jsx/scan'
 
 // matches an interpolation the way Vue's template parser does: from `{{` up
 // to the nearest `}}`
@@ -24,16 +25,12 @@ const pathRE =
 const segmentRE =
   /\.\s*([A-Za-z_$][\w$]*)|\[\s*(?:(0|[1-9]\d*)|'([^'\\]*)'|"([^"\\]*)")\s*\]/g
 
-// one raw html tag: closing slash, name, attributes (a quoted value may
-// contain `>`), self-closing slash
-const htmlTagRE = /<(\/?)([A-Za-z][\w-]*)((?:[^"'>]|"[^"]*"|'[^']*')*?)(\/?)>/g
-const htmlCommentRE = /<!--[^]*?-->/g
-// script/style/textarea/title content is raw text, not markup
-const rawTextElementRE = /<(script|style|textarea|title)\b[^]*?<\/\1\s*>/gi
+// v-pre 属性判定;标签本身用 jsx/scan 的 readTag 解析(与区域识别层同一套
+// 词法,引号/花括号感知),不再维护第二套标签正则
 const vPreAttrRE = /(?:^|\s)v-pre(?=[\s=/]|$)/
-// void elements never take a closing tag, so v-pre on them opens no scope
-const voidTagRE =
-  /^(?:area|base|br|col|embed|hr|img|input|link|meta|param|source|track|wbr)$/
+
+// script/style/textarea/title 的内容是 raw text,不是 markup
+const RAW_TEXT_TAGS = new Set(['script', 'style', 'textarea', 'title'])
 
 type Resolve = (expr: string) => string | undefined
 
@@ -188,25 +185,43 @@ function scanRawHtml(
   html: string,
   scope: VPreScope | undefined
 ): VPreScope | undefined {
-  const src = html.replace(htmlCommentRE, '').replace(rawTextElementRE, '')
-  htmlTagRE.lastIndex = 0
-  let m: RegExpExecArray | null
-  while ((m = htmlTagRE.exec(src))) {
-    const [, closing, rawTag, attrs, selfClosing] = m
-    const tag = rawTag.toLowerCase()
+  let i = 0
+  while (i < html.length) {
+    if (html[i] !== '<') {
+      i++
+      continue
+    }
+    if (html.startsWith('<!--', i)) {
+      const end = html.indexOf('-->', i + 4)
+      i = end === -1 ? html.length : end + 3
+      continue
+    }
+    const tag = readTag(html, i)
+    if (!tag) {
+      i++
+      continue
+    }
+    const name = tag.name.toLowerCase()
+    if (!tag.close && !tag.selfClosing && RAW_TEXT_TAGS.has(name)) {
+      // raw text element:its content is not markup
+      const close = html.toLowerCase().indexOf(`</${name}`, tag.end)
+      i = close === -1 ? html.length : close
+      continue
+    }
     if (scope) {
-      if (tag === scope.tag && !selfClosing) {
-        scope.depth += closing ? -1 : 1
+      if (name === scope.tag && !tag.selfClosing) {
+        scope.depth += tag.close ? -1 : 1
         if (!scope.depth) scope = undefined
       }
     } else if (
-      !closing &&
-      !selfClosing &&
-      !voidTagRE.test(tag) &&
-      vPreAttrRE.test(attrs)
+      !tag.close &&
+      !tag.selfClosing &&
+      !VOID_HTML_TAGS.has(name) &&
+      vPreAttrRE.test(html.slice(i, tag.end))
     ) {
-      scope = { tag, depth: 1 }
+      scope = { tag: name, depth: 1 }
     }
+    i = tag.end
   }
   return scope
 }
@@ -266,12 +281,10 @@ function rawTagBoundary(
       continue
     }
     if (t.type !== 'html_inline') break
-    htmlTagRE.lastIndex = 0
-    const m = htmlTagRE.exec(t.content)
-    if (!m) break
-    const [, closing, tag, , selfClosing] = m
-    if (selfClosing || voidTagRE.test(tag.toLowerCase())) break
-    return { kind: closing ? 'close' : 'open', sawBreak }
+    const tag = readTag(t.content, 0)
+    if (!tag) break
+    if (tag.selfClosing || VOID_HTML_TAGS.has(tag.name.toLowerCase())) break
+    return { kind: tag.close ? 'close' : 'open', sawBreak }
   }
   return { kind: null, sawBreak }
 }

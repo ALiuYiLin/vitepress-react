@@ -4,6 +4,7 @@
 
 import { extractComponentNames, serializeHtmlToJsx } from './serializeHtmlToJsx'
 import type { PlaceholderStore } from './placeholders'
+import { SCRIPT_CLIENT_RE } from './jsx/scriptTags'
 import type { MarkdownEnv, PageData } from '../shared'
 
 /** __pageData 顶层导出(契约与上游一致:主题 useData() 读取) */
@@ -76,7 +77,6 @@ function stripExportDefault(code: string): string {
 }
 
 /** <script client>(MPA client JS):内容以注释保留,避免静默丢弃 */
-const scriptClientRE = /<script\b[^>]*client\b[^>]*>/i
 
 /**
  * 把 script 顶层代码按行分拣:
@@ -154,8 +154,8 @@ function styleBlockLang(tagOpen: string): string | undefined {
  *
  * 正文动态能力契约(V2):正文裸 `{…}`
  * 一律字面文本;动态内容由作者**显式写成 JSX**(`<>{expr}</>` Fragment /
- * 组件标签 / ::: react),由 markdown/jsxTokenRules 的 token 级规则在 md 内
- * 占位(env.jsxStore → @@VP_HTML / data-vp-jsx),序列化时原样恢复 —— 与
+ * 组件标签 / ::: react),由 markdown/jsx 的区域识别层在 md 内占位
+ * (env.jsxStore → @@VP_HTML / data-vp-jsx),序列化时原样恢复 —— 与
  * Page 函数体共享作用域(可响应 hooks 更新)。
  * 需要完整交互时仍用 <script> 定义的组件标签。
  *
@@ -184,7 +184,7 @@ export function createReactPageSrc(
   const moduleRest: string[] = []
   const pageCode: string[] = []
   for (const block of scripts) {
-    if (scriptClientRE.test(block.tagOpen)) {
+    if (SCRIPT_CLIENT_RE.test(block.tagOpen)) {
       parts.push(`// <script client> (MPA client JS)`)
       parts.push(
         block.contentStripped

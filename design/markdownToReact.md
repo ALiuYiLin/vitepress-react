@@ -40,7 +40,7 @@ if (import.meta.hot) { import.meta.hot.accept() }
    │  markdown-it 解析(块/行内插件全开)
    ▼
 token 流 + env(jsxStore、sfcBlocks、headers、links …)
-   │  ① A/B/C 规则在此改写:JSX 区域 → 占位符(见 §4)
+   │  ① 区域识别层在此改写:JSX / <script> 区域 → 占位符(见 §4)
    │  ② 各插件 renderer 输出中间 HTML(含占位符)
    ▼
 中间 HTML(不是最终视图,只是“机器 HTML + 占位符”的载体)
@@ -73,8 +73,8 @@ include 等)原样工作,它们的产出就是 HTML;本项目只在其后把 HTM
 
 markdown-it 实例的构建在 `src/node/markdown/markdown.ts`:
 全部内置插件(container/include/snippet/highlight/attrs/anchor/emoji/toc …)→ mdit-vue
-插件组(frontmatter/headers/sfc/title/… )→ 用户 `config()` → **最后** `applyJsxTokenRules(md)`
-(§4 的 A/B/C 全部注册在用户配置之后,C 用 `core.ruler.push` 保证排在核心链最末)。
+插件组(frontmatter/headers/sfc/title/… )→ 用户 `config()` → **最后** `applyJsxRegions(md)`
+(区域识别全部注册在用户配置之后;规则只挂在 inline/block 链的三个锚点上,没有 core 规则)。
 
 ## 3. 三条“身份”与判定总原则
 
@@ -82,95 +82,100 @@ markdown-it 实例的构建在 `src/node/markdown/markdown.ts`:
 
 | 身份 | 语义 | 产物形态 |
 | --- | --- | --- |
-| **JSX 原文(接管)** | 作者显式写的 JSX/组件标签/Fragment,原样交给 React | 原文 push 进 `env.jsxStore`;正文 HTML 里只剩占位符:`@@VP_HTML_n@@`(行内)/`<div data-vp-jsx="n">`(块级);序列化时按 n 还原 |
+| **JSX 原文(接管)** | 作者显式写的 JSX/组件标签/Fragment,原样交给 React | 原文 push 进 `env.jsxStore`;正文 HTML 里只剩**元素哨兵**:`<span data-vp-jsx="<nonce>:n">`(行内)/`<div data-vp-jsx="<nonce>:n">`(块级);序列化时按 n 展开原文 |
 | **机器 HTML** | markdown 语法生成的结构、可被串行器安全翻译的静态 HTML | 走 HTML→JSX 串行器(文本→字符串字面量、属性改名、事件/指令告警丢弃…) |
 | **script / style** | 页面代码与样式,不进正文 | `env.sfcBlocks`(script 提升/注入、style 注入或 scoped) |
 
-判定“该不该接管”的规则(集中在 `jsxTokenRules.ts` 的 `canTakeoverRaw`/`hasJsxInterior`
-与 `serializeHtmlToJsx` 的组件集合):
+判定与承载(见 `design/jsxRegions.md`;唯一识别来源是 `jsx/regions.ts` 的规则表):
 
-- **Fragment `<>{…}</>`** 只要内部含 `{`(表达式)或 `<`(内嵌标签/组件)就接管;
-  `<>纯文字</>` 不接管(按字面文本走 md,避免正文当普通字面写时误伤)。
-- **独立成行的标签/组件行**且整体配平(`tagDepth` 归零)、不以 `</`/`<!--` 开头、非
-  `script/style`、无 Vue 特征(`:x`/`@x`/`v-*`/`{{ }}`),整段接管。
-- **标题行内的标签与 Fragment 不整行接管**:标题交给 markdown-it + anchor 生成干净 id
-  与大纲纯文本;已知组件名由串行器还原成 JSX,标题内 `<>{expr}</>` 一律按字面文本。
-- **大写开头的标签**只有在 `<script>` 顶层导入/导出的标识符集合(或自动注入的主题
-  组件)里才算组件;否则是“未知组件”,串行器渲染成转义文本并告警(避免 ReferenceError)。
+- **element 区域**:作者写的标签(HTML 标签 / 组件标签),行内与块级两个入口;
+  块级要求"整行只有元素序列",行内在句子里就地切出;`script`/`style` 不在其列
+  (分别由 script 区域与 plugin-sfc 负责)。**不做 Vue 特征识别**:属性按 React JSX
+  语法写,写错由 oxc 在编译期报错。
+- **fragment 区域 `<>…</>`**:内部含 `{…}` 表达式或真正的标签才接管(`hasDynamicPart`);
+  `<>`、`<></>`、`<>纯文字</>`、`a <> b`、`Array<>` 保持字面。
+- **标题与正文一致**:标题里的区域同样接管(不再有"标题内按字面"的特殊分支);
+  slug 由 anchor 按 token 类型过滤(`vp_jsx_inline`/`vp_jsx_block` 不进文本),
+  大纲标题由 `resolveTitleFromToken` 的类型白名单天然忽略。
+- **raw 区域**:`::: react` 容器,整块原文交给 React(不进 `<p>`)。
+- **大写开头的标签**:只有在 `serializeHtmlToJsx` 这一侧(即**机器 HTML**)
+  才按 `<script>` 顶层导出集合判断"组件 / 未知组件";作者写的标签走区域原文,
+  不经过该判定。
 - **文本节点里的裸 `{…}` 永远是字面文本**(V2 契约),只有被 `<…>` 包住才按 JSX。
 
-## 4. markdown-it 内部的三个执行点(A/B/C)
+## 4. 区域识别层(markdown/jsx)
 
-注册入口 `applyJsxTokenRules(md)`(`jsxTokenRules.ts`),注册顺序即执行优先级:
+注册入口 `applyJsxRegions(md, { authorTags })`(`markdown/jsx/index.ts`)。
+识别只有一张表(`jsx/regions.ts` 的 `REGION_RULES`),顺序约束只有三个锚点:
 
-```
-inline:   vp_jsx_fragment   ← before('text')   最优先(行内起点即 Fragment)
-block:    vp_script         ← before('html_block')   <script> 块级捕获
-block:    vp_react_container← before('paragraph')    ::: react 容器
-block:    vp_fragment_block ← before('paragraph')    独立多行 <>…</> 遮蔽
-core:     vp_jsx_collect    ← push(链末)              最后的总判定
-```
+| 区域 id | region | 放置 | 起始 | 结束 | 锚点 | sink |
+| --- | --- | --- | --- | --- | --- | --- |
+| `vp_script_block` | script | block | `^ {0,3}<script…`(排除 client) | 行尾 `</script>`(未闭合回退) | `html_block` | **sfc** |
+| `vp_element_block` | element | block | `^<[A-Za-z]` | 整行元素序列(配平) | `html_block` | jsx |
+| `vp_element_inline` | element | inline | `<` + 字母 | 元素序列(配平) | `text` | jsx |
+| `vp_fragment_block` | fragment | block | `^<>`(顶格) | `<>`/`</>` 配平 + 整段恰好一个片段 | `paragraph` | jsx |
+| `vp_fragment_inline` | fragment | inline | `<>` | `<>`/`</>` 配平(限制在 `posMax` 内) | `text` | jsx |
+| `vp_raw_block` | raw | block | `^:::+ *react$` | 单独一行 `:::`(未闭合吃到块尾) | `paragraph` | jsx |
 
-### A.`<script>` 块捕获(block 规则,vp_script)
+### 4.1 `<script>` 区域(sink = sfc)
 
-普通 `<script>`(无 `client` 属性)在**块解析阶段**就被整体拿走:
+普通 `<script>`(无 `client`)在**块解析阶段**被整体拿走:逐行扫到 `</script>` 行,
+区域原文交给交接层的 `collectRegion` 拆成 `tagOpen / contentStripped / tagClose / content`
+并推入 `env.sfcBlocks`(维护 `script`/`scriptSetup` 指针)。未闭合则回退给 md-it
+(不会吞掉后面的内容)。
 
-1. 从行首匹配 `<script …>`(正则排除 `client`,留给下游),逐行扫到 `</script>` 行;
-2. 拆出 `tagOpen / contentStripped / tagClose / content`,按 `@mdit-vue/plugin-sfc`
-   的字段形态推入 `env.sfcBlocks`(`scripts.push`,并维护 `script`/`scriptSetup` 指针,
-   setup 判定沿用 plugin-sfc 的开标签正则);
-3. 消耗整块行号、**不产出任何 token**,因此内容完全不进 markdown 解析。
+为什么绕过 md-it 自己的 html_block:md-it 的 html_block 在块内出现任意
+`</(script|pre|style|textarea)>` 时截断,容易把 `<script>` 里的字符串文本切坏;
+本规则自扫配平不依赖该语义。单行 `<script>…</script>` 不在此列(由 plugin-sfc
+的 html_block renderer 处理,它的字段拆分对单行同样正确)。
 
-为什么绕过 md-it 自己的 html_block:md-it 的 html_block(旧 type-7 语义)会在块内出现
-任意 `</(script|pre|style|textarea)>` 时截断,容易把 `<script>` 里的字符串文本切坏;
-A 规则自扫配平不依赖该语义。
+### 4.2 element 区域(sink = jsx)
 
-### B.Fragment(两处配合)
+- **块级**:行首是 `<` 且整行只有元素序列(元素之后只允许空白)时,整段原文交给
+  React,不经过段落/行内解析 —— 这是"独立一行的 `<Component />`"成为块级节点的原因。
+- **行内**:句子里出现的元素就地切出(内部 md 语法不被拆开)。
 
-- **行内 B(inline 最前)**:`<` 后紧跟 `>` 即候选;`fragmentEnd` 从该处做带引号/注释
-  跳过的深度扫描(内嵌 `<a>`、`<>`、自闭合/void 标签按规则增减深度),找到配平的
-  `</>` 后整段作为 `vp_jsx` token 一次吞入——内部任何 md 语法都不被拆开。
-  纯 inline 的 `<>{expr}</>`(嵌在句子里的)在 core 阶段再落成 marker(见 C)。
-- **块级 B(vp_fragment_block,paragraph 之前)**:**独立成行**的多行 `<>…</>` 若内部含
-  会“打断段落”的行(例如某一行单独是 `<p>…` → md-it 会在此开 html_block,把区域拆成
-  两个段落),行内规则根本看不到完整区域。此规则从 `<>` 起逐行收集到配平闭合行,
-  整块直接占位(不经过段落/inline 解析)。
+### 4.3 fragment 区域(sink = jsx)
 
-两个 B 都要求 `hasJsxInterior`:内部含 `{` 或 `<` 才算作者 JSX,否则退回 md 当字面。
+- **行内**:`<` 后紧跟 `>` 即候选;`scanFragment` 做深度配平(引号/模板字符串/注释/`{…}`
+  表达式整体跳过,嵌套元素用 `scanElement` 整体跳过),找到配平的 `</>` 后整段吞入。
+- **块级**:独立成行(顶格)的多行 `<>…</>`,逐行收集到"整段恰好配平"为止;跨空行内容
+  不被拆散。单行片段由行内规则处理。
 
-### C.core 末段总判定(vp_jsx_collect)
+两者都要求 `hasDynamicPart`:内部含 `{…}` 表达式或真正的标签才算作者 JSX。
 
-在 anchor/标题等全部 core 处理**之后**统一扫 token 流:
+### 4.4 交接层(jsx/handoff.ts)
 
-1. **html_block**:内容可接管(`canTakeoverRaw`,见 §3)→ 改成 `vp_jsx_block`,原文写入
-   store、token 内容换成块占位 `<div data-vp-jsx="n">`;`script/style/注释/Vue 特征行`
-   保持 html_block(style 稍后由 plugin-sfc 的 renderer 提取,见 §5)。
-2. **纯 HTML 段落**:`paragraph_open + inline` 的 children 只由
-   html_inline / vp_jsx(Fragment)/ 标签内部文本 / 换行组成(标签外无文字)→ 整个
-   段落(3 个 token)splice 成单个 `vp_jsx_block` 占位。这是“正文里独立一行的
-   `<button …>…</button>`、`<Component />`”等能成为**块级**节点的原因。
-3. **行内 vp_jsx**:把 Fragment token 落成 `@@VP_HTML_n@@` 文本 marker(原文入 store);
-   若父节点是标题(heading_open 之后)→ 不接管,直接改回普通文本(字面)。
+1. **collect**:`sink: 'sfc'` → `env.sfcBlocks`;`sink: 'jsx'` → `env.jsxStore`
+   (块级区域带 `JSX md:<行号>` 注释前缀),并把下标写进 `token.meta.jsxIndex`。
+   发生在规则内、按源码顺序,所以 store 下标天然等于源码顺序。
+2. **emit**:`renderer.rules.vp_jsx_inline / vp_jsx_block / vp_script` 把区域 token 变成
+   **带 nonce 的元素哨兵**(`<span data-vp-jsx="<nonce>:n">` / `<div data-vp-jsx="<nonce>:n">`)/ 空串。
+   `placeholders.ts` 只被这一个文件 import。
 
-块占位 token(`vp_jsx_block`)注册了专属 renderer,直接输出其 `content`(即占位行);
-行内 Fragment 已在 C 阶段落成带 `@@VP_HTML_n@@` 的普通 text token,由默认文本
-渲染输出。于是 render 出的 HTML 里是干净的 `<div data-vp-jsx="n"></div>` / 行内
-`@@VP_HTML_n@@`。
+### 4.5 行内规则的实现约定(silent)
+
+行内规则靠"推进 `state.pos` + 只产一个 token"跳过内部解析(`ParserInline.tokenize`
+只从新 pos 继续),因此 **silent 与正常模式都要推进 pos**,只把 `push` 包在
+`!silent` 里 —— 否则 `md.inline.skipToken`(link/image 扫描链接标签用)会抛
+`inline rule didn't increment state.pos`。块级规则的 `silent` 语义相反(纯谓词,
+不改 state),所以块级 handler 里 `if (silent) return true` 放在改 `state.line` 之前。
 
 ## 5. script / style / 自定义块在 md 中的真正去处
 
 | 块 | 谁处理 | 结果 |
 | --- | --- | --- |
-| `<script>`(无 client) | A 规则(块解析期) | 进 `env.sfcBlocks.scripts`,零 token、零 HTML |
-| `<script client>` | 交给 html_block → C 不接管(名字 script)→ **plugin-sfc 的 html_block renderer** 捕获 | 进 `env.sfcBlocks.scripts`;模块组装时其内容整块以注释保留(MPA client JS,不静默丢弃) |
-| `<style>` / `<style scoped …>` / `<style lang=…>` | html_block token → C 不接管(名字 style)→ plugin-sfc renderer 捕获 | 进 `env.sfcBlocks.styles`(tagOpen/contentStripped);正文 HTML 无样式残留 |
-| `<template>` 等自定义块 | 同上 plugin-sfc 捕获 | 进 `customBlocks`;模块组装只留一行 NOTE(React 暂无对应机制) |
-| 其它 html_block(普通 HTML 行、表格内标签等) | C 判定 | 可接管 → JSX 原文;否则交给默认 html_block renderer → 机器 HTML 序列化 |
+| `<script>`(无 client,多行) | `vp_script_block`(块解析期) | 进 `env.sfcBlocks.scripts`,零 token、零 HTML |
+| `<script>` 单行 / `<script client>` | 交给 html_block → 区域识别层不接管(client 被起始正则排除)→ **plugin-sfc 的 html_block renderer** 捕获 | 进 `env.sfcBlocks.scripts`;client 内容在模块组装时以注释保留 |
+| `<style>` / `<style scoped …>` / `<style lang=…>` | html_block(标签名在 element 区域的排除集里)→ plugin-sfc renderer 捕获 | 进 `env.sfcBlocks.styles`(tagOpen/contentStripped);正文 HTML 无样式残留 |
+| `<template>` 等自定义块 | 同上 plugin-sfc 捕获(需 `sfc.customBlocks` 配置) | 进 `customBlocks`;模块组装只留一行 NOTE(React 暂无对应机制) |
+| 其它 html_block(HTML 注释、插件改写源码注入的标记等) | 默认 html_block renderer | 机器 HTML → 序列化器转换(注释丢弃、属性改名) |
 
 要点:plugin-sfc 只重写 `md.renderer.rules.html_block`(且只在 `env.sfcBlocks` 存在时
 生效),它**不做解析**;style/client-script 能走到它,是因为 md-it 先把这类行判成
-html_block,而我们 C 的 `canTakeoverRaw` 又按标签名把它们挡在 JSX 接管之外。
-A 规则抢走的是普通 `<script>`(避免 md-it html_block 的截断缺陷),二者互不重叠。
+html_block,而区域识别层又按 `excludeTag`(script/style)把它们挡在 JSX 接管之外。
+`vp_script_block` 抢走的是**多行普通 `<script>`**(避免 md-it html_block 的截断缺陷),
+二者互不重叠。
 
 ## 6. 模块组装:createReactPageSrc
 
@@ -203,9 +208,10 @@ pageData、jsxStore、scopedCssEnabled。步骤:
 轻量栈式扫描器:
 
 - 注释 / `<!…>` / `<?…>` 直接跳过(HTML 注释不会出现在 React 树里);
-- 文本一律输出 `{"字符串字面量"}`;文本中出现 `@@VP_HTML_n@@` 时按 n 从
-  jsxStore 取原文**原样拼回 JSX**(这就是 `<>{expr}</>`、行内组件还原的机制);
-- `<div data-vp-jsx="n">` 哨兵 → 取出块级 JSX 原文逐行输出(不进 `<p>`,保持块级);
+- 文本一律输出 `{"字符串字面量"}`(正文裸 `{…}` 不求值);作者显式写的 JSX 不再是文本,
+  而是**元素哨兵**(见下),所以文本阶段没有"还原"这一步 —— 作者写的字面量不会被误展开;
+- 哨兵(行内 `<span data-vp-jsx>` / 块级 `<div data-vp-jsx>`,且属性值带本进程 nonce)
+  → 按 n 从 jsxStore 取原文**原样展开**(块级不进 `<p>`);nonce 不符的当普通元素;
 - 标签:大写且命中 componentNames → 组件引用(属性透传);大写未命中 → 告警并渲染成
   转义文本;小写 → 普通 DOM;
 - 属性:`class→className` 等别名映射、`data-*/aria-*` 保持连字符、其余 kebab→驼峰;
@@ -234,18 +240,19 @@ pageData、jsxStore、scopedCssEnabled。步骤:
 | 你写的 | 经过 | 最终 React 产物 |
 | --- | --- | --- |
 | 正文 `{1 + 1}` / `{{x}}` | 机器 HTML(字面) | 字符串字面量 `{"{1 + 1}"}` |
-| 正文 `<>{count}</>`(句中) | 行内 B 捕获 → C 落 marker → 串行器还原 | `<>{count}</>` 表达式(Fragment) |
-| 独立多行 `<>…</>`(含标签行) | 块级 B 占位 | 块级原文 JSX |
-| `<Component />`(独立一行) | C 纯 HTML 段落 splice | 块级 `<Component />`(若在 componentNames) |
-| `<Counter />` | script 具名导出 → componentNames | 组件引用 |
-| `<b>加粗</b>`(句中) | 机器 HTML(串行器) | `<b>{'加粗'}</b>` |
-| 标题 `## x <Badge/>` | anchor 纯文本 id;串行器还原已知组件 | 标题里 `<Badge/>`,正文可含 |
-| `::: react` 多行 JSX | reactContainer 块占位 | 块级原文 JSX(不进 `<p>`) |
-| `<script>` 普通块 | A 捕获 → sfcBlocks | import/具名导出→模块顶层;其余→Page 体内 |
-| `<script client>` | html_block → plugin-sfc | sfcBlocks;产物中以注释保留 |
+| 正文 `<>{count}</>`(句中) | 行内 fragment 区域 → 交接层 marker → 串行器还原 | `<>{count}</>` 表达式(Fragment) |
+| 独立多行 `<>…</>`(可含空行) | 块级 fragment 区域(顶格、配平) | 块级原文 JSX |
+| `<Component />`(独立一行) | 块级 element 区域(整行元素序列) | 块级 `<Component />` 原文 |
+| `<Counter />` | 区域原文交给 React;组件标识符由 script 决定 | 组件引用(未定义则编译期报错) |
+| `<b>加粗</b>`(句中) | 行内 element 区域 → 原文 JSX | `<b>加粗</b>`(属性不转换) |
+| 标题 `## x <Badge/>` | 行内 element 区域;anchor 按 token 类型过滤 slug | 标题里 `<Badge/>`,slug 不含标签名 |
+| 标题 `## x {#id}` + 组件 | attrs 取最后一个 text 子 token | `id="id"`,组件原样 |
+| `::: react` 多行 JSX | raw 区域块占位 | 块级原文 JSX(不进 `<p>`) |
+| `<script>` 普通块(多行) | vp_script_block → sfcBlocks | import/具名导出→模块顶层;其余→Page 体内 |
+| `<script client>` / 单行 script | html_block → plugin-sfc | sfcBlocks;产物中以注释保留 |
 | `<style>`/`<style scoped>` | html_block → plugin-sfc(style) | 全局运行时注入 / jsx-scoped 虚拟模块 |
 | 代码 fence / 行内代码 | md 语法,字面 | 字符串/HTML(永不求值、不接管) |
-| Vue 指令行/属性 | canTakeoverRaw / 串行器拦截 | 不接管:丢弃属性并告警,或整行退回机器路径 |
+| Vue 指令/绑定 `:x` `@x` `v-*` `{{ }}` | 按 JSX 原样交给 oxc(不做特征识别) | `:`/`@` 编译期报错;`v-*` 透传为普通属性 |
 
 ## 8. 出错怎么定位
 
@@ -257,10 +264,13 @@ JSX 原文写入 store 时会附 `{/* JSX md:<行号> */}` 前缀(块级占位),
 | 文件 | 职责 |
 | --- | --- |
 | `src/node/markdownToReact.ts` | 编排:缓存/参数/env/render/pageData/模块组装 |
-| `src/node/markdown/markdown.ts` | md 实例与全部插件注册,末尾挂 A/B/C |
-| `src/node/markdown/jsxTokenRules.ts` | A script / B Fragment(行内+块级)/ C 总判定 / ::: react |
-| `src/node/markdown/jsxLexer.ts` | tagDepth / hasVueishAttr 等词法工具 |
+| `src/node/markdown/markdown.ts` | md 实例与全部插件注册,末尾挂区域识别层 |
+| `src/node/markdown/jsx/regions.ts` | 区域规则表(唯一识别来源)+ 规则注册 |
+| `src/node/markdown/jsx/scan.ts` | 词法原语(标签/片段配平、动态判据) |
+| `src/node/markdown/jsx/handoff.ts` | 交接层:→ sfcBlocks / jsxStore + 占位输出 |
+| `src/node/markdown/jsx/scriptTags.ts` | `<script>` 判定规则的唯一定义 |
 | `src/node/markdown/placeholders.ts` | 占位符与 store 的唯一契约(写入==读取) |
 | `src/node/markdown/serializeHtmlToJsx.ts` | 机器 HTML → JSX(文本字面化 + marker 还原) |
 | `src/node/markdown/buildReactPageModule.ts` | TSX 模块组装(script 分拣/style/pageData/正文) |
 | `node_modules/…/@mdit-vue/plugin-sfc` | html_block renderer 捕获 style/client-script/custom 块 |
+| `design/jsxRegions.md` | 区域识别层重构方案(规则表/删除清单/测试矩阵) |

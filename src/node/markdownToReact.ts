@@ -1,18 +1,20 @@
 // md → React 页面模块管线(M1)的编排层。
 //
 // 职责:单次编译的流程控制 —— 取站点分辨率快照与编译缓存 → 参数剥离 →
-// markdown-it renderAsync(token 级 A/B/C 规则在 md 内完成 JSX 区域占位)→
+// markdown-it renderAsync(markdown/jsx 的区域识别层在 md 内完成 JSX 区域占位)→
 // 渲染后处理(死链校验 / pageData 组装)→
 // markdown/buildReactPageModule 的模块组装 → 写缓存并返回。
 //
 // V2 契约:正文裸 {…} 一律字面文本,
 // 不再有表达式掩码 Pass;动态内容 = 作者显式写的 JSX(<>{expr}</> /
-// 组件标签 / ::: react),由 markdown/jsxTokenRules 的 A/B/C token 规则
-// 在 md 内占位、序列化时还原。
+// 组件标签 / ::: react),由 markdown/jsx 的区域识别层在 md 内占位、
+// 序列化时还原。
 //
 // 各阶段的实现已拆分到(本目录均相对于 src/node):
-//   markdown/jsxTokenRules.ts    token 级接管规则(A script/B Fragment/C 判定)
-//   markdown/jsxLexer.ts         词法工具(标签配平/Vue 特征)
+//   markdown/jsx/regions.ts      区域规则表(唯一的识别来源)
+//   markdown/jsx/scan.ts         词法原语(标签配平 / 片段配平 / 动态判据)
+//   markdown/jsx/handoff.ts      交接层(→ sfcBlocks / jsxStore + 占位输出)
+//   markdown/jsx/scriptTags.ts   <script> 判定规则的唯一定义
 //   markdown/placeholders.ts     占位符写入/读取契约
 //   markdown/serializeHtmlToJsx.ts HTML → JSX 编译期序列化
 //   markdown/buildReactPageModule.ts 页面模块(TSX)组装

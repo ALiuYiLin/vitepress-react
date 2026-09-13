@@ -1,5 +1,5 @@
-import { VOID_HTML_TAGS as VOID_TAGS } from './jsxLexer'
-import { DATA_VP_JSX_ATTR, VP_HTML_TOKEN_GLOBAL_RE } from './placeholders'
+import { VOID_HTML_TAGS as VOID_TAGS } from './jsx/scan'
+import { DATA_VP_JSX_ATTR, parseJsxPlaceholder } from './placeholders'
 
 // React md 正文序列化:把 markdown-it 渲染出的静态 HTML 在编译期转成
 // JSX 源码(页面模块以 automatic JSX runtime 由 oxc 编译)。
@@ -16,7 +16,7 @@ import { DATA_VP_JSX_ATTR, VP_HTML_TOKEN_GLOBAL_RE } from './placeholders'
 //     未命中 → 渲染为转义文本 + 警告(避免 JSX 编译期 ReferenceError);
 //   - 正文文本一律输出为 {"字符串字面量"} —— V2 契约下正文裸 {…} 是
 //     字面文本、不求值;只有 @@VP_HTML_n@@ / data-vp-jsx 占位还原作者
-//     显式写的 JSX(含 <>{expr}</> Fragment,占位来自 jsxTokenRules)。
+//     显式写的 JSX(含 <>{expr}</> Fragment,占位来自 markdown/jsx 的交接层)。
 //   - 顶层固定 <div className="vp-doc"> 包裹(与上游 Vue 版 template 一致)。
 
 interface JsxNode {
@@ -562,46 +562,14 @@ export function serializeHtmlToJsx(
   // 序列化
   const lines: string[] = []
 
-  /**
-   * 把一段已解码文本渲染成 JSX:
-   * - @@VP_HTML_n@@ → 原样恢复作者写的 JSX 标签代码(整行/行内占位,占位
-   *   来自 markdown/jsxTokenRules 的 token 级规则;含 <>{expr}</> Fragment);
-   * - 其余一律包成 {"字符串字面量"} —— V2 契约下正文裸 {…} 是字面文本,
-   *   不做表达式求值。
-   */
-  const VP_HTML_RE = VP_HTML_TOKEN_GLOBAL_RE
-  const textWithHtml = (decoded: string): string => {
-    if (!decoded.includes('@@VP_HTML_')) return `{${JSON.stringify(decoded)}}`
-    VP_HTML_RE.lastIndex = 0
-    const parts: string[] = []
-    let last = 0
-    let m: RegExpExecArray | null
-    let hasToken = false
-    while ((m = VP_HTML_RE.exec(decoded))) {
-      hasToken = true
-      const pre = decoded.slice(last, m.index)
-      if (pre) parts.push(`{${JSON.stringify(pre)}}`)
-      const entry = expressions[`${Number(m[1])}`]
-      if (entry?.html != null) {
-        parts.push(entry.html)
-      } else {
-        parts.push(`{${JSON.stringify(m[0])}}`)
-      }
-      last = m.index + m[0].length
-    }
-    const tail = decoded.slice(last)
-    if (tail) parts.push(`{${JSON.stringify(tail)}}`)
-    if (!hasToken) return `{${JSON.stringify(decoded)}}`
-    return parts.join('')
-  }
-
-  // 文本一律输出为 {"字符串字面量"} / @@VP_HTML 占位还原段:正文的 {…}
-  // 是字面文本(V2),不会被求值;动态内容由作者显式写成 JSX(<>{expr}</>),
-  // 由 jsxTokenRules 占位、到这里原样恢复。
+  // 文本一律输出为 {"字符串字面量"}:正文的 {…} 是字面文本(V2),不会被求值。
+  // 作者显式写的 JSX(<>{expr}</> / 组件标签)已经是**元素哨兵**
+  // (<span data-vp-jsx>/<div data-vp-jsx>),走 renderNode 的展开分支,
+  // 不在这里做文本替换 —— 因此作者正文/代码块里写的字面量不会被误展开。
   const renderText = (raw: string, pad: string): string => {
     const decoded = decodeEntities(raw)
     if (!decoded) return ''
-    return `${pad}${textWithHtml(decoded)}`
+    return `${pad}{${JSON.stringify(decoded)}}`
   }
   const renderChildren = (children: (JsxNode | string)[], depth: number) => {
     for (const child of children) {
@@ -617,17 +585,18 @@ export function serializeHtmlToJsx(
     const pad = indent.repeat(depth)
     const rawTag = node.tag
 
-    // 块级 JSX 占位(<div data-vp-jsx="n">):还原为原始 JSX(不进 <p>)
-    if (node.tag.toLowerCase() === 'div') {
-      const sentinel = node.attrs.find(
-        ([k]) => k.toLowerCase() === DATA_VP_JSX_ATTR
-      )
-      if (sentinel) {
-        const raw = expressions[`${String(sentinel[1])}`]?.html
-        if (raw != null) {
-          for (const rl of raw.split('\n')) lines.push(rl ? `${pad}${rl}` : pad)
-          return
-        }
+    // JSX 区域哨兵(块级 <div data-vp-jsx>,行内 <span data-vp-jsx>):
+    // 还原为原始 JSX 原文(不进 <p>)。只认本进程 nonce 发出的哨兵,
+    // 作者手写的同名 raw HTML 不受影响(见 ../placeholders)。
+    const sentinel = node.attrs.find(
+      ([k]) => k.toLowerCase() === DATA_VP_JSX_ATTR
+    )
+    if (sentinel) {
+      const index = parseJsxPlaceholder(sentinel[1])
+      const raw = index != null ? expressions[`${index}`]?.html : undefined
+      if (raw != null) {
+        for (const rl of raw.split('\n')) lines.push(rl ? `${pad}${rl}` : pad)
+        return
       }
     }
     // 大写开头但不在具名导出集合:JSX 中大写标签必为组件变量(未定义会
@@ -742,7 +711,9 @@ export function serializeHtmlToJsx(
       if (decoded.trim() === '') {
         lines.push(`${pad}<${tag}${attrStr} />`)
       } else {
-        lines.push(`${pad}<${tag}${attrStr}>${textWithHtml(decoded)}</${tag}>`)
+        lines.push(
+          `${pad}<${tag}${attrStr}>{${JSON.stringify(decoded)}}</${tag}>`
+        )
       }
       return
     }

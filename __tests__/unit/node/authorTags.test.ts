@@ -8,15 +8,15 @@ import { resolveConfig } from '../../../src/node/config'
 import { disposeMdItInstance } from '../../../src/node/markdown/markdown'
 import { createMarkdownToReactRenderFn } from '../../../src/node/markdownToReact'
 
-// 语义契约(jsxTokenRules 的 D 规则):作者在 md 正文里写的标签
+// 语义契约(markdown/jsx 的 element 区域):作者在 md 正文里写的标签
 // (HTML 标签 / 组件标签 / <></>)就是 **JSX 元素**,一律原样交给 React;
 // 属性按 React JSX 语法写。只有 md 层自己生成的 HTML(attrs {.class}、锚点、
 // 容器、Shiki…)才在序列化时做属性转换。
 //
 // 背景:markdown-it 的 inline HTML 语法不接受"未加引号且含空格的属性值"
 // (如 `onClick={() => …}`),这类作者标签不会被 token 化,旧的"纯 HTML 段落/
-// HTML 块"判定接管不到 → 退化成字面文本(还会丢掉闭合标签)。D 规则用自带的
-// 括号感知扫描器切出整段元素,不再依赖 md-it 的 HTML 语法。
+// HTML 块"判定接管不到 → 退化成字面文本(还会丢掉闭合标签)。区域识别层用
+// 自带的括号感知扫描器切出整段元素,不再依赖 md-it 的 HTML 语法。
 
 async function renderReact(src: string) {
   const root = await mkdtemp(join(tmpdir(), 'vpr-authtag-'))
@@ -140,17 +140,43 @@ describe('author tags are handed to React as JSX', () => {
     ).toContain('<b>粗</b>')
   })
 
-  test('Vue 写法不接管(仍走告警/丢弃路径)', async () => {
+  // 决策(design/jsxRegions.md §13.6):不做 Vue 特征识别。
+  // 作者标签一律按 JSX 原样输出;Vue 语法交给 oxc 在编译期报错,
+  // 而不是"丢弃属性 + 告警"地静默降级。
+  test('Vue 写法按 JSX 原样交给编译器(不再有静默降级路径)', async () => {
     const directive = page(
       await renderReact([fm, '<div :class="x">y</div>'].join('\n'))
     )
-    expect(directive).not.toContain(':class="x"')
-    expect(directive).toContain('{"y"}')
+    expect(directive).toContain('<div :class="x">y</div>')
 
     const mustache = page(
       await renderReact([fm, '<div>{{ msg }}</div>'].join('\n'))
     )
-    expect(mustache).toContain('{{ msg }}')
+    expect(mustache).toContain('<div>{{ msg }}</div>')
+  })
+
+  test('标题内的作者标签:slug 干净 + 原样 JSX', async () => {
+    const code = await renderReact([fm, '## Handle <Badge>x</Badge>'].join('\n'))
+    expect(code).toContain('id="handle"')
+    expect(code).not.toContain('handle-badge-x-badge')
+    expect(code).toContain('<Badge>x</Badge>')
+  })
+
+  test('标题内的作者标签 + 显式 {#id}', async () => {
+    const code = await renderReact(
+      [fm, '## Handle <Badge>x</Badge> {#custom-id}'].join('\n')
+    )
+    expect(code).toContain('id="custom-id"')
+    expect(code).toContain('<Badge>x</Badge>')
+  })
+
+  test('区域出现在链接标签内不再抛错(旧实现 skipToken 崩溃回归)', async () => {
+    const code = await renderReact(
+      [fm, '[<>{a}</>](/x) 与 [文字 <Badge />](/y)'].join('\n')
+    )
+    expect(code).toContain('{a}')
+    expect(code).toContain('<Badge />')
+    expect(code).not.toContain('@@VP_')
   })
 
   test('不成对 / 非标签文本不接管', async () => {

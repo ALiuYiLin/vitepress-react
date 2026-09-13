@@ -53,7 +53,7 @@ import {
 } from './plugins/containers'
 import { eagerFrontmatterInterpolationPlugin } from './plugins/eagerFrontmatterInterpolation'
 import { highlight as createHighlighter } from './plugins/highlight'
-import { applyJsxTokenRules } from './jsxTokenRules'
+import { applyJsxRegions } from './jsx'
 import { imagePlugin, type Options as ImageOptions } from './plugins/image'
 import {
   includePlugin,
@@ -492,7 +492,12 @@ export async function createMarkdownRenderer(
       slugify,
       getTokensText: (tokens) => {
         return tokens
-          .filter((t) => !['html_inline', 'emoji'].includes(t.type))
+          .filter(
+            (t) =>
+              !['html_inline', 'emoji', 'vp_jsx_inline', 'vp_jsx_block'].includes(
+                t.type
+              )
+          )
           .map((t) => t.content)
           .join('')
       },
@@ -592,9 +597,9 @@ export async function createMarkdownRenderer(
     await options.config(md)
   }
 
-  // Token 级 JSX 区域规则(A script 块 / B Fragment / C 接管判定):
-  // 在用户 config 之后注册,collect(core.push)保证排在全链最后(anchor 后)。
-  applyJsxTokenRules(md, { authorTags: options.component !== false })
+  // 作者 JSX / <script> 区域识别层(见 design/jsxRegions.md):
+  // 在用户 config 之后注册,规则表 + 交接层,无 core 阶段规则。
+  applyJsxRegions(md, { authorTags: options.component !== false })
 
   return md
 }

@@ -311,5 +311,7 @@ function getSearchableText(content: string) {
 }
 
 function clearHtmlTags(str: string) {
+  // JSX 区域占位是元素哨兵(<span data-vp-jsx>/<div data-vp-jsx>),普通去标签
+  // 正则即可清掉;行内不再是文本 marker,不需要额外处理。
   return str.replace(/<[^>]*>/g, '')
 }

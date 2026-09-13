@@ -5,6 +5,10 @@ import {
   extractComponentNames,
   serializeHtmlToJsx
 } from '../../../src/node/markdown/serializeHtmlToJsx'
+import {
+  jsxBlockPlaceholder,
+  jsxInlinePlaceholder
+} from '../../../src/node/markdown/placeholders'
 
 const round = (html: string, names: string[] = []) =>
   serializeHtmlToJsx(html, new Set(names)).code
@@ -42,9 +46,9 @@ describe('serializeHtmlToJsx', () => {
     expect(code).not.toContain('checked="')
   })
 
-  it('restores @@VP_HTML_ placeholders verbatim (incl. <> fragment)', () => {
+  it('expands inline JSX sentinels verbatim (incl. <> fragment)', () => {
     const { code, warnings } = serializeHtmlToJsx(
-      '<p>a @@VP_HTML_0@@ b</p>',
+      `<p>a ${jsxInlinePlaceholder(0)} b</p>`,
       new Set(),
       { '0': { html: '<>{1 + 1}</>' } }
     )
@@ -53,8 +57,30 @@ describe('serializeHtmlToJsx', () => {
     expect(code).toContain('{1 + 1}')
     expect(code).toContain('</>')
     expect(code).toContain('{" b"}')
-    expect(code).not.toContain('@@VP_')
+    expect(code).not.toContain('data-vp-jsx')
     expect(warnings).toEqual([])
+  })
+
+  it('expands block JSX sentinels verbatim (not wrapped in <p>)', () => {
+    const { code } = serializeHtmlToJsx(
+      jsxBlockPlaceholder(0),
+      new Set(),
+      { '0': { html: '<Component />' } }
+    )
+    expect(code).toContain('<Component />')
+    expect(code).not.toContain('data-vp-jsx')
+  })
+
+  it('ignores forged sentinels (foreign nonce) and literal text markers', () => {
+    const forged =
+      '<p><span data-vp-jsx="0"></span> 与 @@VP_HTML_0@@ 都是字面</p>'
+    const { code } = serializeHtmlToJsx(forged, new Set(), {
+      '0': { html: '<>{1 + 1}</>' }
+    })
+    // 伪造哨兵(nonce 不符)按普通 span 输出;文本 marker 不再是占位格式
+    expect(code).toContain('data-vp-jsx="0"')
+    expect(code).toContain('@@VP_HTML_0@@')
+    expect(code).not.toContain('{1 + 1}')
   })
 
   it('renders literal braces as string content, never as expressions', () => {
