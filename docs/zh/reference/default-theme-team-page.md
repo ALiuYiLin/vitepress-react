@@ -1,8 +1,8 @@
 ---
-description: 使用 VitePress 内置的团队组件创建包含成员资料的团队页面。
+description: 使用 VitePress React 版内置的团队组件创建包含成员资料的团队页面。
 ---
 
-<script setup>
+<script>
 import { VPTeamMembers } from '@10coding/vitepress-react/theme'
 
 const members = [
@@ -31,12 +31,16 @@ const members = [
 
 如果你想介绍你的团队，你可以使用 Team components 来构建团队页面。有两种使用这些组件的方法。一种是将其嵌入文档页面，另一种是创建完整的团队页面。
 
+::: tip Vue 版的插槽在这里是 props
+React 版没有 `<template #slot>`:Vue 的具名插槽对应**同名 camelCase props**(`title` / `lead` / `members`),值直接写 JSX/字符串。参见[扩展默认主题](../guide/extending-default-theme)。
+:::
+
 ## 在页面中显示团队成员 {#show-team-members-in-a-page}
 
-你可以在任何页面上使用从 `vitepress/theme` 暴露出的公共组件 `<VPTeamMembers>` 显示团队成员。
+你可以在任何页面上使用从 `@10coding/vitepress-react/theme` 暴露出的公共组件 `<VPTeamMembers>` 显示团队成员。
 
-```html
-<script setup>
+```md
+<script>
 import { VPTeamMembers } from '@10coding/vitepress-react/theme'
 
 const members = [
@@ -57,12 +61,12 @@ const members = [
 
 Say hello to our awesome team.
 
-<VPTeamMembers size="small" :members />
+<VPTeamMembers size="small" members={members} />
 ```
 
 以上将在卡片外观元素中显示团队成员。它应该显示类似于下面的内容。
 
-<VPTeamMembers size="small" :members />
+<VPTeamMembers size="small" members={members} />
 
 `<VPTeamMembers>` 组件有 2 种不同的尺寸，`small` 和 `medium`。虽然它取决于你的偏好，但通常尺寸在文档页面中使用时 `small` 应该更适合。此外，你可以为每个成员添加更多属性，例如添加“描述”或“赞助”按钮。在 [`<VPTeamMembers>`](#vpteammembers) 中了解更多信息。
 
@@ -76,11 +80,11 @@ Say hello to our awesome team.
 
 要创建团队页面，首先，创建一个新的 md 文件。文件名无所谓，这里我们就叫它 `team.md` 吧。在这个文件中，在 frontmatter 设置 `layout: page`，然后你可以使用 `TeamPage` 组件来组成页面结构。
 
-```html
+```md
 ---
 layout: page
 ---
-<script setup>
+<script>
 import {
   VPTeamPage,
   VPTeamPageTitle,
@@ -102,22 +106,17 @@ const members = [
 </script>
 
 <VPTeamPage>
-  <VPTeamPageTitle>
-    <template #title>
-      Our Team
-    </template>
-    <template #lead>
-      The development of VitePress is guided by an international
-      team, some of whom have chosen to be featured below.
-    </template>
-  </VPTeamPageTitle>
-  <VPTeamMembers :members />
+  <VPTeamPageTitle
+    title="Our Team"
+    lead="The development of VitePress is guided by an international team, some of whom have chosen to be featured below."
+  />
+  <VPTeamMembers members={members} />
 </VPTeamPage>
 ```
 
 创建完整的团队页面时，请记住用 `<VPTeamPage>` 组件包装所有团队相关组件，以获得正确的布局结构，如间距。
 
-`<VPTeamPageTitle>` 组件添加页面标题部分。标题是 `<h1>` 标题。使用 `#title` 和 `#lead` 插槽来介绍你的团队。
+`<VPTeamPageTitle>` 组件添加页面标题部分。标题是 `<h1>` 标题。使用 `title` 与 `lead` 两个 props 来填写标题与引言。
 
 `<VPTeamMembers>` 和在 doc 页面中使用时一样。它将显示成员列表。
 
@@ -127,11 +126,11 @@ const members = [
 
 为此，将 `<VPTeamPageSection>` 组件添加到我们之前创建的 `team.md` 文件中。
 
-```html
+```md
 ---
 layout: page
 ---
-<script setup>
+<script>
 import {
   VPTeamPage,
   VPTeamPageTitle,
@@ -144,37 +143,31 @@ const partners = [...]
 </script>
 
 <VPTeamPage>
-  <VPTeamPageTitle>
-    <template #title>Our Team</template>
-    <template #lead>...</template>
-  </VPTeamPageTitle>
-  <VPTeamMembers size="medium" :members="coreMembers" />
-  <VPTeamPageSection>
-    <template #title>Partners</template>
-    <template #lead>...</template>
-    <template #members>
-      <VPTeamMembers size="small" :members="partners" />
-    </template>
-  </VPTeamPageSection>
+  <VPTeamPageTitle title="Our Team" lead="..." />
+  <VPTeamMembers size="medium" members={coreMembers} />
+  <VPTeamPageSection
+    title="Partners"
+    lead="..."
+    members={<VPTeamMembers size="small" members={partners} />}
+  />
 </VPTeamPage>
 ```
 
-`<VPTeamPageSection>` 组件可以有类似于 `VPTeamPageTitle` 组件的 `#title` 和 `#lead` 插槽，还有用于显示团队成员的 `#members` 插槽。
+`<VPTeamPageSection>` 组件可以有类似于 `VPTeamPageTitle` 组件的 `title` 和 `lead` props，还有用于显示团队成员的 `members` prop。
 
-请记住将 `<VPTeamMembers>` 组件放入 `#members` 插槽中。
+请记住把 `<VPTeamMembers>` 组件传给 `members` prop（而不是像 Vue 版那样放进 `#members` 插槽）。
 
 ## `<VPTeamMembers>`
 
 `<VPTeamMembers>` 组件显示给定的成员列表。
 
-```html
+```md
 <VPTeamMembers
   size="medium"
-  :members="[
+  members={[
     { avatar: '...', name: '...' },
-    { avatar: '...', name: '...' },
-    ...
-  ]"
+    { avatar: '...', name: '...' }
+  ]}
 />
 ```
 
@@ -183,16 +176,16 @@ interface Props {
   // 每个成员的大小，默认为 `medium`
   size?: 'small' | 'medium'
 
-  // 显示的成员列表
-  members: TeamMember[]
+  // 显示的成员列表（为空时组件不渲染）
+  members?: VpTeamMember[]
 }
 
-interface TeamMember {
+interface VpTeamMember {
   // 成员的头像图像
-  avatar: string
+  avatar?: string
 
   // 成员的名称
-  name: string
+  name?: string
 
   // 成员姓名下方的标题
   // 例如：Developer, Software Engineer, etc.
@@ -201,59 +194,48 @@ interface TeamMember {
   // 成员所属的组织
   org?: string
 
-  // 组织的 URL
-  orgLink?: string
-
   // 成员的描述
   desc?: string
 
   // 社交媒体链接，例如 GitHub、Twitter 等，可以在此处传入 Social Links 对象
   // 参见: https://vitepress.dev/reference/default-theme-config.html#sociallinks
-  links?: SocialLink[]
-
-  // 成员 sponsor 页面的 URL
-  sponsor?: string
-
-  // sponsor 链接的文本，默认为 'Sponsor'
-  actionText?: string
+  links?: { icon?: string; link?: string }[]
 }
 ```
 
+::: warning 与 Vue 版的差异
+React 版的 `VpTeamMember` 目前实现 `avatar` / `name` / `title` / `org` / `desc` / `links`;
+Vue 版的 `orgLink`、`sponsor`(赞助按钮)与 `actionText` 尚未实现。链接项直接渲染 `icon`(缺省时渲染 `link`),没有图标组件映射。
+:::
+
 ## `<VPTeamPage>`
 
-创建完整团队页面时的根组件。它只接受一个插槽。它将设置所有传入的团队相关组件的样式。
+创建完整团队页面时的根组件。它只接受 `children`。它将设置所有传入的团队相关组件的样式。
 
 ## `<VPTeamPageTitle>`
 
-添加页面的标题。最好在一开始就在 `<VPTeamPage>` 下使用。它接受 `#title` 和 `#lead` 插槽。
+添加页面的标题。最好在一开始就在 `<VPTeamPage>` 下使用。它接受 `title` 和 `lead` props。
 
-```html
+```md
 <VPTeamPage>
-  <VPTeamPageTitle>
-    <template #title>
-      Our Team
-    </template>
-    <template #lead>
-      The development of VitePress is guided by an international
-      team, some of whom have chosen to be featured below.
-    </template>
-  </VPTeamPageTitle>
+  <VPTeamPageTitle
+    title="Our Team"
+    lead="The development of VitePress is guided by an international team, some of whom have chosen to be featured below."
+  />
 </VPTeamPage>
 ```
 
 ## `<VPTeamPageSection>`
 
-在团队页面中创建一个“section”。它接受 `#title`、`#lead` 和 `#members` 插槽。你可以在 `<VPTeamPage>` 中添加任意数量的 section。
+在团队页面中创建一个“section”。它接受 `title`、`lead` 和 `members` props。你可以在 `<VPTeamPage>` 中添加任意数量的 section。
 
-```html
+```md
 <VPTeamPage>
   ...
-  <VPTeamPageSection>
-    <template #title>Partners</template>
-    <template #lead>Lorem ipsum...</template>
-    <template #members>
-      <VPTeamMembers :members="data" />
-    </template>
-  </VPTeamPageSection>
+  <VPTeamPageSection
+    title="Partners"
+    lead="Lorem ipsum..."
+    members={<VPTeamMembers members={data} />}
+  />
 </VPTeamPage>
 ```

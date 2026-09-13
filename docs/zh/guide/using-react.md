@@ -349,7 +349,7 @@ export default function Page() {
 ```
 
 ::: tip 为什么有真实 `<ul>` 而没有 `<p>` 包裹
-块级占位在 md-it 眼里是一行 `<div data-vp-jsx="…">`(`html_block`,不会被包进段落),序列化器遇到它直接注入原始 JSX——所以 `<ul>` 是真正的块级节点。
+块级区域在 markdown-it 眼里是一个**块级占位元素**(`html_block`,不会被包进段落),序列化阶段再把原文还原成 JSX —— 所以 `<ul>` 是真正的块级节点。
 :::
 
 ## 6. 代码块与指令 {#code-blocks}
