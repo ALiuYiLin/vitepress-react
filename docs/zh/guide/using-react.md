@@ -5,7 +5,7 @@ outline: deep
 
 # 在 Markdown 中使用 React {#using-react-in-markdown}
 
-在本 React 版 VitePress(vitepress-react)中,每个 Markdown 文件都会被编译成静态 HTML,再经 JSX 序列化器生成页面组件。正文(含 `{…}`、`{{…}}`)与 HTML 一律是**字面量**,与标准 Markdown / 上游 VitePress 一致;不存在 Vue 版的 `{{ }}` 插值、指令或 `v-pre`,也不需要转义。
+在本 React 版 VitePress(vitepress-react)中,每个 Markdown 文件都会被编译成静态 HTML,再经 JSX 序列化器生成页面组件。正文文本(含 `{…}`、`{{…}}`)一律是**字面量**,与标准 Markdown / 上游 VitePress 一致;不存在 Vue 版的 `{{ }}` 插值、指令或 `v-pre`,也不需要转义。作者**显式写的标签**与 `<>{…}</>` 则按 **JSX** 交给 React(见 §3)。
 
 页面动态能力来自三个机制,先用 §0 速查表给结论,再逐条看**代码示例 → 真实渲染 → 编译后的 TSX(示意)**:
 
@@ -28,9 +28,9 @@ outline: deep
 | 字面花括号(想显示 `{x}` 本身) | **直接写即可**:`{x}` 就是字面文本;`\{` 退化为 md 默认显示 `{`,不再承担语义 |
 | 独立成行的 `<标签 …>` 块 | React 接管:整行(可跨行配平)占位 → 原样恢复成 JSX |
 | 正文行内的 `<b>`/`<Badge/>`/`<>{x}</>` | React 接管:同句片段占位 → 恢复成 JSX(片段前后文字仍是普通 md) |
-| ATX 标题行内的标签(`## 标题 <Badge/>`) | **不整行接管**:markdown-it + anchor 生成干净 id 与大纲纯文本;已知组件名由序列化器还原(标题内不支持 `<>{expr}</>` 动态) |
+| ATX 标题行内的标签与 `<>{expr}</>`(`## 标题 <Badge/>`、`## 计数 <>{count}</>`) | **与正文同规则**:接管并原样恢复成 JSX;anchor id / aria-label / 大纲文本按 **token 类型**过滤区域,只取纯文本 |
 | `::: react … :::` 容器 | 任意多行 JSX(含 `items.map(...)` 表达式),原样交给 React |
-| Vue 指令(`:members`/`@click`/`#slot`/`v-*`) | **不接管**,退回旧 HTML→JSX 路径(丢弃并提示) |
+| Vue 指令/绑定(`:members`/`@click`/`v-*`/`{{ x }}`) | **不做识别**:按 JSX 原样编译 —— `:x`/`@x` 是非法 JSX 属性名 → **编译期报错**;`v-*` 当普通属性透传;`{{ x }}` 当表达式容器 |
 | 代码 fence / 行内代码 | 字面量,永不求值/接管 |
 | `<script>` | import/具名导出 → 模块顶层;其余(useState 等)→ `Page()` 体 |
 | `<style scoped>` / `*.scoped.css` 导入 | 不是 JSX 区域:页面级 scoped 样式方案,见 [md 页面 scoped 样式](./md-scoped-demo) |
@@ -64,7 +64,7 @@ Vue 版文档里的 `{{ }}` 在这里不存在,正文也**不做 `{expr}` 求值
 
   这种写法与 [`::: react` 容器](#react-container)**互补**:常规"一整块 JSX"(元素/表达式/组件混排、可跨空行)直接写 `<>…</>`;容器保留给它**取代不了**的场景——内容**不以 `<>` 开头**、**不做 `<>…</>` 配平约束**(如含裸 `</>` 的教学文本)、**不含 `{`/`<` 的原始 JSX 文本区**,或想用**显式 `:::` 行收尾**避免整篇扫描找配平,以及位于**缩进上下文**(列表/引用内;块级 fragment 要求列 0)。
 
-约束:标签必须严格 `<>`…`</>`(漏斜杠 / 带空格即退回字面文本);内部是 JSX children,属性按 JSX 写(`className`、驼峰事件;Vue 指令不接管);未配平到文末的 `<>` 会整体回退为普通 markdown,不会吞掉后续段落。
+约束:标签必须严格 `<>`…`</>`(漏斜杠 / 带空格即退回字面文本);内部是 JSX children,属性按 JSX 写(`className`、驼峰事件;Vue 指令会按 JSX 编译并在写错时报错,见 §7);未配平到文末的 `<>` 会整体回退为普通 markdown,不会吞掉后续段落。
 :::
 
 ::: tip 两个常见坑
@@ -195,7 +195,7 @@ export default function Page() {
 
   return (
     <div className="vp-doc">
-      <p>{/* JSX md:… */}当前计数: <>{count}</></p>
+      <p>{"当前计数: "}<>{count}</></p>
       {/* JSX md:… */}
       <button onClick={() => setCount(count + 1)}>+1</button>
     </div>
@@ -227,32 +227,35 @@ export default function Page() {
 ```tsx
 // 自动注入:import { VPBadge as Badge } from '@10coding/vitepress-react/theme'
 <p>
-  {'行内接管: '}
-  <b>{'加粗'}</b>
-  {' 与 '}
+  {"行内接管: "}
+  <b>加粗</b>
+  {" 与 "}
   <Badge type="tip" text="new" />
-  {' 都生效。'}
+  {" 都生效。"}
 </p>
 ```
 
-普通 HTML 标签(`<b>`)与主题组件(`<Badge>`/`<VPTeamMembers>`…)都按 JSX 编译;组件会从 `vitepress/theme` 自动导入。含 Vue 指令(`:members`、`@click`、`<template #slot>`)的行不属于 React 接管范围,仍按旧 HTML 路径处理并提示(见 §7)。
+注意:作者写的标签是**原样**交给 React 的(`<b>加粗</b>`,内部文本不做字符串包裹),只有 markdown 层自己生成的 HTML 才会经过属性转换(`class` → `className` 等)。
+
+普通 HTML 标签(`<b>`)与主题组件(`<Badge>`/`<VPTeamMembers>`…)都按 JSX 编译;组件会从 `vitepress/theme` 自动导入。含 Vue 指令(`:members`、`@click`、`<template #slot>`)的行同样按 JSX 编译,所以写 Vue 语法会得到**编译错误**,而不是被静默丢弃(见 §7)。
 
 ::: tip 多行 / 含 JS 表达式的 JSX 块
-正文的标签行规则只处理“整行可配平”的情况;需要跨多行、含表达式(如 `items.map(...)`)时,请用 [`::: react` 容器](#react-container)包裹(内容对 markdown-it 完全不透明、原样交给 React)。
+独立成行的 `<>…</>`(可跨多行、内部允许空行,可含 `items.map(...)`)本身就是块级 JSX 区域,见 §1;`::: react` 容器保留给容器特有的场景(内容不以 `<>` 开头、不做 `<>…</>` 配平、需要显式 `:::` 收尾,或位于缩进上下文),见 §5。
 :::
 
-### 3.1 在标题中使用组件 {#using-components-in-headers}
+### 3.1 在标题中使用组件与表达式 {#using-components-in-headers}
 
-可以在标题中放组件,但解析出的标题只取纯文本:
+标题与正文走**同一套** JSX 区域规则:标题里的标签和 `<>{…}</>` 都会被接管、原样恢复成 JSX;而 **anchor id、aria-label 与大纲文本只取纯文本** —— 文本提取按 token 类型过滤掉区域,所以 id 不会被组件标签或占位串污染。
 
-| Markdown                                        | 解析出的标题 |
-| ----------------------------------------------- | ------------ |
-| `# 文档 <Badge type="info" text="new" />`       | `文档`       |
-| `# 文档 \`<Badge/>\``                           | `文档 <Badge/>` |
+| Markdown                                        | 解析出的标题 | 说明 |
+| ----------------------------------------------- | ------------ | ---- |
+| `# 文档 <Badge type="info" text="new" />`       | `文档`       | 组件照常渲染,id = `文档` |
+| `# 计数 <>{count}</>`                           | `计数`       | 表达式求值,id = `计数` |
+| `` # 文档 `<Badge/>` ``                          | `文档 <Badge/>` | 行内代码是字面量,不当作组件 |
 
-`<code>` 里的内容不会被解析成组件。
-
-**标题里不支持 `<>{expr}</>` 动态**:anchor id、aria-label、大纲文本都在编译期由纯文本生成,标题内只放组件标签;需要动态值时,把 `<>{expr}</>` 写在标题下方的正文里。ATX 标题行**不整行占位**——否则占位串会漏进 anchor 生成的 heading id(如 `#标题-vp-html-4`)与 aria-label;标题由 markdown-it + anchor 处理(id 干净、大纲只取纯文本),已知组件名再由序列化器还原成 JSX 组件(自定义组件需 `<script>` 顶层 import,主题标签如 `Badge` 会自动导入)。
+::: tip 为什么 id 不会被污染
+区域在 token 层就是独立类型(`vp_jsx_inline`),anchor 的文本提取与大纲提取都按类型过滤它 —— 不是"标题里不接管",而是"接管了但不参与纯文本"。
+:::
 
 等价于 Vue 版 `docs/components/ComponentInHeader.vue` 的最小组件
 `docs/components/ComponentInHeader.tsx` 就放在 docs 里,import 后即可用:
@@ -294,7 +297,7 @@ This is a .md using a custom component
 如果组件在绝大多数页面使用,可以在自定义主题/布局层统一包装与注入,参见[扩展默认主题](./extending-default-theme)。
 
 ::: warning 重要
-自定义组件标签名必须 **PascalCase** 且出现在 `<script>` 顶层(import 或具名导出),否则序列化器无法解析成组件。
+自定义组件标签名必须 **PascalCase**,并在 `<script>` 顶层 import 或具名导出。作者写的标签会**原样**交给 React 编译,不会退回字面文本 —— 未定义时会在 SSR/浏览器渲染时报 `Foo is not defined`。
 :::
 
 默认主题也导出可直接用的组件(`VPBadge`、`VPTeamMembers`、`VPTeamPage` 等),甚至文档里裸写 `<Badge type="tip" text="new" />` 这类 Vue 全局注册标签,编译时会自动从 `vitepress/theme` 导入。
@@ -369,12 +372,13 @@ Hello {1 + 1}
 
 代码 fence / 行内代码里的任何内容都**永不求值、不接管**;想展示字面 JSX 代码,请这样写。
 
-## 7. 何时**不**接管(保留字面 / 退回旧路径)
+## 7. 保留字面的情形与 Vue 语法的结果
 
 | 场景 | 结果 |
 | --- | --- |
 | 代码块 / 行内代码 | 字面展示(§6) |
-| Vue 指令语法(`:members`、`@click`、`<template #slot>`、`v-if`) | 不接管,退回旧 HTML→JSX 路径并给出提示(避免把 Vue 语法当 JSX 编译) |
+| Vue 指令语法(`:members`、`@click`、`<template #slot>`、`v-if`、`{{ x }}`) | 不做特征识别:按 JSX 编译 —— `:x`/`@x` → **编译期报错**(oxc,报错行号可回到源 md);`v-*` 透传为普通属性;`{{ x }}` 当表达式容器 |
+| 不做标签配平 / 无动态部分 | 保持字面:未闭合的 `<div`,或内部既无 `{…}` 也无标签的 `<>`、`<></>`、`<>纯文字</>`、`a <> b` |
 | `<script>` | 走 plugin-sfc 提取(组件/page-scope),不当作 JSX 区域(§2) |
 | `<style>` / `<style scoped>` / `*.scoped.css` 导入 | 不是 JSX 区域:全局样式运行时注入;页面级 scoped 样式见 [md 页面 scoped 样式](./md-scoped-demo) |
 
